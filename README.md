@@ -8,8 +8,6 @@
 - 📄 My experiences **I have taught courses in Deep Learning, Natural Language Processing and Marketing Engineering.**
 
 - ⚡ Fun fact **I like to play Playstation and go to the stadium to see the University of Chile**
-
-<h3 align="left">Connect with me:</h3>
 <p align="left">
 </p>
 
