@@ -187,7 +187,7 @@ Sitio gratuito de indicadores económicos y calculadoras financieras para Chile,
 
 En este período no hay fines de semana largos (el 31 de octubre cae sábado y el 1 de noviembre, domingo). Los próximos son del 25 al 27 de diciembre y del 1 al 3 de enero de 2027.
 
-> **Ojo con `/feriados/2027/`:** el 1 de enero de 2027 esos feriados pasan a `/feriados/` y la dirección `/feriados/2027/` deja de existir (daría error 404) mientras no se agregue una redirección. Úsenla en publicaciones de temporada, pero en enlaces que deben durar (correos a sitios, artículos, el README) enlacen `/feriados/`.
+> **`/feriados/2027/` es una dirección permanente:** sigue existiendo después del 1 de enero de 2027 (desde ese día indica a Google que la página principal del año en curso es `/feriados/`). Pueden usarla sin miedo en enlaces que deben durar.
 
 ## 7. Calendario de temporadas
 
@@ -196,7 +196,7 @@ Publiquen o compartan cada contenido una o dos semanas antes de que suba la bús
 | Cuándo | Qué pasa | Páginas a empujar |
 |---|---|---|
 | Cada mes, cerca del día 8 | El INE publica el IPC y queda fija la UF hasta el día 9 del mes siguiente | `/uf/`, `/uf/proyeccion/`, archivo mensual de la UF, `/ipc/`, `/calculadoras/reajuste-arriendo-ipc/` |
-| Octubre | Se buscan los feriados del año siguiente | `/feriados/2027/` (en enero pasa a ser `/feriados/`: ver la advertencia de la sección 6) |
+| Octubre | Se buscan los feriados del año siguiente | `/feriados/2027/` (dirección permanente; desde enero, `/feriados/` muestra el año en curso) |
 | Noviembre (por confirmar) | Black Friday: compras en tiendas extranjeras | `/dolar/` y las páginas de montos ("100 dólares en pesos") |
 | Diciembre y enero | Términos de contrato y vacaciones; fines de semana largos del 25 al 27 de diciembre y del 1 al 3 de enero | `/calculadoras/finiquito/`, `/calculadoras/vacaciones-proporcionales/`, `/feriados/` |
 | 1 de enero de 2027 | Reajuste del sueldo mínimo (Ley 21.830). En años anteriores también hubo reajustes en mayo | `/sueldo-minimo/`, `/calculadoras/sueldo-liquido/`, páginas de sueldo líquido por monto. Actualicen `parametros/chile.yaml` apenas se publique el monto |
@@ -260,7 +260,5 @@ Si alguien les ofrece enlaces a cambio de dinero o de otro enlace, respondan que
 - [Cabeceras de los archivos estáticos en Cloudflare Workers](https://developers.cloudflare.com/workers/static-assets/headers/): todas las reglas de `_headers` que calzan con una ruta se aplican juntas.
 - Tamaño de los subreddits: [GummySearch](https://gummysearch.com/r/chile/) (sitio de terceros).
 - Fines de semana largos: `lucas/feriados.py`. Sueldo mínimo: `parametros/chile.yaml` (Ley 21.830).
-
-Pendiente en el código: una redirección permanente de `/feriados/<año en curso>/` a `/feriados/` (Cloudflare acepta un archivo `_redirects`), para que no se pierdan los enlaces a la página del año siguiente cuando cambia el año.
 
 Pendiente de verificar antes de usar (no se pudo al preparar este plan): las reglas vigentes de cada comunidad, las fechas de CyberDay y Black Friday de cada año, el calendario de pago de bonos (ChileAtiende), el momento de pago de la gratificación anual (Dirección del Trabajo) y los requisitos de `public-apis/public-apis`.

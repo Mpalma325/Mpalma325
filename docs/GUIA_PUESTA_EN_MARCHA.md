@@ -26,6 +26,23 @@ Revisen las páginas y los textos. Si algo no les gusta, las plantillas están e
 - `sitio.url`: la URL final (por ejemplo, `https://lucasclaras.cl`).
 - `sitio.correo_contacto`: un correo para el sitio. Creen uno nuevo, por ejemplo `contacto.lucasclaras@gmail.com`. Google AdSense valora que exista un contacto.
 - `sitio.autores`: cómo quieren presentarse en "Quiénes somos" (o déjenlo vacío).
+- `sitio.equipo`: **muy recomendado.** En los sitios de finanzas, Google y AdSense valoran saber quién está detrás. Completen sus datos reales:
+
+  ```yaml
+    equipo:
+      - nombre: Nombre Apellido
+        rol: Cofundadora · datos y fórmulas
+        descripcion: Estudiante de ingeniería. Revisa las fórmulas y los parámetros legales.
+        enlace: https://www.linkedin.com/in/su-perfil/     # opcional: LinkedIn o GitHub
+      - nombre: Nombre Apellido
+        rol: Cofundador · negocio
+        descripcion: Estudiante de ingeniería. Se encarga de métricas, AdSense y alianzas.
+        enlace: https://github.com/su-usuario
+    redes: []          # perfiles públicos del sitio (no personales), con https://
+    repositorio: ""    # solo si publican el código
+  ```
+
+  Aparecen como tarjetas en `/acerca/` y en los datos estructurados de la organización. Corran `python -m pytest`: una prueba revisa que cada persona tenga nombre y que los enlaces empiecen con `https://`.
 - Si quieren otro nombre para el sitio, cámbienlo aquí y regeneren las imágenes con `python herramientas/generar_imagenes.py`.
 
 ## Paso 3: Comprar el dominio
@@ -62,8 +79,8 @@ Como findic.cl no es oficial, conviene agregar el respaldo oficial de la Comisi�
    - Pestaña **Variables** → *New repository variable*:
      - `DESTINO` = `cloudflare`
 7. **Publicar por primera vez:** pestaña *Actions* → **Actualizar y publicar** → *Run workflow*. La primera vez descarga datos desde 2018 y demora un par de minutos. Debe terminar en verde ✅. Se crea el Worker `lucas-claras` con una dirección `lucas-claras.<algo>.workers.dev`.
-8. **Conectar el dominio:** Cloudflare → *Workers & Pages* → `lucas-claras` → *Settings* → *Domains & Routes* → *Add* → *Custom domain* → `lucasclaras.cl`. Repitan con `www.lucasclaras.cl` si quieren que también funcione.
-9. **Analítica gratis y sin cookies:** Cloudflare → *Web Analytics* → agreguen el sitio. Si les entrega un token, cópienlo en `config.yaml` (`analitica.cloudflare_web_analytics_token`).
+8. **Conectar el dominio:** Cloudflare → *Workers & Pages* → `lucas-claras` → *Settings* → *Domains & Routes* → *Add* → *Custom domain* → `lucasclaras.cl`. **No agreguen `www` como dominio del Worker**: servirían el mismo sitio dos veces. Para `www`, sigan el complemento B más abajo.
+9. **Analítica gratis y sin cookies:** Cloudflare → *Web Analytics* → agreguen el sitio. Si les entrega un token, cópienlo en `config.yaml` (`analitica.cloudflare_web_analytics_token`). Prefieran esta opción a Google Analytics: las calculadoras guardan los montos en la parte `#` de la dirección para poder compartirlos, y si algún día activan Google Analytics 4 deben desactivar en su "medición mejorada" los cambios de página basados en el historial del navegador, para no enviar esos montos a Google.
 10. **Avisar a Bing y Yandex automáticamente:** Cloudflare → *Caching → Configuration* → activen **Crawler Hints** (usa IndexNow).
 
 <details>
@@ -79,6 +96,37 @@ Con el GitHub Student Developer Pack tienen GitHub Pro gratis, que permite Pages
 
 Desde ahora el sitio se actualiza solo dos veces al día. 🎉
 
+### Complemento A: correo de contacto gratis con Cloudflare Email Routing
+
+Con el dominio ya en Cloudflare pueden tener `contacto@lucasclaras.cl` sin pagar: Cloudflare recibe los correos y los reenvía a su correo personal. **AdSense espera que el sitio tenga un contacto.**
+
+1. En Cloudflare, entren a **Email Routing** dentro del dominio (según el panel aparece como *Email Service → Email Routing* o *Email → Email Routing*).
+2. **Destination addresses → Add:** escriban su correo personal y confírmenlo con el mensaje de verificación que les llega. Sin confirmar, la regla queda desactivada.
+3. Activen Email Routing para `lucasclaras.cl`. Cloudflare agrega solo los registros MX y el TXT de SPF. Si el dominio tenía otro correo, hay que quitar esos MX: no pueden convivir.
+4. **Routing rules → Create address:** en la dirección escriban `contacto`; en la acción elijan **Send to an email** y su correo verificado.
+5. Prueben escribiendo desde otra cuenta (revisen también la carpeta de spam).
+6. En `config.yaml`, pongan `correo_contacto: "contacto@lucasclaras.cl"` y hagan commit y push. El correo aparece en Contacto, Privacidad, Quiénes somos y en los datos estructurados.
+
+> Email Routing solo recibe y reenvía: sus respuestas saldrán desde su correo personal.
+
+### Complemento B: que `www` lleve al dominio sin `www`
+
+1. En **DNS → Records**, creen un registro para `www` con la nube naranja (*Proxied*), por ejemplo un `CNAME` `www` → `lucasclaras.cl`.
+2. En **Rules → Redirect Rules → Create rule**, elijan la plantilla **Redirect from WWW to root** (o configúrenla a mano: *Request URL* `https://www.*`, *Target URL* `https://${1}`, código **301**, *Preserve query string* activado).
+3. Activen **SSL/TLS → Edge Certificates → Always Use HTTPS**.
+4. Prueben que `https://www.lucasclaras.cl/uf/?x=1` lleve a `https://lucasclaras.cl/uf/?x=1`.
+
+### Complemento C: apaguen `workers.dev` cuando el dominio funcione
+
+Cuando `https://lucasclaras.cl` ya muestre el sitio, apaguen la dirección `lucas-claras.<cuenta>.workers.dev` y las URL de vista previa, para que no queden copias del sitio que Google pueda indexar. En `wrangler.jsonc`, agreguen:
+
+```jsonc
+  "workers_dev": false,
+  "preview_urls": false,
+```
+
+Hagan commit y push: el siguiente despliegue las apaga. **Háganlo solo después de conectar el dominio**; si no, el sitio queda sin dirección pública.
+
 ## Paso 6: Registrar el sitio en Google y Bing
 
 1. **Google Search Console** ([search.google.com/search-console](https://search.google.com/search-console)): *Agregar propiedad* → tipo **Dominio** → `lucasclaras.cl`. Google les pedirá un registro TXT: agréguenlo en Cloudflare → *DNS → Records* → *Add record* (tipo TXT).
@@ -88,7 +136,9 @@ Desde ahora el sitio se actualiza solo dos veces al día. 🎉
 
 ## Paso 7: Conseguir las primeras visitas y enlaces
 
-Google confía más en un sitio nuevo cuando otros sitios lo enlazan. Sin spam:
+Google confía más en un sitio nuevo cuando otros sitios lo enlazan. El plan detallado de las primeras 8 semanas, con borradores de mensajes y un calendario de temporadas, está en [LANZAMIENTO.md](LANZAMIENTO.md). Lo esencial, sin spam:
+
+- Ofrezcan el **widget gratuito** (`/widget/`) y la **API de indicadores** (`/api/`) a blogs, medios y centros de alumnos: cada sitio que los use los enlaza.
 
 - Compártanlo con amigos, familia y compañeros, y en sus perfiles de LinkedIn y GitHub (¡el README del perfil de Marcelo es un buen lugar!).
 - Respondan preguntas reales en comunidades (por ejemplo, foros o subreddits chilenos de finanzas personales) enlazando la calculadora cuando de verdad sirva.
@@ -98,7 +148,8 @@ Google confía más en un sitio nuevo cuando otros sitios lo enlazan. Sin spam:
 
 Postulen cuando el sitio lleve algunas semanas en línea y ya tenga páginas indexadas (lo ven en Search Console).
 
-1. Requisitos: ser mayor de 18 años, tener contenido original, política de privacidad (✅ ya está en `/privacidad/`) y página de contacto (✅ `/contacto/`, con el correo del paso 2).
+1. Requisitos: ser mayor de 18 años, tener contenido original (✅ calculadoras y 15 guías), política de privacidad (✅ `/privacidad/`) y página de contacto (✅ `/contacto/`, **con el correo del complemento A**). Antes de postular, completen también `sitio.equipo` (paso 2): "Quiénes somos" con personas reales ayuda mucho en un sitio de finanzas.
+   - Detalles verificados de AdSense en Chile (umbral de pago, PIN, formulario W-8BEN, formas de pago) en [MONETIZACION.md](MONETIZACION.md#3-publicidad).
 2. Entren a [adsense.google.com](https://adsense.google.com), creen la cuenta y agreguen el sitio.
 3. Copien su ID de editor (`ca-pub-XXXXXXXXXXXXXXXX`) y en `config.yaml` pongan:
 
@@ -120,9 +171,10 @@ Postulen cuando el sitio lleve algunas semanas en línea y ya tenga páginas ind
 
 ## Paso 9: Referidos 💰
 
-1. Inscríbanse en los programas que les parezcan confiables y útiles para sus lectores. Ideas: Fintual (referidos), Racional, Global66 (programa de afiliados), Mercado Libre Afiliados.
-2. **Lean las bases:** algunos programas solo permiten invitar a conocidos y no publicar el enlace en un sitio web.
-3. Agréguenlos en `config.yaml`, en `monetizacion.afiliados`, indicando en qué secciones mostrarlos. Hay un ejemplo comentado en el archivo. El sitio siempre muestra el aviso de que son enlaces de referidos.
+1. Revisen [MONETIZACION.md](MONETIZACION.md): tiene los programas verificados (Fintual, Racional, Global66 Afiliados, ComparaOnline vía Awin...), los descartados y por qué (por ejemplo, Buda.com prohíbe publicar el enlace en sitios web) y **fragmentos listos para pegar** en `config.yaml`.
+2. **Pidan por escrito la confirmación** de que pueden publicar el enlace en un sitio web cuando las bases no lo digan (Fintual, Racional). Guarden esa respuesta.
+3. Agreguen los programas en `config.yaml`, en `monetizacion.afiliados`, con las secciones donde mostrarlos (en las guías, la sección es la categoría de la guía). El sitio siempre muestra el aviso de que son enlaces de referidos.
+4. Antes de recibir el primer pago, ordenen los impuestos con un contador (ver la sección tributaria de MONETIZACION.md).
 
 ## Lista final
 
@@ -131,7 +183,9 @@ Postulen cuando el sitio lleve algunas semanas en línea y ya tenga páginas ind
 - [ ] `https://lucasclaras.cl` muestra el sitio, con el candado HTTPS.
 - [ ] `https://lucasclaras.cl/sitemap.xml` y `/robots.txt` responden.
 - [ ] Sitemap enviado a Search Console y a Bing.
-- [ ] Correo de contacto configurado.
+- [ ] Correo de contacto funcionando (`contacto@lucasclaras.cl`) y puesto en `correo_contacto`.
+- [ ] `sitio.equipo` completo ("Quiénes somos" con personas reales).
+- [ ] `www` redirige al dominio sin `www`; `workers_dev` y `preview_urls` en `false`.
 - [ ] AdSense postulado (cuando corresponda).
 - [ ] Referidos configurados (cuando corresponda).
 - [ ] Leyeron [MANTENCION.md](MANTENCION.md) y saben qué hacer cuando llegue un correo de GitHub con un workflow en rojo.
