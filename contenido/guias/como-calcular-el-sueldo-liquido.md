@@ -14,16 +14,32 @@ calculadoras:
 fuentes:
   - nombre: "Comisiones de las AFP (Superintendencia de Pensiones)"
     url: "https://www.spensiones.cl/portal/institucional/594/w3-propertyvalue-9897.html"
+  - nombre: "¿En qué consiste la comisión que cobra una AFP? (Superintendencia de Pensiones)"
+    url: "https://www.spensiones.cl/portal/institucional/594/w3-article-2810.html"
   - nombre: "Topes imponibles 2026 (Superintendencia de Pensiones)"
     url: "https://www.spensiones.cl/portal/institucional/594/w3-article-16885.html"
+  - nombre: "Límite máximo imponible: reajuste y UF con que se convierte (Compendio de Pensiones)"
+    url: "https://www.spensiones.cl/portal/compendio/596/w3-propertyvalue-3629.html"
   - nombre: "Impuesto Único de Segunda Categoría 2026 (Servicio de Impuestos Internos)"
     url: "https://www.sii.cl/valores_y_fechas/impuesto_2da_categoria/impuesto2026.htm"
+  - nombre: "Beneficios tributarios del APV (Superintendencia de Pensiones)"
+    url: "https://www.spensiones.cl/portal/institucional/594/w3-article-5795.html"
   - nombre: "Código del Trabajo, artículos 41, 42 y 50 (Biblioteca del Congreso Nacional)"
     url: "https://www.bcn.cl/leychile/navegar?idNorma=207436"
+  - nombre: "Dirección del Trabajo: monto de las asignaciones de colación y movilización"
+    url: "https://www.dt.gob.cl/portal/1628/w3-article-60235.html"
+  - nombre: "Cotizaciones del seguro de cesantía (Superintendencia de Pensiones)"
+    url: "https://www.spensiones.cl/portal/institucional/594/w3-propertyvalue-9902.html"
+  - nombre: "Dirección del Trabajo: ¿Durante cuánto tiempo se cotiza para el seguro de cesantía?"
+    url: "https://www.dt.gob.cl/portal/1628/w3-article-95311.html"
   - nombre: "Seguro de Cesantía (AFC Chile)"
     url: "https://www.afc.cl/"
+  - nombre: "Cotización de cargo del empleador (Superintendencia de Pensiones)"
+    url: "https://www.spensiones.cl/portal/institucional/594/w3-propertyvalue-10906.html"
   - nombre: "Aportes del empleador al sistema de pensiones (ChileAtiende)"
     url: "https://www.chileatiende.gob.cl/fichas/130987-aportes-del-empleador-al-sistema-de-pensiones"
+  - nombre: "Cómo se financia el seguro de accidentes del trabajo y la Ley SANNA (SUSESO)"
+    url: "https://www.suseso.gob.cl/606/w3-article-18613.html"
 faq:
   - pregunta: "¿Qué diferencia hay entre sueldo bruto y sueldo líquido?"
     respuesta: "El bruto es el total de tus haberes antes de descuentos. El líquido es lo que recibes: la remuneración imponible más las asignaciones no imponibles, menos AFP, salud, seguro de cesantía e impuesto único."
@@ -32,9 +48,9 @@ faq:
   - pregunta: "¿Desde qué sueldo se paga impuesto único?"
     respuesta: "Desde que la base tributable (remuneración imponible menos las cotizaciones obligatorias) supera {{ p.tramos_impuesto[0].hasta|numero(1) }} UTM: {{ (p.tramos_impuesto[0].hasta * utm_hoy)|pesos }} en {{ hoy|mes_de_anio }}. Bajo ese monto la tasa es cero."
   - pregunta: "¿La colación y la movilización pagan cotizaciones o impuesto?"
-    respuesta: "No. Son asignaciones que no constituyen remuneración (artículo 41 del Código del Trabajo): no se les descuenta AFP, salud, seguro de cesantía ni impuesto, y se suman completas al líquido."
+    respuesta: "No, si son de un monto razonable. Son asignaciones que no constituyen remuneración (artículo 41 del Código del Trabajo): no se les descuenta AFP, salud, seguro de cesantía ni impuesto, y se suman completas al líquido."
   - pregunta: "¿Qué pasa si gano más que el tope imponible?"
-    respuesta: "La AFP y la salud se calculan solo hasta el tope de {{ p.tope_imponible_uf|numero(1) }} UF al mes (unos {{ (p.tope_imponible_uf * uf_hoy)|pesos }} con la UF de hoy). Lo que ganes por sobre ese monto no paga esas cotizaciones, pero sí paga impuesto único."
+    respuesta: "La AFP y la salud se calculan solo hasta el tope de {{ p.tope_imponible_uf|numero(1) }} UF al mes (unos {{ (p.tope_imponible_uf * p.uf_topes)|pesos }} en {{ hoy|mes_de_anio }}). Lo que ganes por sobre ese monto no paga esas cotizaciones, pero sí paga impuesto único."
 ---
 {% set barata = calc.afp_mas_barata(p) %}
 {% set r = calc.sueldo_liquido(1000000, p, afp=barata) %}
@@ -46,7 +62,7 @@ En tu liquidación aparecen tres montos distintos:
 
 - **Sueldo bruto:** todo lo que te pagan en el mes, antes de descuentos.
 - **Remuneración imponible:** la parte del bruto sobre la que se calculan las cotizaciones. Incluye el sueldo base, las horas extra, las comisiones, la gratificación y, en general, lo que recibes como pago por tu trabajo (artículos 41 y 42 del Código del Trabajo).
-- **Haberes no imponibles:** la colación, la movilización, los viáticos y la asignación familiar legal, entre otros. No son remuneración (artículo 41), así que no pagan cotizaciones ni impuesto y se suman completos al líquido.
+- **Haberes no imponibles:** la colación, la movilización, los viáticos y la asignación familiar legal, entre otros. No son remuneración (artículo 41), así que no pagan cotizaciones ni impuesto y se suman completos al líquido. La colación y la movilización deben ser de un monto razonable: según la Dirección del Trabajo, lo que exceda el gasto que compensan se considera remuneración.
 
 La cuenta completa es: **líquido = imponible + no imponible − cotizaciones − impuesto único**. Tu empleador descuenta las cotizaciones y el impuesto, y los paga por ti cada mes.
 
@@ -54,7 +70,7 @@ La cuenta completa es: **líquido = imponible + no imponible − cotizaciones �
 
 ### AFP: {{ p.tasa_afp|porcentaje(0) }} más la comisión
 
-El {{ p.tasa_afp|porcentaje(0) }} de tu remuneración imponible va a tu cuenta de capitalización individual. A eso se suma la comisión de tu AFP, que cada administradora fija y que también se cobra sobre la remuneración imponible. Estas son las comisiones vigentes, ordenadas de menor a mayor:
+El {{ p.tasa_afp|porcentaje(0) }} de tu remuneración imponible va a tu cuenta de capitalización individual. A eso se suma la comisión de tu AFP, que es distinta en cada administradora y que, por ley, también se cobra como un porcentaje de la remuneración imponible. Estas son las comisiones vigentes, ordenadas de menor a mayor:
 
 | AFP | Comisión | Descuento total |
 |---|---:|---:|
@@ -69,7 +85,7 @@ Con $1.000.000 imponibles, la diferencia de comisión entre la AFP más barata y
 Se descuenta el {{ p.salud_obligatoria|porcentaje(0) }} de tu remuneración imponible. Si estás en Fonasa, ese es todo el descuento. Si estás en una isapre y tu plan cuesta más que ese {{ p.salud_obligatoria|porcentaje(0) }}, se descuenta el precio del plan: la diferencia es una cotización adicional que también sale de tu sueldo.
 
 {% set ri = calc.sueldo_liquido(1500000, p, afp=barata, salud="isapre", plan_isapre_uf=4) %}
-Por ejemplo, con $1.500.000 imponibles el {{ p.salud_obligatoria|porcentaje(0) }} es {{ (1500000 * p.salud_obligatoria)|pesos }}. Si tu plan de isapre cuesta 4 UF (unos {{ (4 * uf_hoy)|pesos }} con la UF de hoy), te descuentan {{ ri.salud|pesos }}: {{ ri.salud_adicional|pesos }} más que en Fonasa.
+Por ejemplo, con $1.500.000 imponibles el {{ p.salud_obligatoria|porcentaje(0) }} es {{ (1500000 * p.salud_obligatoria)|pesos }}. Si tu plan de isapre cuesta 4 UF (unos {{ (4 * p.uf_topes)|pesos }} en {{ hoy|mes_de_anio }}), te descuentan {{ ri.salud|pesos }}: {{ ri.salud_adicional|pesos }} más que en Fonasa.
 
 ### Seguro de cesantía
 
@@ -79,17 +95,19 @@ Las cotizaciones las pagan tú y tu empleador, en proporciones que dependen del 
 |---|---:|---:|
 | Indefinido | {{ p.cesantia_trabajador.indefinido|porcentaje(1) }} | {{ p.cesantia_empleador.indefinido|porcentaje(1) }} |
 | Plazo fijo o por obra | {{ "No pagas" if p.cesantia_trabajador.plazo_fijo == 0 else p.cesantia_trabajador.plazo_fijo|porcentaje(1) }} | {{ p.cesantia_empleador.plazo_fijo|porcentaje(1) }} |
-| Indefinido, con más de 11 años | {{ "No pagas" if p.cesantia_trabajador.indefinido_11 == 0 else p.cesantia_trabajador.indefinido_11|porcentaje(1) }} | {{ p.cesantia_empleador.indefinido_11|porcentaje(1) }} |
+| Indefinido, después de 11 años con el mismo empleador | {{ "No pagas" if p.cesantia_trabajador.indefinido_11 == 0 else p.cesantia_trabajador.indefinido_11|porcentaje(1) }} | {{ p.cesantia_empleador.indefinido_11|porcentaje(1) }} |
 
-Se calcula sobre la remuneración imponible con un tope propio, más alto que el de la AFP: {{ p.tope_cesantia_uf|numero(1) }} UF al mes (unos {{ (p.tope_cesantia_uf * uf_hoy)|pesos }} con la UF de hoy).
+Tu cotización y la parte que tu empleador deposita en tu cuenta individual se pagan por un máximo de 11 años en cada relación laboral; después, el empleador sigue pagando solo su aporte al Fondo de Cesantía Solidario, mientras dure el contrato.
+
+Se calcula sobre la remuneración imponible con un tope propio, más alto que el de la AFP: {{ p.tope_cesantia_uf|numero(1) }} UF al mes (unos {{ (p.tope_cesantia_uf * p.uf_topes)|pesos }} en {{ hoy|mes_de_anio }}).
 
 ### El tope imponible
 
-La AFP y la salud se calculan sobre un máximo de {{ p.tope_imponible_uf|numero(1) }} UF al mes: unos {{ (p.tope_imponible_uf * uf_hoy)|pesos }} con la [UF]({{ ruta('/uf/') }}) de hoy. Si ganas más, lo que excede ese monto no paga esas cotizaciones, aunque sí paga impuesto. En tu liquidación, el tope se convierte a pesos con la UF del último día del mes, y su valor en UF se reajusta cada año en febrero.
+La AFP y la salud se calculan sobre un máximo de {{ p.tope_imponible_uf|numero(1) }} UF al mes. Si ganas más, lo que excede ese monto no paga esas cotizaciones, aunque sí paga impuesto. Para pasar el tope a pesos se usa la [UF]({{ ruta('/uf/') }}) del último día del mes al que corresponde la remuneración: en {{ hoy|mes_de_anio }} son unos {{ (p.tope_imponible_uf * p.uf_topes)|pesos }}. La Superintendencia de Pensiones reajusta su valor en UF una vez al año, según la variación del Índice de Remuneraciones Reales; si esa variación es negativa, el tope se mantiene.
 
 ## El impuesto único de segunda categoría
 
-El impuesto único no se calcula sobre el bruto, sino sobre la **base tributable**: tu remuneración imponible menos las cotizaciones de AFP, salud (hasta el {{ p.salud_obligatoria|porcentaje(0) }}) y seguro de cesantía. Si ahorras en APV régimen B, ese ahorro también se descuenta de la base, hasta {{ p.tope_apv_mensual_uf|numero }} UF al mes.
+El impuesto único no se calcula sobre el bruto, sino sobre la **base tributable**: tu remuneración imponible menos las cotizaciones de AFP, salud (hasta el {{ p.salud_obligatoria|porcentaje(0) }}) y seguro de cesantía. Si ahorras en APV régimen B y tu empleador lo descuenta de tu sueldo, ese ahorro también se descuenta de la base, hasta {{ p.tope_apv_mensual_uf|numero }} UF al mes.
 
 La tabla está en UTM, así que sus montos en pesos cambian cada mes. Con la UTM de {{ hoy|mes_de_anio }} ({{ utm_hoy|pesos }}) queda así:
 
@@ -135,7 +153,7 @@ Con contrato indefinido, Fonasa y AFP {{ p.nombres_afp[barata] }} (la de menor c
 ## Lo que paga tu empleador aparte
 
 {% set costo = calc.costo_empleador(1000000, p) %}
-Tu empleador paga además cotizaciones que no se descuentan de tu sueldo: su parte del seguro de cesantía, el seguro de accidentes del trabajo (con una tasa básica de {{ p.mutual_basica|porcentaje(2) }}) y el aporte de la reforma de pensiones, hoy de {{ p.aporte_empleador_reforma|porcentaje(1) }}{% if p.sis == 0 %}, que incluye el seguro de invalidez y sobrevivencia{% else %}, más el seguro de invalidez y sobrevivencia ({{ p.sis|porcentaje(2) }}){% endif %}. Para un sueldo de $1.000.000 con contrato indefinido suman {{ costo.total_cotizaciones|pesos }} al mes, sin contar la cotización adicional de la mutual según el riesgo de la empresa.
+Tu empleador paga además cotizaciones que no se descuentan de tu sueldo: su parte del seguro de cesantía, la cotización básica del seguro de accidentes del trabajo junto con la del seguro de la Ley SANNA ({{ p.mutual_basica|porcentaje(2) }} entre ambas) y el aporte de la reforma de pensiones, hoy de {{ p.aporte_empleador_reforma|porcentaje(1) }}{% if p.sis == 0 %}, que incluye el seguro de invalidez y sobrevivencia{% else %}, más el seguro de invalidez y sobrevivencia ({{ p.sis|porcentaje(2) }}){% endif %}. Para un sueldo de $1.000.000 con contrato indefinido suman {{ costo.total_cotizaciones|pesos }} al mes, sin contar la cotización adicional del seguro de accidentes, que depende del riesgo de la empresa.
 
 ## Lo que este cálculo no incluye
 

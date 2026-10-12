@@ -10,21 +10,39 @@ orden: 20
 calculadoras:
   - /calculadoras/sueldo-liquido/
 fuentes:
-  - nombre: "Código del Trabajo, artículos 41, 42, 54 y 58 (Biblioteca del Congreso Nacional)"
+  - nombre: "Código del Trabajo, artículos 41, 42, 44, 54, 54 bis y 58 (Biblioteca del Congreso Nacional)"
     url: "https://www.bcn.cl/leychile/navegar?idNorma=207436"
+  - nombre: "Dirección del Trabajo: límite del 15% para los descuentos convenidos"
+    url: "https://www.dt.gob.cl/portal/1628/w3-article-60214.html"
+  - nombre: "Dirección del Trabajo, Ord. N° 4565/94: tope de 30% para préstamos del empleador para la vivienda"
+    url: "https://www.dt.gob.cl/legislacion/1624/w3-article-100009.html"
+  - nombre: "Dirección del Trabajo, Ord. N° 3912: tope conjunto de 45% para los descuentos convenidos"
+    url: "https://www.dt.gob.cl/legislacion/1624/w3-article-115623.html"
+  - nombre: "Dirección del Trabajo: monto de las asignaciones de colación y movilización"
+    url: "https://www.dt.gob.cl/portal/1628/w3-article-60235.html"
+  - nombre: "Dirección del Trabajo: sueldo mínimo con jornada parcial"
+    url: "https://www.dt.gob.cl/portal/1628/w3-article-60136.html"
+  - nombre: "Dirección del Trabajo, Ord. N° 1013: anexo de comisiones, bonos e incentivos en la liquidación"
+    url: "https://www.dt.gob.cl/legislacion/1624/w3-article-119939.html"
   - nombre: "Superintendencia de Pensiones: comisiones de las AFP"
     url: "https://www.spensiones.cl/portal/institucional/594/w3-propertyvalue-9897.html"
-  - nombre: "Superintendencia de Pensiones: seguro de cesantía"
-    url: "https://www.spensiones.cl/portal/institucional/594/w3-propertyvalue-9894.html"
+  - nombre: "Superintendencia de Pensiones: límite máximo imponible y UF con que se convierte"
+    url: "https://www.spensiones.cl/portal/compendio/596/w3-propertyvalue-3629.html"
+  - nombre: "Superintendencia de Pensiones: cotizaciones del seguro de cesantía"
+    url: "https://www.spensiones.cl/portal/institucional/594/w3-propertyvalue-9902.html"
+  - nombre: "Dirección del Trabajo: ¿Durante cuánto tiempo se cotiza para el seguro de cesantía?"
+    url: "https://www.dt.gob.cl/portal/1628/w3-article-95311.html"
+  - nombre: "Superintendencia de Pensiones: qué pasa si el empleador no paga las cotizaciones"
+    url: "https://www.spensiones.cl/portal/institucional/594/w3-article-3566.html"
   - nombre: "Servicio de Impuestos Internos: impuesto único de segunda categoría"
     url: "https://www.sii.cl/valores_y_fechas/impuesto_2da_categoria/impuesto2026.htm"
 faq:
   - pregunta: "¿Qué descuentos son obligatorios en la liquidación de sueldo?"
-    respuesta: "La cotización de AFP ({{ p.tasa_afp|porcentaje(0) }} más la comisión de tu AFP), la de salud ({{ p.salud_obligatoria|porcentaje(0) }}, o el valor de tu plan de isapre si es mayor), el seguro de cesantía si tienes contrato indefinido ({{ p.cesantia_trabajador.indefinido|porcentaje(1) }}) y el impuesto único, si tu sueldo supera el tramo exento."
+    respuesta: "La cotización de AFP ({{ p.tasa_afp|porcentaje(0) }} más la comisión de tu AFP), la de salud ({{ p.salud_obligatoria|porcentaje(0) }}, o el valor de tu plan de isapre si es mayor), el seguro de cesantía si tienes contrato indefinido ({{ p.cesantia_trabajador.indefinido|porcentaje(1) }}, durante los primeros 11 años con el mismo empleador) y el impuesto único, si tu sueldo supera el tramo exento."
   - pregunta: "¿La colación y la movilización pagan impuesto?"
-    respuesta: "No. Las asignaciones de colación y movilización no son remuneración (artículo 41 del Código del Trabajo), así que no pagan cotizaciones ni impuesto y se suman completas al líquido."
+    respuesta: "No, si son de un monto razonable. Las asignaciones de colación y movilización no son remuneración (artículo 41 del Código del Trabajo), así que no pagan cotizaciones ni impuesto y se suman completas al líquido. Según la Dirección del Trabajo, la parte que exceda lo razonable para cubrir esos gastos se considera remuneración."
   - pregunta: "¿Cuánto me pueden descontar del sueldo por otros conceptos?"
-    respuesta: "Además de los descuentos que exige la ley, el empleador solo puede descontar las sumas que acuerden por escrito, y esos descuentos, en general, no pueden superar el 15% de tu remuneración total (artículo 58 del Código del Trabajo)."
+    respuesta: "Además de los descuentos que exige la ley, el empleador solo puede descontar lo que acuerden por escrito. Los descuentos para pagos de cualquier naturaleza no pueden superar el 15% de tu remuneración total (artículo 58 del Código del Trabajo); los préstamos del empleador para la vivienda pueden descontarse hasta el 30%, y todos los descuentos acordados juntos no pueden pasar del 45%, según la Dirección del Trabajo."
   - pregunta: "¿El empleador está obligado a entregarme la liquidación?"
     respuesta: "Sí. Junto con el pago debe entregarte un comprobante con el monto pagado, la forma en que se calculó y las deducciones efectuadas (artículo 54 del Código del Trabajo)."
   - pregunta: "¿Dónde reclamo si mi liquidación está mal?"
@@ -57,16 +75,18 @@ El artículo 54 del Código del Trabajo exige que, junto con el pago, el emplead
 
 Son tus remuneraciones del mes, y sobre su total se calculan las cotizaciones y el impuesto. Los más comunes son las formas de remuneración del artículo 42:
 
-- **Sueldo base:** el monto fijo mensual. Con jornada completa, no puede ser menor que el ingreso mínimo ({{ p.imm|pesos }} para trabajadores de 18 a 65 años).
+- **Sueldo base:** el monto fijo mensual. Con jornada completa, no puede ser menor que el ingreso mínimo (artículo 44: {{ p.imm|pesos }} para trabajadores de 18 a 65 años); con jornada parcial, no puede ser menor que el mínimo calculado en proporción a tus horas.
 - **Gratificación:** si se paga mes a mes con el sistema del artículo 50, es el {{ p.gratificacion_tasa|porcentaje(0) }} de tu remuneración con un tope de {{ (p.gratificacion_tope_imm_anual * p.imm / 12)|pesos }} al mes. Lo explicamos en la guía de [gratificación legal]({{ ruta('/guias/gratificacion-legal/') }}).
 - **Horas extra:** se pagan con un recargo de al menos 50%; revisa cómo se calculan en la guía de [jornada y horas extra]({{ ruta('/guias/jornada-laboral-42-horas-y-horas-extra/') }}).
-- **Comisiones, bonos y participaciones**, según tu contrato.
+- **Comisiones y participaciones** (también formas de remuneración del artículo 42) y **bonos**, según tu contrato. Si recibes comisiones, bonos u otros incentivos, la liquidación debe traer un anexo con el monto de cada uno, las operaciones que los originaron y cómo se calcularon (artículo 54 bis).
 
-Las cotizaciones de AFP y salud tienen un tope de {{ p.tope_imponible_uf|numero(1) }} UF imponibles ({{ (p.tope_imponible_uf * uf_hoy)|pesos }} con la UF de hoy), y la del seguro de cesantía, uno de {{ p.tope_cesantia_uf|numero(1) }} UF ({{ (p.tope_cesantia_uf * uf_hoy)|pesos }}). Lo que ganes por sobre esos topes no paga esas cotizaciones, pero sí impuesto.
+Las cotizaciones de AFP y salud tienen un tope de {{ p.tope_imponible_uf|numero(1) }} UF imponibles, y la del seguro de cesantía, uno de {{ p.tope_cesantia_uf|numero(1) }} UF. Para pasarlos a pesos se usa la UF del último día del mes al que corresponde la remuneración: en {{ hoy|mes_de_anio }} son unos {{ (p.tope_imponible_uf * p.uf_topes)|pesos }} y {{ (p.tope_cesantia_uf * p.uf_topes)|pesos }}. Lo que ganes por sobre esos topes no paga esas cotizaciones, pero sí impuesto.
 
 ## Haberes no imponibles
 
 Las asignaciones de colación, movilización, pérdida de caja y desgaste de herramientas, los viáticos y la asignación familiar no son remuneración (artículo 41). No pagan cotizaciones ni impuesto y se suman completas a lo que recibes.
+
+La ley no fija un monto máximo para la colación y la movilización, pero deben ser razonables: según la Dirección del Trabajo, si superan lo que razonablemente cuestan la alimentación o el traslado, el exceso se considera remuneración y es imponible.
 
 ## Descuentos legales
 
@@ -74,7 +94,7 @@ Las asignaciones de colación, movilización, pérdida de caja y desgaste de her
 |---|---|---|
 | AFP | {{ p.tasa_afp|porcentaje(0) }} para tu cuenta más la comisión de tu AFP: entre {{ (p.tasa_afp + comisiones|min)|porcentaje(2) }} y {{ (p.tasa_afp + comisiones|max)|porcentaje(2) }} en total | Total imponible, hasta {{ p.tope_imponible_uf|numero(1) }} UF |
 | Salud | {{ p.salud_obligatoria|porcentaje(0) }} para Fonasa o tu isapre; si tu plan cuesta más, se descuenta el valor del plan | Total imponible, hasta {{ p.tope_imponible_uf|numero(1) }} UF |
-| Seguro de cesantía | {{ p.cesantia_trabajador.indefinido|porcentaje(1) }} con contrato indefinido; nada con contrato a plazo fijo o por obra | Total imponible, hasta {{ p.tope_cesantia_uf|numero(1) }} UF |
+| Seguro de cesantía | {{ p.cesantia_trabajador.indefinido|porcentaje(1) }} con contrato indefinido, durante los primeros 11 años con el mismo empleador; nada con contrato a plazo fijo o por obra | Total imponible, hasta {{ p.tope_cesantia_uf|numero(1) }} UF |
 | Impuesto único | Según la tabla mensual del SII; exento hasta {{ (p.tramos_impuesto[0].hasta * p.utm)|pesos }} | Total imponible menos AFP, salud (hasta el {{ p.salud_obligatoria|porcentaje(0) }}) y seguro de cesantía |
 
 Algunas liquidaciones muestran también las cotizaciones que paga el empleador, como su parte del seguro de cesantía o su aporte al sistema de pensiones. Esas no se descuentan de tu sueldo: son un costo adicional para la empresa.
@@ -83,7 +103,11 @@ Algunas liquidaciones muestran también las cotizaciones que paga el empleador, 
 
 Además de los descuentos legales, en tu liquidación pueden aparecer anticipos de sueldo, cuotas sindicales, cuotas de créditos con una caja de compensación, ahorro previsional voluntario (APV) o seguros complementarios.
 
-El artículo 58 obliga al empleador a descontar los impuestos, las cotizaciones de seguridad social, las cuotas sindicales y las obligaciones con instituciones de previsión o con organismos públicos. Los demás descuentos requieren un **acuerdo escrito** entre tú y el empleador y, en general, no pueden superar el **15% de tu remuneración total**.
+El artículo 58 obliga al empleador a descontar los impuestos, las cotizaciones de seguridad social, las cuotas sindicales y las obligaciones con instituciones de previsión o con organismos públicos. Los demás descuentos requieren un **acuerdo escrito** entre tú y el empleador, con estos límites:
+
+- Los descuentos destinados a pagos de cualquier naturaleza no pueden superar el **15% de tu remuneración total**. Según la Dirección del Trabajo, ese 15% se calcula sobre el total bruto de tus remuneraciones, sin restar antes los descuentos legales.
+- Con acuerdo escrito también se pueden descontar dividendos hipotecarios y depósitos de ahorro para la vivienda. Si tu empleador te prestó dinero para la vivienda, puede descontar hasta el **30%** de tu remuneración para recuperarlo.
+- Según la Dirección del Trabajo, todos los descuentos acordados, sumados, no pueden pasar del **45%** de tu remuneración total.
 
 El empleador tampoco puede descontarte por arriendo de habitación, luz, agua, uso de herramientas, medicamentos o atención médica, ni multas que no estén en el reglamento interno de la empresa.
 
@@ -115,16 +139,16 @@ Sin el anticipo, su líquido sería {{ r.liquido|pesos }}. Si su contrato fuera 
 
 1. **Días y período:** que correspondan al mes pagado. Las ausencias y los días de licencia médica reducen lo que paga el empleador.
 2. **Sueldo base:** el mismo de tu contrato.
-3. **Gratificación:** el {{ p.gratificacion_tasa|porcentaje(0) }} de tu remuneración o el tope mensual, si es lo que pactaste.
+3. **Gratificación:** si te la pagan mes a mes con el sistema del artículo 50, el {{ p.gratificacion_tasa|porcentaje(0) }} de tu remuneración o el tope mensual; si tu contrato pacta otra, lo convenido.
 4. **Horas extra:** que coincidan con las horas trabajadas y con el valor que corresponde.
 5. **AFP y salud:** la tasa debe ser {{ p.tasa_afp|porcentaje(0) }} más la comisión de tu AFP, y la salud, {{ p.salud_obligatoria|porcentaje(0) }} o el valor de tu plan.
-6. **Seguro de cesantía:** solo se descuenta con contrato indefinido.
+6. **Seguro de cesantía:** solo se descuenta con contrato indefinido, y hasta que cumples 11 años de cotizaciones con el mismo empleador.
 7. **Impuesto:** compáralo con la [tabla del impuesto único]({{ ruta('/impuesto-unico/') }}) del mes.
 8. **Otros descuentos:** que los hayas autorizado por escrito.
 9. **Cotizaciones pagadas:** pide el certificado de cotizaciones en tu AFP y revisa que aparezca lo que te descontaron.
 
 ## Dónde reclamar
 
-Si algo no calza, pide primero una explicación a tu empleador o al área de remuneraciones. Si no se resuelve, puedes consultar o presentar una denuncia en la Inspección del Trabajo, de forma presencial o en el sitio de la Dirección del Trabajo. Si te descontaron cotizaciones que no aparecen pagadas, infórmalo también a tu AFP, que debe cobrarlas al empleador.
+Si algo no calza, pide primero una explicación a tu empleador o al área de remuneraciones. Si no se resuelve, puedes consultar o presentar una denuncia en la Inspección del Trabajo, de forma presencial o en el sitio de la Dirección del Trabajo. Si te descontaron cotizaciones que no aparecen pagadas, infórmalo también a tu AFP: según la Superintendencia de Pensiones, las AFP deben cobrar al empleador las cotizaciones impagas, primero con gestiones extrajudiciales y después en tribunales.
 
 Este ejemplo es referencial. Tu liquidación puede incluir otros conceptos según tu contrato, como bonos, comisiones o asignación familiar.

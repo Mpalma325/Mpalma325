@@ -19,13 +19,27 @@ fuentes:
     url: "https://www.dt.gob.cl/portal/1628/w3-article-60194.html"
   - nombre: "Dirección del Trabajo: feriado anual en Magallanes, Aysén y la Provincia de Palena"
     url: "https://www.dt.gob.cl/portal/1628/w3-article-98885.html"
+  - nombre: "Dirección del Trabajo: ¿Cómo se acreditan los años trabajados para el feriado progresivo?"
+    url: "https://www.dt.gob.cl/portal/1628/w3-article-60195.html"
+  - nombre: "Dirección del Trabajo, Ord. N° 4350: compensación en dinero del feriado progresivo"
+    url: "https://dt.gob.cl/legislacion/1624/w3-article-117579.html"
+  - nombre: "Dirección del Trabajo, Ord. N° 2813: el feriado básico no se compensa en dinero"
+    url: "https://www.dt.gob.cl/legislacion/1624/w3-article-103667.html"
+  - nombre: "Dirección del Trabajo: ¿Puede el empleador disponer el fraccionamiento del feriado?"
+    url: "https://www.dt.gob.cl/portal/1628/w3-article-60180.html"
+  - nombre: "Dirección del Trabajo: compensar horas extraordinarias con días adicionales de feriado"
+    url: "https://www.dt.gob.cl/portal/1628/w3-article-125917.html"
+  - nombre: "Dirección del Trabajo, Ord. N° 199/5: los días compensados se usan en días completos"
+    url: "https://www.dt.gob.cl/legislacion/1624/w3-article-125738.html"
+  - nombre: "Dirección del Trabajo, Ord. N° 81/2: días compensados que no se usan"
+    url: "https://www.dt.gob.cl/legislacion/1624/w3-article-125559.html"
 faq:
   - pregunta: "¿Cuántos días de vacaciones me corresponden al año?"
     respuesta: "{{ p.feriado_anual_habiles|numero }} días hábiles con remuneración íntegra si llevas más de un año en la empresa, o 20 si trabajas en Magallanes, Aysén o la Provincia de Palena. Para las vacaciones el sábado nunca es día hábil, así que se cuentan de lunes a viernes, sin feriados."
   - pregunta: "¿Desde cuántos años tengo vacaciones progresivas?"
     respuesta: "Desde que sumas 13 años de trabajo: los primeros 10, con uno o más empleadores, y 3 años nuevos. Después ganas un día más por cada 3 años adicionales. De empleadores anteriores solo se cuentan hasta 10 años."
   - pregunta: "¿Puedo cambiar mis vacaciones por plata?"
-    respuesta: "No mientras sigas trabajando: el feriado no se puede compensar en dinero (artículo 73 del Código del Trabajo). Solo se paga cuando el contrato termina, como feriado pendiente o proporcional en el finiquito."
+    respuesta: "El feriado básico no, mientras sigas trabajando: no se puede compensar en dinero (artículo 73 del Código del Trabajo). Los días de feriado progresivo sí se pueden compensar en dinero si lo acuerdas con tu empleador, según la Dirección del Trabajo. Al terminar el contrato, el feriado pendiente y el proporcional se pagan en el finiquito."
   - pregunta: "¿Puedo acumular vacaciones de un año para otro?"
     respuesta: "Sí, si lo acuerdas con tu empleador, y hasta por dos períodos consecutivos. Antes de que cumplas el año que te daría un tercer período, el empleador debe darte al menos el primero de los acumulados."
   - pregunta: "¿Me pueden obligar a tomar las vacaciones en partes?"
@@ -54,7 +68,7 @@ La ley pide que el feriado se otorgue de preferencia en primavera o verano, cons
 
 ## Feriado progresivo
 
-El artículo 68 agrega **un día hábil por cada tres nuevos años trabajados**, una vez que cumples **10 años de trabajo** para uno o más empleadores, continuos o no. Solo puedes hacer valer **hasta 10 años con empleadores anteriores**: los años que den derecho a días adicionales deben sumarse con tu empleador actual.
+El artículo 68 agrega **un día hábil por cada tres nuevos años trabajados**, una vez que cumples **10 años de trabajo** para uno o más empleadores, continuos o no. Solo puedes hacer valer **hasta 10 años con empleadores anteriores**: los años que den derecho a días adicionales deben sumarse con tu empleador actual. La ley agrega que estos días adicionales son susceptibles de negociación individual o colectiva.
 
 | Años de trabajo | Días hábiles de feriado | En Magallanes, Aysén y Palena |
 |---|---:|---:|
@@ -68,21 +82,22 @@ Dos ejemplos:
 - **Pedro** trabajó 8 años en otra empresa y lleva 5 en la actual: suma 13 años, así que este año tiene {{ (dias + 1)|numero }} días hábiles.
 - **Ana** trabajó 15 años en otras empresas y lleva 2 en la actual: de los anteriores solo se cuentan 10, suma 12 y todavía no tiene días progresivos. El primero lo gana al cumplir 3 años con su empleador actual.
 
-Para que te los reconozcan, debes acreditar los años con empleadores anteriores, por ejemplo con el certificado de cotizaciones de tu AFP o una certificación de la Inspección del Trabajo. Según la Dirección del Trabajo, tienes que hacerlo antes de usar el feriado de ese año; si no, pierdes el día adicional de ese período.
+Para que te los reconozcan, debes acreditar los años con empleadores anteriores, por ejemplo con el certificado de cotizaciones de tu AFP, una certificación de la Inspección del Trabajo u otro instrumento público. Según la Dirección del Trabajo, tienes que hacerlo antes de usar el feriado de ese año; si no, pierdes el día adicional de ese período y no puedes sumarlo a los siguientes.
 
 ## Fraccionar, acumular y cambiar por dinero
 
 - **Fraccionar:** el feriado debe ser continuo. Solo la parte que excede de 10 días hábiles se puede dividir, y siempre de común acuerdo: el empleador no puede fraccionarlo por su cuenta (artículo 70).
-- **Acumular:** con acuerdo de ambos, puedes acumular hasta dos períodos consecutivos. Si tienes dos acumulados, el empleador debe darte al menos el primero antes de que completes el año que te daría un tercero. Según la Dirección del Trabajo, si se acumulan más, no pierdes esos días.
-- **Cambiar por dinero:** no se puede mientras sigas trabajando (artículo 73). Las vacaciones solo se pagan en dinero cuando el contrato termina.
+- **Acumular:** con acuerdo de ambos, puedes acumular hasta dos períodos consecutivos. Si tienes dos acumulados, el empleador debe darte al menos el primero antes de que completes el año que te daría un tercero (artículo 70).
+- **Cambiar por dinero:** el feriado básico no se puede compensar en dinero mientras sigas trabajando (artículo 73). La excepción son los días de feriado progresivo: según la Dirección del Trabajo, puedes acordar con tu empleador que te los pague en dinero. Todo lo demás solo se paga en dinero cuando el contrato termina.
 
 ## Días adicionales por horas extra
 
 Desde la Ley 21.561 (Ley de 40 horas), puedes acordar por escrito con tu empleador que tus horas extra se compensen con días adicionales de feriado, en vez de pagarse:
 
 - Cada hora extra equivale a una hora y media de descanso.
-- El máximo es de **cinco días hábiles adicionales al año**, contados según la anualidad de tu contrato.
-- Debes usarlos dentro de los seis meses siguientes, avisando con 48 horas de anticipación, y puedes sumarlos a tus vacaciones.
+- El máximo es de **cinco días hábiles adicionales al año**.
+- Debes usarlos dentro de los seis meses siguientes al ciclo o período en que hiciste las horas extra, avisando con 48 horas de anticipación. Según la Dirección del Trabajo, se usan en días completos, no en medios días ni en horas, y si coinciden con tus vacaciones puedes sumarlos a ellas.
+- Si no los usas dentro de ese plazo, la Dirección del Trabajo indica que el empleador debe pagarlos con la remuneración del séptimo mes contado desde el ciclo en que se generaron.
 - Si el contrato termina antes de que los uses, se pagan como el feriado pendiente.
 
 Más detalles en la guía de [jornada laboral y horas extra]({{ ruta('/guias/jornada-laboral-42-horas-y-horas-extra/') }}).
@@ -91,7 +106,7 @@ Más detalles en la guía de [jornada laboral y horas extra]({{ ruta('/guias/jor
 
 Si tu contrato termina, el empleador debe pagarte los días de feriado pendientes y los **proporcionales**: los que ganaste desde que entraste o desde tu último aniversario en la empresa (artículo 73). La Dirección del Trabajo los calcula así:
 
-1. Divide tus días de feriado anual (incluidos los progresivos) por 12. Con {{ dias|numero }} días son {{ por_mes|numero(2) }} días hábiles por mes.
+1. Divide tus días de feriado anual por 12; según la Dirección del Trabajo, se incluyen los días de feriado progresivo, si te corresponden. Con {{ dias|numero }} días son {{ por_mes|numero(2) }} días hábiles por mes.
 2. Multiplica ese resultado por los meses trabajados desde el último aniversario y suma la fracción del mes: {{ por_mes|numero(2) }} ÷ 30 por cada día.
 3. Cuenta esos días hábiles desde el día siguiente al término del contrato e incluye los sábados, domingos y feriados que caigan entre medio. El resultado son los días corridos que se pagan.
 4. Multiplica los días corridos por el valor diario de tu remuneración.
