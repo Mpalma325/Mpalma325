@@ -18,6 +18,7 @@ from .feriados import (feriados_nacionales, feriados_regionales, fines_de_semana
 from .formato import (capitalizar, dia_mes, fecha_con_dia, fecha_larga, mes_anio, mes_de_anio,
                       monto_corto, nombre_mes, numero, pesos, porcentaje, redondear)
 from .graficos import grafico_barras, grafico_linea
+from .paginas_calculadoras_extra import paginas_calculadoras_extra
 
 # Montos con página propia ("1000 UF en pesos", "100 dólares en pesos", etc.).
 # Son búsquedas frecuentes en Google. Puedes agregar o quitar montos libremente.
@@ -799,6 +800,10 @@ def paginas_calculadoras(c: Contexto) -> list[Pagina]:
          "De bruto a líquido y de líquido a bruto, con tu AFP y salud."),
         ("Boleta de honorarios", "/calculadoras/boleta-honorarios/",
          f"Retención {porcentaje(p['retencion_honorarios'], 2)} de {hoy.year}: bruto y líquido."),
+        ("Horas extra", "/calculadoras/horas-extra/",
+         f"Valor de la hora extra con la jornada de {numero(p['jornada_semanal_horas'])} horas."),
+        ("IVA", "/calculadoras/iva/",
+         f"Agrega o saca el IVA ({porcentaje(p['iva'], 0)}) de cualquier monto."),
         ("Reajuste de arriendo por IPC", "/calculadoras/reajuste-arriendo-ipc/",
          "Cuánto sube tu arriendo según la variación del IPC."),
         ("Finiquito", "/calculadoras/finiquito/",
@@ -807,6 +812,8 @@ def paginas_calculadoras(c: Contexto) -> list[Pagina]:
          "Días de feriado proporcional y cuánto te deben pagar."),
         ("Crédito hipotecario", "/calculadoras/credito-hipotecario/",
          "Dividendo en UF y en pesos, renta mínima e intereses."),
+        ("Crédito de consumo", "/calculadoras/credito-consumo/",
+         "Cuota mensual, CAE y costo total del crédito."),
         ("Interés compuesto y ahorro", "/calculadoras/interes-compuesto/",
          "Cuánto crece tu ahorro con aportes mensuales."),
         ("Días hábiles", "/calculadoras/dias-habiles/",
@@ -1188,5 +1195,5 @@ def paginas_institucionales(c: Contexto) -> list[Pagina]:
 def todas_las_paginas(c: Contexto) -> list[Pagina]:
     return (paginas_inicio(c) + paginas_uf(c) + paginas_uf_proyeccion(c) + paginas_divisas(c)
             + paginas_utm_impuesto_ipc(c)
-            + paginas_sueldo(c) + paginas_calculadoras(c) + paginas_feriados(c)
+            + paginas_sueldo(c) + paginas_calculadoras(c) + paginas_calculadoras_extra(c) + paginas_feriados(c)
             + paginas_institucionales(c))

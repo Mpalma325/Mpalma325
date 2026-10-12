@@ -64,6 +64,12 @@ def contexto_parametros(fecha: dt.date, uf: float, utm: float, params: Parametro
         "tope_indemnizacion_uf": float(indemnizaciones["tope_remuneracion_uf"]),
         "tope_anios_indemnizacion": int(indemnizaciones["tope_anios"]),
         "feriado_anual_habiles": float(indemnizaciones["feriado_dias_habiles_anuales"]),
+        # IVA, horas extra e impuesto de timbres del crédito de consumo
+        "iva": float(params.vigente("iva", fecha)["tasa"]),
+        "jornada_semanal_horas": float(params.vigente("jornada_laboral", fecha)["horas_semanales"]),
+        "recargo_horas_extra": float(params.vigente("jornada_laboral", fecha)["recargo_horas_extra"]),
+        "timbres_tasa_mensual": float(params.vigente("impuesto_timbres", fecha)["tasa_mensual"]),
+        "timbres_tope": float(params.vigente("impuesto_timbres", fecha)["tope"]),
         "tasa_hipotecaria_referencia": float(hipotecario["tasa_referencia"]),
         "carga_financiera_maxima": float(hipotecario["carga_financiera_maxima"]),
     }
@@ -410,3 +416,176 @@ def proyectar_ahorro(inicial: float, aporte_mensual: float, tasa_anual: float, a
 
 def convertir(monto: float, tasa: float, decimales: int = 0) -> float:
     return redondear(monto * tasa, decimales)
+
+
+# ---------------------------------------------------------------------------
+# IVA
+# ---------------------------------------------------------------------------
+# Montos en pesos enteros. El IVA se calcula sobre el neto y se redondea al peso.
+# Un precio con IVA incluido se desglosa calculando primero el neto (total ÷ 1,19,
+# redondeado) y el IVA como la diferencia, para que neto + IVA sea el total exacto.
+
+def iva_desde_neto(neto: float, p: dict) -> dict:
+    """Agrega el IVA a un monto neto (tasa general del DL 825, art. 14)."""
+    tasa = p["iva"]
+    neto = redondear(neto)
+    iva = redondear(neto * tasa)
+    return {"neto": neto, "iva": iva, "total": neto + iva, "tasa": tasa}
+
+
+def iva_desde_total(total: float, p: dict) -> dict:
+    """Saca el IVA de un precio que ya lo incluye."""
+    tasa = p["iva"]
+    total = redondear(total)
+    neto = redondear(total / (1 + tasa))
+    return {"neto": neto, "iva": total - neto, "total": total, "tasa": tasa}
+
+
+# ---------------------------------------------------------------------------
+# Horas extra
+# ---------------------------------------------------------------------------
+
+def factor_horas_extra(jornada: float, p: dict) -> float:
+    """Factor que, multiplicado por el sueldo mensual, da el valor de una hora extra.
+
+    Es la fórmula de la Dirección del Trabajo con el recargo incluido: para 42 horas,
+    1,5 × 28 / (30 × 4 × 42) = 0,0083333.
+    """
+    return (1 + p["recargo_horas_extra"]) * 28 / (30 * 4 * jornada)
+
+
+def horas_extra(sueldo: float, horas: float, jornada: float, p: dict) -> dict:
+    """Pago de las horas extra del mes de un trabajador con sueldo mensual (art. 32 del Código del Trabajo).
+
+    - Hora ordinaria según la Dirección del Trabajo: sueldo / 30 × 28 / (4 × jornada semanal).
+    - La hora extra lleva un recargo de 50% sobre ese valor.
+    - La base es el sueldo convenido, pero no puede ser menor que el ingreso mínimo mensual;
+      con una jornada menor que la legal, el mínimo es proporcional a ella (art. 40 bis A y
+      dictámenes de la DT). Si ``jornada`` supera la legal vigente (por ejemplo, 44 horas para
+      un mes anterior a la rebaja), el mínimo se toma completo.
+    """
+    minimo = p["imm"] * min(1.0, jornada / p["jornada_semanal_horas"])
+    base = max(sueldo, minimo)
+    valor_hora = base / 30 * 28 / (4 * jornada)
+    valor_extra = valor_hora * (1 + p["recargo_horas_extra"])
+    return {
+        "sueldo": sueldo,
+        "base": base,
+        "minimo": minimo,
+        "minimo_aplicado": sueldo < minimo,
+        "valor_hora": valor_hora,
+        "valor_hora_extra": valor_extra,
+        "factor": factor_horas_extra(jornada, p),
+        "horas": horas,
+        "total": redondear(valor_extra * horas),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Crédito de consumo
+# ---------------------------------------------------------------------------
+
+def tasa_timbres(meses: int, p: dict) -> float:
+    """Tasa del impuesto de timbres y estampillas de un crédito a ``meses`` (DL 3.475, art. 1 N° 3):
+    0,066% por cada mes o fracción hasta el último vencimiento, con un máximo de 0,8%."""
+    return min(p["timbres_tasa_mensual"] * meses, p["timbres_tope"])
+
+
+def cuota_francesa(capital: float, tasa_mensual: float, meses: int) -> float:
+    """Cuota fija mensual (sistema francés).
+
+    (1 + r)^n se calcula multiplicando mes a mes para que JavaScript obtenga exactamente
+    el mismo número (``**`` y ``Math.pow`` pueden diferir en el último decimal).
+    """
+    if tasa_mensual == 0:
+        return capital / meses
+    factor = 1.0
+    for _ in range(meses):
+        factor *= 1 + tasa_mensual
+    return capital * tasa_mensual * factor / (factor - 1)
+
+
+def valor_presente(flujos: list[float], tasa_mensual: float) -> float:
+    """Valor presente de pagos mensuales; el primero vence al mes 1."""
+    total = 0.0
+    descuento = 1.0
+    for flujo in flujos:
+        descuento /= 1 + tasa_mensual
+        total += flujo * descuento
+    return total
+
+
+def carga_anual_equivalente(monto_liquido: float, flujos: list[float]) -> float:
+    """CAE según la Ley 20.555 y el reglamento de créditos de consumo (DS 43 de 2012).
+
+    Es la tasa que iguala el valor presente de los pagos (cuotas con seguros y gastos) con
+    el monto líquido que recibe el consumidor en el mes 0, expresada en base anual con
+    capitalización mensual: la tasa mensual multiplicada por 12. Lo que se paga al
+    contado al firmar se descuenta del monto líquido.
+
+    Se resuelve por bisección con un número fijo de pasos para que Python y JavaScript
+    lleguen al mismo resultado. Si los pagos no superan lo recibido, la CAE es 0.
+    """
+    if monto_liquido <= 0:
+        raise ValueError("Lo que se paga al firmar no puede igualar o superar el monto del crédito")
+    bajo, alto = 0.0, 1.0
+    while valor_presente(flujos, alto) > monto_liquido and alto < 1e6:
+        alto *= 2
+    for _ in range(100):
+        medio = (bajo + alto) / 2
+        if valor_presente(flujos, medio) > monto_liquido:
+            bajo = medio
+        else:
+            alto = medio
+    return 12 * (bajo + alto) / 2
+
+
+def credito_consumo(monto: float, meses: int, tasa_mensual: float, p: dict, seguros: float = 0.0,
+                    gastos: float = 0.0, financiar: bool = True) -> dict:
+    """Simulación de un crédito de consumo en pesos con cuota fija (sistema francés).
+
+    - ``monto``: lo que quieres recibir (monto líquido).
+    - ``tasa_mensual``: tasa de interés mensual en fracción (0.015 = 1,5%).
+    - ``seguros``: seguros mensuales que se suman a cada cuota.
+    - ``gastos``: gastos y comisiones iniciales (notaría, comisión de apertura...).
+    - ``financiar``: True si el impuesto de timbres y los gastos se suman al crédito; False
+      si se pagan al contado al firmar.
+
+    El impuesto de timbres se calcula sobre el monto del crédito (el capital del pagaré).
+    Si se financia, ese capital lo incluye: monto bruto = (monto + gastos) / (1 − tasa).
+    """
+    monto = redondear(monto)
+    seguros = redondear(seguros)
+    gastos = redondear(gastos)
+    tasa_impuesto = tasa_timbres(meses, p)
+    if financiar:
+        bruto = redondear((monto + gastos) / (1 - tasa_impuesto))
+        impuesto = bruto - monto - gastos
+        al_contado = 0.0
+    else:
+        bruto = monto
+        impuesto = redondear(monto * tasa_impuesto)
+        al_contado = impuesto + gastos
+    cuota = redondear(cuota_francesa(bruto, tasa_mensual, meses))
+    cuota_total = cuota + seguros
+    total_cuotas = cuota_total * meses
+    costo_total = total_cuotas + al_contado
+    return {
+        "monto_liquido": monto,
+        "monto_bruto": bruto,
+        "meses": meses,
+        "tasa_mensual": tasa_mensual,
+        "tasa_impuesto": tasa_impuesto,
+        "impuesto": impuesto,
+        "gastos": gastos,
+        "al_contado": al_contado,
+        "cuota": cuota,
+        "seguros": seguros,
+        "cuota_total": cuota_total,
+        "total_cuotas": total_cuotas,
+        "intereses": cuota * meses - bruto,
+        "total_seguros": seguros * meses,
+        "costo_total": costo_total,
+        "sobrecosto": costo_total - monto,
+        "cae": carga_anual_equivalente(monto - al_contado, [cuota_total] * meses),
+    }

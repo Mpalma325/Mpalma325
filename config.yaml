@@ -32,7 +32,8 @@ monetizacion:
 
   # Enlaces de referidos o afiliados. Se muestran en las secciones indicadas,
   # siempre con el aviso de que son referidos. Secciones disponibles: uf, dolar,
-  # euro, utm, ipc, sueldo, honorarios, arriendo, hipotecario, ahorro, feriados, todas.
+  # euro, utm, ipc, sueldo, honorarios, iva, arriendo, hipotecario, consumo, ahorro,
+  # feriados, todas.
   afiliados: []
   # Ejemplo (borra el "#" de cada línea y usa tu propio enlace):
   # - titulo: Invierte tu ahorro desde $1.000

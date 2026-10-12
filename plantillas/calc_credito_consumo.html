@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<p class="bajada">Calcula la cuota de tu crédito de consumo, la <strong>CAE</strong> (carga anual equivalente) y cuánto pagarás en total, con el impuesto de timbres y estampillas, los seguros y los gastos.</p>
+
+<div class="calculadora-layout">
+<form id="calc-consumo" class="calculadora" data-calculadora="consumo" onsubmit="return false">
+  <div class="campo">
+    <label for="cc-monto">Monto que necesitas recibir</label>
+    <input id="cc-monto" name="monto" inputmode="numeric" autocomplete="off" value="3.000.000" data-dinero>
+  </div>
+  <div class="campo">
+    <label for="cc-plazo">Plazo (meses)</label>
+    <input id="cc-plazo" name="plazo" inputmode="numeric" autocomplete="off" value="36">
+  </div>
+  <div class="campo">
+    <label for="cc-tasa">Tasa de interés mensual (%)</label>
+    <input id="cc-tasa" name="tasa" inputmode="decimal" autocomplete="off" value="{{ (tasa * 100)|numero(2) }}">
+  </div>
+  <details class="opciones">
+    <summary>Seguros, gastos e impuesto</summary>
+    <div class="campo">
+      <label for="cc-seguros">Seguros mensuales (opcional)</label>
+      <input id="cc-seguros" name="seguros" inputmode="numeric" autocomplete="off" value="0" data-dinero>
+    </div>
+    <div class="campo">
+      <label for="cc-gastos">Gastos y comisiones iniciales (opcional)</label>
+      <input id="cc-gastos" name="gastos" inputmode="numeric" autocomplete="off" value="0" data-dinero>
+    </div>
+    <fieldset class="modo">
+      <legend>Impuesto de timbres y gastos iniciales</legend>
+      <label><input type="radio" name="pago" value="credito" checked> Se suman al crédito</label>
+      <label><input type="radio" name="pago" value="contado"> Los pago al contado al firmar</label>
+    </fieldset>
+  </details>
+</form>
+<div class="resultado" id="resultado-consumo" aria-live="polite">
+  <p class="resultado-etiqueta">Cuota mensual</p>
+  <p class="resultado-principal" data-r="principal">{{ inicial.cuota_total|pesos }}</p>
+  <p class="resultado-etiqueta">CAE (carga anual equivalente)</p>
+  <p class="resultado-principal" data-r="cae">{{ inicial.cae|porcentaje(2) }}</p>
+  <table class="tabla tabla-detalle">
+    <tbody>
+      <tr><th scope="row">Monto que recibes</th><td class="num" data-r="liquido">{{ inicial.monto_liquido|pesos }}</td></tr>
+      <tr><th scope="row">Impuesto de timbres <span data-r="tasa_impuesto">({{ tasa_impuesto_texto }})</span></th><td class="num" data-r="impuesto">{{ inicial.impuesto|pesos }}</td></tr>
+      <tr data-fila="gastos" hidden><th scope="row">Gastos iniciales</th><td class="num" data-r="gastos">$0</td></tr>
+      <tr><th scope="row">Monto del crédito (bruto)</th><td class="num" data-r="bruto">{{ inicial.monto_bruto|pesos }}</td></tr>
+      <tr><th scope="row">Cuota del crédito</th><td class="num" data-r="cuota">{{ inicial.cuota|pesos }}</td></tr>
+      <tr data-fila="seguros" hidden><th scope="row">Seguros mensuales</th><td class="num" data-r="seguros">$0</td></tr>
+      <tr><th scope="row">Intereses totales</th><td class="num" data-r="intereses">{{ inicial.intereses|pesos }}</td></tr>
+      <tr data-fila="total_seguros" hidden><th scope="row">Seguros en todo el plazo</th><td class="num" data-r="total_seguros">$0</td></tr>
+      <tr><th scope="row">Total de las cuotas</th><td class="num" data-r="total_cuotas">{{ inicial.total_cuotas|pesos }}</td></tr>
+      <tr data-fila="al_contado" hidden><th scope="row">Pagado al contado al firmar</th><td class="num" data-r="al_contado">$0</td></tr>
+      <tr class="total"><th scope="row">Costo total del crédito (CTC)</th><td class="num" data-r="costo_total">{{ inicial.costo_total|pesos }}</td></tr>
+    </tbody>
+  </table>
+  <p class="nota" data-r="nota">Pagarás {{ inicial.sobrecosto|pesos }} más de lo que recibes: {{ inicial.meses }} cuotas de {{ inicial.cuota_total|pesos }}.</p>
+  <button type="button" class="boton-secundario" data-compartir>Copiar enlace a este cálculo</button>
+</div>
+</div>
+
+<p class="aviso">Simulación referencial: supone cuotas mensuales iguales, la primera un mes después de recibir el dinero. Cada institución calcula su oferta con sus propios seguros, gastos y fechas de pago. Antes de firmar, pide siempre la <strong>hoja resumen</strong> del crédito con la CAE y el costo total, y compara al menos tres ofertas.</p>
+
+{{ m.anuncio("consumo_superior") }}
+
+<section>
+  <h2>Cuota mensual según monto y plazo (tasa de {{ tasa|porcentaje(2) }} mensual)</h2>
+  <div class="tabla-desplazable">
+  <table class="tabla">
+    <thead><tr><th>Monto</th>{% for meses in plazos %}<th class="num">{{ meses }} meses</th>{% endfor %}</tr></thead>
+    <tbody>
+    {% for fila in cuotas %}
+      <tr><td>{{ fila.monto|pesos }}</td>{% for cuota in fila.cuotas %}<td class="num">{{ cuota|pesos }}</td>{% endfor %}</tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+
+  <h2>CAE y costo total según el plazo ({{ inicial.monto_liquido|pesos }})</h2>
+  <div class="tabla-desplazable">
+  <table class="tabla">
+    <thead><tr><th>Plazo (meses)</th><th class="num">CAE</th><th class="num">Costo total</th></tr></thead>
+    <tbody>
+    {% for e in por_plazo %}
+      <tr><td>{{ e.meses }}</td><td class="num">{{ e.cae|porcentaje(2) }}</td><td class="num">{{ e.costo_total|pesos }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p>A mayor plazo la cuota baja, pero pagas intereses por más tiempo: a {{ por_plazo[-1].meses }} meses el costo total es {{ (por_plazo[-1].costo_total - por_plazo[0].costo_total)|pesos }} mayor que a {{ por_plazo[0].meses }} meses.</p>
+  <p class="nota">Con el impuesto de timbres sumado al crédito y sin seguros ni gastos. La tasa de {{ tasa|porcentaje(2) }} mensual es solo un ejemplo: usa la de tu cotización.</p>
+</section>
+
+<section class="texto">
+  <h2>¿Qué es la CAE y cómo se calcula?</h2>
+  <p>La <strong>carga anual equivalente (CAE)</strong> es un indicador, en porcentaje, del costo de un crédito en un período de un año, cualquiera sea su plazo. Incluye el capital, la tasa de interés, el plazo, los seguros, los gastos propios del crédito y los productos voluntarios que contrates. Desde la Ley 20.555, toda publicidad de créditos que muestre una tasa o una cuota debe informarla, y el reglamento de información al consumidor de créditos de consumo (DS 43 de 2012) define cómo se calcula.</p>
+  <p>Es la tasa mensual que iguala el valor presente de todas las cuotas que pagarás (con seguros) con el monto líquido que recibes al inicio, multiplicada por 12. Si pagas algo al contado al firmar, se descuenta de lo que recibes. Por eso, para comparar créditos fíjate en la CAE y en el costo total del crédito, no solo en la tasa o en la cuota.</p>
+
+  <h2>Impuesto de timbres y estampillas</h2>
+  <p>Los créditos pagan un impuesto de {{ timbres_mensual }} del monto por cada mes de plazo, con un máximo de {{ timbres_tope }}: un crédito a 12 meses paga {{ timbres_12 }}, y uno de 13 meses o más, {{ timbres_tope }}. Si el impuesto se suma al crédito, se calcula sobre el monto bruto, que ya lo incluye: en un crédito de {{ inicial.monto_liquido|pesos }} a {{ inicial.meses }} meses son {{ inicial.impuesto|pesos }}, y {{ al_contado.impuesto|pesos }} si lo pagas al contado.</p>
+
+  <h2>Tasa máxima convencional</h2>
+  <p>Ninguna institución puede pactar intereses por sobre la <strong>tasa máxima convencional (TMC)</strong>, que publica la Comisión para el Mercado Financiero según el monto y el plazo del crédito. Revisa la TMC vigente en el <a href="https://www.cmfchile.cl/" rel="noopener" target="_blank">sitio de la CMF</a> y compárala con la tasa que te ofrecen.</p>
+</section>
+
+{{ m.afiliados("consumo") }}
+{{ m.faq(pagina) }}
+<p><a href="{{ ruta('/calculadoras/credito-hipotecario/') }}">Simula un crédito hipotecario →</a> · <a href="{{ ruta('/calculadoras/interes-compuesto/') }}">Calcula cuánto crece tu ahorro →</a></p>
+{{ m.fuente("Ley 20.555 y DS 43 de 2012 del Ministerio de Economía (CAE); DL 3.475 y SII, Circular N° 17 de 2015 (impuesto de timbres); CMF (tasa máxima convencional)") }}
+{% endblock %}

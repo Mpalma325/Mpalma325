@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<p class="bajada">Agrega el IVA a un monto neto o sácalo de un precio que ya lo incluye. En Chile el IVA es de <strong>{{ tasa|porcentaje(0) }}</strong> sobre el precio neto.</p>
+
+<div class="calculadora-layout">
+<form id="calc-iva" class="calculadora" data-calculadora="iva" onsubmit="return false">
+  <fieldset class="modo">
+    <legend>¿Qué quieres calcular?</legend>
+    <label><input type="radio" name="modo" value="neto" checked> Agregar el IVA a un monto neto</label>
+    <label><input type="radio" name="modo" value="total"> Sacar el IVA de un precio con IVA</label>
+  </fieldset>
+  <div class="campo">
+    <label for="iva-monto" data-etiqueta-neto="Monto neto (sin IVA)" data-etiqueta-total="Precio con IVA incluido">Monto neto (sin IVA)</label>
+    <input id="iva-monto" name="monto" inputmode="numeric" autocomplete="off" value="100.000" data-dinero>
+  </div>
+</form>
+<div class="resultado" id="resultado-iva" aria-live="polite">
+  <p class="resultado-etiqueta" data-r="etiqueta">Precio con IVA</p>
+  <p class="resultado-principal" data-r="principal">{{ inicial.total|pesos }}</p>
+  <table class="tabla tabla-detalle">
+    <tbody>
+      <tr><th scope="row">Monto neto</th><td class="num" data-r="neto">{{ inicial.neto|pesos }}</td></tr>
+      <tr><th scope="row">IVA ({{ tasa|porcentaje(0) }})</th><td class="num" data-r="iva">{{ inicial.iva|pesos }}</td></tr>
+      <tr class="total"><th scope="row">Total con IVA</th><td class="num" data-r="total">{{ inicial.total|pesos }}</td></tr>
+    </tbody>
+  </table>
+  <p class="nota">Montos en pesos: el IVA se redondea al peso.</p>
+  <button type="button" class="boton-secundario" data-compartir>Copiar enlace a este cálculo</button>
+</div>
+</div>
+
+{{ m.anuncio("iva_superior") }}
+
+<section>
+  <h2>Ejemplos: de monto neto a precio con IVA</h2>
+  <table class="tabla">
+    <thead><tr><th class="num">Neto</th><th class="num">IVA ({{ tasa|porcentaje(0) }})</th><th class="num">Total con IVA</th></tr></thead>
+    <tbody>
+    {% for e in desde_neto %}
+      <tr><td class="num">{{ e.neto|pesos }}</td><td class="num">{{ e.iva|pesos }}</td><td class="num">{{ e.total|pesos }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Ejemplos: cuánto IVA trae un precio</h2>
+  <table class="tabla">
+    <thead><tr><th class="num">Precio con IVA</th><th class="num">Neto</th><th class="num">IVA incluido</th></tr></thead>
+    <tbody>
+    {% for e in desde_total %}
+      <tr><td class="num">{{ e.total|pesos }}</td><td class="num">{{ e.neto|pesos }}</td><td class="num">{{ e.iva|pesos }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="texto">
+  <h2>¿Qué es el IVA y quién lo paga?</h2>
+  <p>El Impuesto al Valor Agregado (IVA) grava la venta de bienes y la prestación de servicios. Lo paga quien compra, porque va incluido en el precio: el vendedor lo cobra, lo detalla en su factura o boleta y lo declara al Servicio de Impuestos Internos (SII) cada mes, descontando el IVA que él mismo pagó en sus compras (el crédito fiscal).</p>
+  <p>La tasa general es de {{ tasa|porcentaje(0) }} desde el {{ vigente.desde|fecha_larga }} ({{ vigente.ley }}). Hasta 2022 solo pagaban IVA algunos servicios, como los comerciales e industriales; desde el 1 de enero de 2023, la Ley 21.420 lo extendió a la mayoría de los servicios.</p>
+
+  <h2>Cómo se calcula</h2>
+  <ul>
+    <li><strong>Agregar el IVA:</strong> multiplica el monto neto por {{ (1 + tasa)|numero(2) }}. El IVA es el {{ tasa|porcentaje(0) }} del neto.</li>
+    <li><strong>Sacar el IVA:</strong> divide el precio con IVA por {{ (1 + tasa)|numero(2) }} para obtener el neto; el IVA es la diferencia entre el precio y el neto.</li>
+    <li><strong>Redondeo:</strong> las facturas y boletas van en pesos enteros. El IVA de un neto se redondea al peso, y al desglosar un precio se redondea el neto y el IVA se calcula por diferencia, para que neto más IVA dé exactamente el precio.</li>
+  </ul>
+
+  <h2>Boletas de honorarios: sin IVA</h2>
+  <p>Los servicios que prestan las personas con boleta de honorarios no llevan IVA. En su lugar, la boleta tiene una retención de impuesto ({{ tasa_honorarios|porcentaje(2) }} en {{ hoy.year }}). Si emites o pagas una boleta de honorarios, usa la <a href="{{ ruta('/calculadoras/boleta-honorarios/') }}">calculadora de boleta de honorarios</a>.</p>
+</section>
+
+{{ m.afiliados("iva") }}
+{{ m.faq(pagina) }}
+{{ m.fuente("Servicio de Impuestos Internos; DL 825, Ley sobre Impuesto a las Ventas y Servicios (artículo 14)") }}
+{% endblock %}

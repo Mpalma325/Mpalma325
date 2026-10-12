@@ -621,6 +621,116 @@
     poner(res, 'corridos', numero(r.feriado_corridos, 2));
   }
 
+  /** Muestra "—" en los resultados indicados (entrada inválida). */
+  function vaciar(res, claves) {
+    claves.forEach(function (clave) { poner(res, clave, '—'); });
+  }
+
+  /** Porcentaje con hasta 3 decimales, sin ceros sobrantes: 0,8% o 0,792%. */
+  function porcentajeCorto(fraccion) {
+    return numero(fraccion * 100, 3).replace(/0+$/, '').replace(/,$/, '') + '%';
+  }
+
+  function calcIva(form, res) {
+    var p = datosPagina().parametros;
+    var d = leerFormulario(form);
+    var desdeNeto = d.modo !== 'total';
+    var etiqueta = $('label[for="iva-monto"]', form);
+    etiqueta.textContent = etiqueta.getAttribute(desdeNeto ? 'data-etiqueta-neto' : 'data-etiqueta-total');
+    poner(res, 'etiqueta', desdeNeto ? 'Precio con IVA' : 'Precio neto (sin IVA)');
+    var monto = leerNumero(d.monto);
+    if (isNaN(monto) || monto <= 0) {
+      vaciar(res, ['principal', 'neto', 'iva', 'total']);
+      return;
+    }
+    var r = desdeNeto ? L.ivaDesdeNeto(monto, p) : L.ivaDesdeTotal(monto, p);
+    poner(res, 'principal', pesos(desdeNeto ? r.total : r.neto));
+    poner(res, 'neto', pesos(r.neto));
+    poner(res, 'iva', pesos(r.iva));
+    poner(res, 'total', pesos(r.total));
+  }
+
+  /** Factor de horas extra con 7 decimales truncados, como lo publica la DT (0,0083333). */
+  function factorTexto(factor) {
+    var truncado = Math.floor(factor * 1e7 + 1e-6) / 1e7;
+    return numero(truncado, 7).replace(/0+$/, '').replace(/,$/, '');
+  }
+
+  function calcHorasExtra(form, res) {
+    var p = datosPagina().parametros;
+    var d = leerFormulario(form);
+    var sueldo = leerNumero(d.sueldo);
+    var horas = leerNumero(d.horas);
+    var jornada = leerNumero(d.jornada);
+    if (isNaN(sueldo) || sueldo <= 0 || isNaN(horas) || horas < 0 || horas > 300 ||
+        isNaN(jornada) || jornada < 1 || jornada > 45) {
+      vaciar(res, ['principal', 'valor_hora', 'valor_extra', 'factor', 'nota']);
+      mostrarFila(res, 'base', false);
+      mostrarFila(res, 'sobre_jornada', false);
+      return;
+    }
+    var r = L.horasExtra(sueldo, horas, jornada, p);
+    poner(res, 'principal', pesos(r.total));
+    poner(res, 'valor_hora', pesos(r.valor_hora));
+    poner(res, 'valor_extra', pesos(r.valor_hora_extra));
+    poner(res, 'factor', factorTexto(r.factor));
+    poner(res, 'base', pesos(r.base));
+    mostrarFila(res, 'base', r.minimo_aplicado);
+    var nota = numero(horas, horas % 1 ? 2 : 0) + (horas === 1 ? ' hora extra' : ' horas extra') +
+      ' con jornada de ' + numero(jornada, jornada % 1 ? 1 : 0) + ' horas semanales y recargo de ' +
+      porcentaje(p.recargo_horas_extra, 0) + '.';
+    if (r.minimo_aplicado) {
+      nota += ' Tu sueldo es menor que el ingreso mínimo' + (jornada < p.jornada_semanal_horas ?
+        ' proporcional a tu jornada' : '') + ' (' + pesos(r.minimo) + '), así que se calcula sobre ese mínimo.';
+    }
+    if (horas > 52) {
+      nota += ' Ojo: la ley permite como máximo 2 horas extra por día.';
+    }
+    poner(res, 'nota', nota);
+    mostrarFila(res, 'sobre_jornada', jornada > p.jornada_semanal_horas);
+  }
+
+  function calcConsumo(form, res) {
+    var p = datosPagina().parametros;
+    var d = leerFormulario(form);
+    var monto = leerNumero(d.monto);
+    var meses = Math.round(leerNumero(d.plazo));
+    var tasa = leerNumero(d.tasa) / 100;
+    var seguros = d.seguros === '' ? 0 : leerNumero(d.seguros);
+    var gastos = d.gastos === '' ? 0 : leerNumero(d.gastos);
+    var financiar = d.pago !== 'contado';
+    var claves = ['principal', 'cae', 'liquido', 'impuesto', 'tasa_impuesto', 'gastos', 'bruto', 'cuota',
+      'seguros', 'intereses', 'total_seguros', 'total_cuotas', 'al_contado', 'costo_total', 'nota'];
+    if (isNaN(monto) || monto < 1000 || isNaN(meses) || meses < 1 || meses > 120 || isNaN(tasa) ||
+        tasa < 0 || tasa > 0.2 || isNaN(seguros) || seguros < 0 || isNaN(gastos) || gastos < 0 ||
+        (!financiar && gastos >= monto)) {
+      vaciar(res, claves);
+      return;
+    }
+    var r = L.creditoConsumo(monto, meses, tasa, p, seguros, gastos, financiar);
+    poner(res, 'principal', pesos(r.cuota_total));
+    poner(res, 'cae', porcentaje(r.cae, 2));
+    poner(res, 'liquido', pesos(r.monto_liquido));
+    poner(res, 'impuesto', pesos(r.impuesto));
+    poner(res, 'tasa_impuesto', '(' + porcentajeCorto(r.tasa_impuesto) + ')');
+    poner(res, 'gastos', pesos(r.gastos));
+    mostrarFila(res, 'gastos', r.gastos > 0);
+    poner(res, 'bruto', pesos(r.monto_bruto));
+    poner(res, 'cuota', pesos(r.cuota));
+    poner(res, 'seguros', pesos(r.seguros));
+    mostrarFila(res, 'seguros', r.seguros > 0);
+    poner(res, 'intereses', pesos(r.intereses));
+    poner(res, 'total_seguros', pesos(r.total_seguros));
+    mostrarFila(res, 'total_seguros', r.total_seguros > 0);
+    poner(res, 'total_cuotas', pesos(r.total_cuotas));
+    poner(res, 'al_contado', pesos(r.al_contado));
+    mostrarFila(res, 'al_contado', r.al_contado > 0);
+    poner(res, 'costo_total', pesos(r.costo_total));
+    poner(res, 'nota', 'Pagarás ' + pesos(r.sobrecosto) + ' más de lo que recibes: ' + meses +
+      (meses === 1 ? ' cuota de ' : ' cuotas de ') + pesos(r.cuota_total) +
+      (r.al_contado > 0 ? ' más ' + pesos(r.al_contado) + ' al firmar.' : '.'));
+  }
+
   // ---------------------------------------------------------------------------
   // Próximo feriado y proyección de UF
   // ---------------------------------------------------------------------------
@@ -682,7 +792,10 @@
       ahorro: [calcAhorro, 'resultado-ahorro'],
       dias: [calcDias, 'resultado-dias'],
       finiquito: [calcFiniquito, 'resultado-finiquito'],
-      vacaciones: [calcVacaciones, 'resultado-vacaciones']
+      vacaciones: [calcVacaciones, 'resultado-vacaciones'],
+      iva: [calcIva, 'resultado-iva'],
+      horas_extra: [calcHorasExtra, 'resultado-horas-extra'],
+      consumo: [calcConsumo, 'resultado-consumo']
     };
     $$('form[data-calculadora]').forEach(function (form) {
       var definicion = calculadoras[form.getAttribute('data-calculadora')];

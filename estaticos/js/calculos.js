@@ -431,6 +431,146 @@
     return { fecha: aTexto(fecha), feriados: excluidos };
   }
 
+  // -------------------------------------------------------------------------
+  // IVA (montos en pesos enteros)
+  // -------------------------------------------------------------------------
+
+  function ivaDesdeNeto(neto, p) {
+    var tasa = p.iva;
+    neto = redondear(neto);
+    var iva = redondear(neto * tasa);
+    return { neto: neto, iva: iva, total: neto + iva, tasa: tasa };
+  }
+
+  function ivaDesdeTotal(total, p) {
+    var tasa = p.iva;
+    total = redondear(total);
+    var neto = redondear(total / (1 + tasa));
+    return { neto: neto, iva: total - neto, total: total, tasa: tasa };
+  }
+
+  // -------------------------------------------------------------------------
+  // Horas extra
+  // -------------------------------------------------------------------------
+
+  function factorHorasExtra(jornada, p) {
+    return (1 + p.recargo_horas_extra) * 28 / (30 * 4 * jornada);
+  }
+
+  function horasExtra(sueldo, horas, jornada, p) {
+    var minimo = p.imm * Math.min(1, jornada / p.jornada_semanal_horas);
+    var base = Math.max(sueldo, minimo);
+    var valorHora = base / 30 * 28 / (4 * jornada);
+    var valorExtra = valorHora * (1 + p.recargo_horas_extra);
+    return {
+      sueldo: sueldo,
+      base: base,
+      minimo: minimo,
+      minimo_aplicado: sueldo < minimo,
+      valor_hora: valorHora,
+      valor_hora_extra: valorExtra,
+      factor: factorHorasExtra(jornada, p),
+      horas: horas,
+      total: redondear(valorExtra * horas)
+    };
+  }
+
+  // -------------------------------------------------------------------------
+  // Crédito de consumo
+  // -------------------------------------------------------------------------
+
+  function tasaTimbres(meses, p) {
+    return Math.min(p.timbres_tasa_mensual * meses, p.timbres_tope);
+  }
+
+  function cuotaFrancesa(capital, tasaMensual, meses) {
+    if (tasaMensual === 0) {
+      return capital / meses;
+    }
+    var factor = 1;
+    for (var i = 0; i < meses; i++) {
+      factor *= 1 + tasaMensual;
+    }
+    return capital * tasaMensual * factor / (factor - 1);
+  }
+
+  function valorPresente(flujos, tasaMensual) {
+    var total = 0;
+    var descuento = 1;
+    for (var i = 0; i < flujos.length; i++) {
+      descuento /= 1 + tasaMensual;
+      total += flujos[i] * descuento;
+    }
+    return total;
+  }
+
+  function cargaAnualEquivalente(montoLiquido, flujos) {
+    if (montoLiquido <= 0) {
+      throw new Error('Lo que se paga al firmar no puede igualar o superar el monto del crédito');
+    }
+    var bajo = 0;
+    var alto = 1;
+    while (valorPresente(flujos, alto) > montoLiquido && alto < 1e6) {
+      alto *= 2;
+    }
+    for (var paso = 0; paso < 100; paso++) {
+      var medio = (bajo + alto) / 2;
+      if (valorPresente(flujos, medio) > montoLiquido) {
+        bajo = medio;
+      } else {
+        alto = medio;
+      }
+    }
+    return 12 * (bajo + alto) / 2;
+  }
+
+  function creditoConsumo(monto, meses, tasaMensual, p, seguros, gastos, financiar) {
+    monto = redondear(monto);
+    seguros = redondear(seguros || 0);
+    gastos = redondear(gastos || 0);
+    financiar = financiar === undefined ? true : financiar;
+    var tasaImpuesto = tasaTimbres(meses, p);
+    var bruto;
+    var impuesto;
+    var alContado;
+    if (financiar) {
+      bruto = redondear((monto + gastos) / (1 - tasaImpuesto));
+      impuesto = bruto - monto - gastos;
+      alContado = 0;
+    } else {
+      bruto = monto;
+      impuesto = redondear(monto * tasaImpuesto);
+      alContado = impuesto + gastos;
+    }
+    var cuota = redondear(cuotaFrancesa(bruto, tasaMensual, meses));
+    var cuotaTotal = cuota + seguros;
+    var totalCuotas = cuotaTotal * meses;
+    var costoTotal = totalCuotas + alContado;
+    var flujos = [];
+    for (var i = 0; i < meses; i++) {
+      flujos.push(cuotaTotal);
+    }
+    return {
+      monto_liquido: monto,
+      monto_bruto: bruto,
+      meses: meses,
+      tasa_mensual: tasaMensual,
+      tasa_impuesto: tasaImpuesto,
+      impuesto: impuesto,
+      gastos: gastos,
+      al_contado: alContado,
+      cuota: cuota,
+      seguros: seguros,
+      cuota_total: cuotaTotal,
+      total_cuotas: totalCuotas,
+      intereses: cuota * meses - bruto,
+      total_seguros: seguros * meses,
+      costo_total: costoTotal,
+      sobrecosto: costoTotal - monto,
+      cae: cargaAnualEquivalente(monto - alContado, flujos)
+    };
+  }
+
   return {
     redondear: redondear,
     afpMasBarata: afpMasBarata,
@@ -454,6 +594,15 @@
     reajustarPorIpc: reajustarPorIpc,
     proyectarAhorro: proyectarAhorro,
     contarDiasHabiles: contarDiasHabiles,
-    sumarDiasHabiles: sumarDiasHabiles
+    sumarDiasHabiles: sumarDiasHabiles,
+    ivaDesdeNeto: ivaDesdeNeto,
+    ivaDesdeTotal: ivaDesdeTotal,
+    factorHorasExtra: factorHorasExtra,
+    horasExtra: horasExtra,
+    tasaTimbres: tasaTimbres,
+    cuotaFrancesa: cuotaFrancesa,
+    valorPresente: valorPresente,
+    cargaAnualEquivalente: cargaAnualEquivalente,
+    creditoConsumo: creditoConsumo
   };
 });
