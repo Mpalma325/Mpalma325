@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ pagina.titulo }}</title>
 <meta name="description" content="{{ pagina.descripcion }}">
-<link rel="canonical" href="{{ url_absoluta(pagina.ruta) }}">
+<link rel="canonical" href="{{ url_absoluta(pagina.canonica or pagina.ruta) }}">
 {% if demo or not pagina.indexar %}
 <meta name="robots" content="noindex">
 {% endif %}

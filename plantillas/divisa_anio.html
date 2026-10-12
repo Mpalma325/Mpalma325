@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<p class="bajada">Promedio, máximo, mínimo y cierre del {{ divisa.nombre }} observado en cada mes de {{ anio }}. {{ resumen }}</p>
+
+<div class="tarjetas">
+  <div class="tarjeta"><span class="tarjeta-titulo">Promedio {{ anio }}</span><span class="tarjeta-valor">{{ promedio|pesos(2) }}</span></div>
+  <div class="tarjeta"><span class="tarjeta-titulo">Máximo</span><span class="tarjeta-valor">{{ maximo[1]|pesos(2) }}</span><span class="tarjeta-pie">{{ maximo[0]|fecha_corta }}</span></div>
+  <div class="tarjeta"><span class="tarjeta-titulo">Mínimo</span><span class="tarjeta-valor">{{ minimo[1]|pesos(2) }}</span><span class="tarjeta-pie">{{ minimo[0]|fecha_corta }}</span></div>
+  <div class="tarjeta destacada"><span class="tarjeta-titulo">Variación {% if en_curso %}en lo que va del año{% else %}del año{% endif %}</span><span class="tarjeta-valor">{{ cambio|porcentaje(2, true) }}</span><span class="tarjeta-pie">Desde {{ desde[1]|pesos(2) }} el {{ desde[0]|fecha_corta }}</span></div>
+</div>
+
+<div class="tabla-desplazable">
+<table class="tabla">
+  <thead><tr><th>Mes</th><th class="num">Promedio</th><th class="num">Máximo</th><th class="num">Mínimo</th><th class="num">Cierre</th></tr></thead>
+  <tbody>
+  {% for f in filas %}
+    <tr><td><a href="{{ ruta(f.ruta) }}">{{ f.mes.month|nombre_mes|capitalizar }}</a></td><td class="num">{{ f.promedio|pesos(2) }}</td><td class="num">{{ f.maximo[1]|pesos(2) }}</td><td class="num">{{ f.minimo[1]|pesos(2) }}</td><td class="num">{{ f.cierre[1]|pesos(2) }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+<p class="nota">El promedio es el promedio simple de los valores publicados en el mes y el cierre, el último valor del mes. El {{ divisa.nombre }} observado se publica solo en días hábiles.</p>
+{% if filas|length > 1 %}
+<p>El mes con el {{ divisa.nombre }} más caro {{ 'hasta ahora es' if en_curso else 'fue' }} {{ mes_mas_caro.mes.month|nombre_mes }}, con un promedio de {{ mes_mas_caro.promedio|pesos(2) }}, y el más barato, {{ mes_mas_barato.mes.month|nombre_mes }} ({{ mes_mas_barato.promedio|pesos(2) }}). Su valor más alto del año fue {{ maximo[1]|pesos(2) }}, el {{ maximo[0]|dia_mes }}, y el más bajo, {{ minimo[1]|pesos(2) }}, el {{ minimo[0]|dia_mes }}.</p>
+{% endif %}
+
+{{ m.anuncio(divisa.clave ~ "_anio") }}
+
+<section>
+  <h2>El {{ divisa.nombre }} observado durante {{ anio }}</h2>
+  <figure class="figura">{{ grafico }}</figure>
+</section>
+
+<section class="texto">
+  <h2>¿Para qué sirve el promedio mensual del {{ divisa.nombre }}?</h2>
+  <p>El {{ divisa.nombre }} observado es el tipo de cambio oficial que publica el Banco Central de Chile cada día hábil. Su promedio o su cierre de cada mes sirven, por ejemplo, para comparar meses entre sí o como referencia en contratos pactados en moneda extranjera; si el contrato indica qué valor usar, manda lo que diga el contrato. Haz clic en un mes para ver el valor de cada día.</p>
+</section>
+
+<nav class="paginador" aria-label="Años">
+  {% if anterior %}<a href="{{ ruta('/' ~ divisa.clave ~ '/' ~ anterior ~ '/') }}">← {{ divisa.nombre|capitalizar }} {{ anterior }}</a>{% else %}<span></span>{% endif %}
+  {% if siguiente %}<a href="{{ ruta('/' ~ divisa.clave ~ '/' ~ siguiente ~ '/') }}">{{ divisa.nombre|capitalizar }} {{ siguiente }} →</a>{% endif %}
+</nav>
+<p><a href="{{ ruta('/' ~ divisa.clave ~ '/') }}">Ver el {{ divisa.nombre }} de hoy →</a></p>
+{{ m.fuente("Banco Central de Chile") }}
+{% endblock %}

@@ -99,18 +99,22 @@ def jsonld_articulo(cfg: dict, titulo: str, descripcion: str, ruta: str, publica
 
 
 def sitemap_xml(cfg: dict, paginas: list, hoy: dt.date) -> str:
+    """Solo las páginas indexables y canónicas, con la fecha de su último cambio real.
+
+    Google ignora ``changefreq`` y ``priority``, y usa ``lastmod`` solo si es confiable: por
+    eso cada página declara en ``modificada`` cuándo cambió su contenido (sin ese dato se usa
+    hoy) y nunca se publica una fecha futura.
+    """
     lineas = ['<?xml version="1.0" encoding="UTF-8"?>',
               '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for pagina in paginas:
-        if not pagina.en_sitemap:
+        if not pagina.en_sitemap or not pagina.indexar or pagina.canonica not in (None, pagina.ruta):
             continue
-        ultima = pagina.modificada or hoy
+        ultima = min(pagina.modificada or hoy, hoy)
         lineas.append(
             "  <url>"
             f"<loc>{escape(url_absoluta(cfg, pagina.ruta))}</loc>"
             f"<lastmod>{ultima.isoformat()}</lastmod>"
-            f"<changefreq>{pagina.frecuencia}</changefreq>"
-            f"<priority>{pagina.prioridad:.1f}</priority>"
             "</url>"
         )
     lineas.append("</urlset>")

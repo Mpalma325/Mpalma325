@@ -130,7 +130,8 @@ def test_sitemap_y_robots(sitio):
     salida, resumen, _ = sitio
     sitemap = (salida / "sitemap.xml").read_text(encoding="utf-8")
     urls = re.findall(r"<loc>(.*?)</loc>", sitemap)
-    assert len(urls) == resumen["paginas"] - 1  # todas menos la 404
+    # todas menos la 404 y /feriados/<año en curso>/, cuya canónica es /feriados/
+    assert len(urls) == resumen["paginas"] - 2
     assert "https://lucasclaras.cl/uf/" in urls
     assert "404" not in sitemap
     assert "Sitemap: https://lucasclaras.cl/sitemap.xml" in (salida / "robots.txt").read_text()

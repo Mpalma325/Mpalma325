@@ -1,15 +1,13 @@
 {% extends "base.html" %}
 {% block contenido %}
 <h1>{{ pagina.h1 }}</h1>
-<p class="bajada">{% if en_curso %}En lo que va de {{ mes|mes_de_anio }}{% else %}En {{ mes|mes_de_anio }}{% endif %}, el {{ divisa.nombre }} observado promedió <strong>{{ promedio|pesos(2) }}</strong>. Su valor más alto fue {{ maximo[1]|pesos(2) }} ({{ maximo[0]|dia_mes }}) y el más bajo {{ minimo[1]|pesos(2) }} ({{ minimo[0]|dia_mes }}).</p>
+<p class="bajada">{% if en_curso %}En lo que va de {{ mes|mes_de_anio }}{% else %}En {{ mes|mes_de_anio }}{% endif %}, el {{ divisa.nombre }} observado promedió <strong>{{ promedio|pesos(2) }}</strong>. Su valor más alto fue {{ maximo[1]|pesos(2) }} ({{ maximo[0]|dia_mes }}) y el más bajo {{ minimo[1]|pesos(2) }} ({{ minimo[0]|dia_mes }}).{% if cierre_previo %} Frente al cierre de {{ cierre_previo[0].month|nombre_mes }} ({{ cierre_previo[1]|pesos(2) }}), {% if variacion_mes > 0 %}{{ 'va subiendo' if en_curso else 'subió' }}{% elif variacion_mes < 0 %}{{ 'va bajando' if en_curso else 'bajó' }}{% else %}{{ 'se mantiene' if en_curso else 'se mantuvo' }}{% endif %}{% if variacion_mes != 0 %} {{ (variacion_mes|abs)|porcentaje(2) }}{% endif %}{{ ' en el mes' if not en_curso else '' }}.{% endif %}</p>
 
 <div class="tarjetas">
   <div class="tarjeta"><span class="tarjeta-titulo">Promedio del mes</span><span class="tarjeta-valor">{{ promedio|pesos(2) }}</span></div>
   <div class="tarjeta"><span class="tarjeta-titulo">Máximo</span><span class="tarjeta-valor">{{ maximo[1]|pesos(2) }}</span><span class="tarjeta-pie">{{ maximo[0]|fecha_corta }}</span></div>
   <div class="tarjeta"><span class="tarjeta-titulo">Mínimo</span><span class="tarjeta-valor">{{ minimo[1]|pesos(2) }}</span><span class="tarjeta-pie">{{ minimo[0]|fecha_corta }}</span></div>
 </div>
-
-{{ m.anuncio(divisa.clave ~ "_mes") }}
 
 <div class="tabla-desplazable">
 <table class="tabla">
@@ -23,10 +21,13 @@
 </div>
 <p class="nota">El {{ divisa.nombre }} observado se publica solo en días hábiles. El promedio es el promedio simple de los valores publicados en el mes.</p>
 
+{{ m.anuncio(divisa.clave ~ "_mes") }}
+
 <nav class="paginador" aria-label="Meses">
   {% if anterior %}<a href="{{ ruta('/' ~ divisa.clave ~ '/' ~ anterior.year ~ '/' ~ (anterior.month|nombre_mes) ~ '/') }}">← {{ anterior|mes_anio|capitalizar }}</a>{% else %}<span></span>{% endif %}
   {% if siguiente %}<a href="{{ ruta('/' ~ divisa.clave ~ '/' ~ siguiente.year ~ '/' ~ (siguiente.month|nombre_mes) ~ '/') }}">{{ siguiente|mes_anio|capitalizar }} →</a>{% endif %}
 </nav>
+<p><a href="{{ ruta('/' ~ divisa.clave ~ '/' ~ mes.year ~ '/') }}">{{ divisa.nombre|capitalizar }} observado {{ mes.year }}: promedio, máximo y mínimo de cada mes →</a></p>
 <p><a href="{{ ruta('/' ~ divisa.clave ~ '/') }}">Ver el {{ divisa.nombre }} de hoy →</a></p>
 {{ m.fuente("Banco Central de Chile") }}
 {% endblock %}

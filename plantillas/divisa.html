@@ -1,11 +1,16 @@
 {% extends "base.html" %}
 {% block contenido %}
 <h1>{{ pagina.h1 }}</h1>
+{% if desactualizado %}
+<p class="aviso">No hemos podido actualizar el {{ divisa.nombre }} desde el {{ fecha|fecha_larga }}. Mostramos el último valor disponible, que puede no reflejar el tipo de cambio actual: confírmalo en tu banco antes de usarlo.</p>
+{% endif %}
 <div class="destacado">
   <p class="destacado-etiqueta">{{ divisa.nombre|capitalizar }} observado del {{ fecha|fecha_con_dia }}</p>
   <p class="destacado-valor">{{ valor|pesos(2) }}</p>
   <p class="destacado-pie">{{ m.variacion(variacion) }} respecto del valor anterior{% if anterior %} ({{ anterior[1]|pesos(2) }} el {{ anterior[0]|dia_mes }}){% endif %} · {{ m.variacion(variacion_anual) }} en 12 meses</p>
 </div>
+
+<p>{% if desactualizado %}Con el último valor publicado, del {{ fecha|fecha_larga }}, 1 {{ divisa.nombre }} equivalía a <strong>{{ valor|pesos(2) }}</strong> pesos chilenos.{% else %}Hoy 1 {{ divisa.nombre }} equivale a <strong>{{ valor|pesos(2) }}</strong> pesos chilenos, según el {{ divisa.nombre }} observado del {{ fecha|fecha_larga }}.{% endif %} Es el valor oficial que publica el Banco Central cada día hábil; los bancos y casas de cambio compran y venden con su propio margen.</p>
 
 <section>
   <h2>Convertir {{ divisa.plural }} a pesos</h2>
@@ -15,16 +20,32 @@
 
 {{ m.anuncio(divisa.clave ~ "_superior") }}
 
-{% if maximo_anio %}
+{% if conversiones %}
 <section>
-  <h2>El {{ divisa.nombre }} en {{ hoy.year }}</h2>
-  <div class="tarjetas">
-    <div class="tarjeta"><span class="tarjeta-titulo">Promedio {{ hoy.year }}</span><span class="tarjeta-valor">{{ promedio_anio|pesos(2) }}</span></div>
-    <div class="tarjeta"><span class="tarjeta-titulo">Máximo {{ hoy.year }}</span><span class="tarjeta-valor">{{ maximo_anio|pesos(2) }}</span></div>
-    <div class="tarjeta"><span class="tarjeta-titulo">Mínimo {{ hoy.year }}</span><span class="tarjeta-valor">{{ minimo_anio|pesos(2) }}</span></div>
+  <h2>Conversiones frecuentes de {{ divisa.plural }} a pesos</h2>
+  <div class="tabla-desplazable">
+  <table class="tabla">
+    <thead><tr><th>{{ divisa.plural|capitalizar }}</th><th class="num">Pesos chilenos</th></tr></thead>
+    <tbody>
+    {% for fila in conversiones %}
+      {% set texto = (fila.monto|numero) ~ " " ~ (divisa.nombre if fila.monto == 1 else divisa.plural) %}
+      <tr><td>{% if fila.ruta %}<a href="{{ ruta(fila.ruta) }}">{{ texto }} en pesos</a>{% else %}{{ texto }}{% endif %}</td><td class="num">{{ (fila.monto * valor)|pesos(2 if fila.monto < 10 else 0) }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
   </div>
+  <p class="nota">Calculado con el {{ divisa.nombre }} observado del {{ fecha|fecha_larga }} ({{ valor|pesos(2) }}).</p>
 </section>
 {% endif %}
+
+<section>
+  <h2>El {{ divisa.nombre }} en {{ anio_valores }}</h2>
+  <div class="tarjetas">
+    <div class="tarjeta"><span class="tarjeta-titulo">Promedio {{ anio_valores }}</span><span class="tarjeta-valor">{{ promedio_anio|pesos(2) }}</span></div>
+    <div class="tarjeta"><span class="tarjeta-titulo">Máximo {{ anio_valores }}</span><span class="tarjeta-valor">{{ maximo_anio|pesos(2) }}</span></div>
+    <div class="tarjeta"><span class="tarjeta-titulo">Mínimo {{ anio_valores }}</span><span class="tarjeta-valor">{{ minimo_anio|pesos(2) }}</span></div>
+  </div>
+</section>
 
 <section>
   <h2>{{ divisa.nombre|capitalizar }} en los últimos 12 meses</h2>
@@ -49,23 +70,26 @@
 
 {% if meses %}
 <section>
-  <h2>{{ divisa.nombre|capitalizar }} observado por mes</h2>
+  <h2>{{ divisa.nombre|capitalizar }} observado por mes y por año</h2>
   <ul class="enlaces">
   {% for mes in meses %}
     <li><a href="{{ ruta('/' ~ divisa.clave ~ '/' ~ mes.year ~ '/' ~ (mes.month|nombre_mes) ~ '/') }}">{{ mes|mes_anio|capitalizar }}</a></li>
   {% endfor %}
   </ul>
+  {% if anios %}
+  <p>Promedio, máximo, mínimo y cierre de cada mes, año por año:</p>
+  <ul class="enlaces">
+  {% for anio in anios %}
+    <li><a href="{{ ruta('/' ~ divisa.clave ~ '/' ~ anio ~ '/') }}">{{ divisa.nombre|capitalizar }} observado {{ anio }}</a></li>
+  {% endfor %}
+  </ul>
+  {% endif %}
 </section>
 {% endif %}
 
-<section>
-  <h2>Conversiones frecuentes</h2>
-  <ul class="enlaces">
-  {% for monto in montos %}
-    <li><a href="{{ ruta('/' ~ divisa.clave ~ '/' ~ monto ~ '-' ~ divisa.plural ~ '-en-pesos/') }}">{{ monto|numero }} {{ divisa.plural }}</a></li>
-  {% endfor %}
-  </ul>
-</section>
+{% if otra %}
+<p>¿Buscas otra moneda? Revisa el <a href="{{ ruta(otra[1]) }}">{{ otra[0] }} en pesos chilenos</a>.</p>
+{% endif %}
 
 {{ m.faq(pagina) }}
 {{ m.fuente("Banco Central de Chile") }}

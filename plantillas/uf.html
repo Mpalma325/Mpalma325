@@ -7,6 +7,8 @@
   <p class="destacado-pie">{{ m.variacion(variacion_anual) }} en los últimos 12 meses · Valores conocidos hasta el {{ ultimo_conocido|fecha_larga }}</p>
 </div>
 
+<p>Hoy 1 UF equivale a <strong data-uf-hoy>{{ cabecera.uf|pesos(2) }}</strong> pesos chilenos. Para convertir otro monto, multiplícalo por ese valor o usa el conversor.</p>
+
 <section>
   <h2>Convertir UF a pesos</h2>
   {{ m.conversor("uf", "UF", "Pesos chilenos", cabecera.uf, 1, 2, 0, true) }}
@@ -38,23 +40,37 @@
 {{ m.afiliados("uf") }}
 
 <section>
-  <h2>Valor UF por mes</h2>
+  <h2>Valor UF por mes y por año</h2>
+  {% if meses_anio %}
   <ul class="enlaces">
   {% for mes in meses_anio %}
     <li><a href="{{ ruta('/uf/' ~ mes.year ~ '/' ~ (mes.month|nombre_mes) ~ '/') }}">UF {{ mes|mes_anio }}</a></li>
   {% endfor %}
   </ul>
-  <p class="nota">Años anteriores: {% for primer_mes in primeros_meses %}<a href="{{ ruta('/uf/' ~ primer_mes.year ~ '/' ~ (primer_mes.month|nombre_mes) ~ '/') }}">{{ primer_mes.year }}</a>{% if not loop.last %} · {% endif %}{% endfor %}</p>
-</section>
-
-<section>
-  <h2>Conversiones frecuentes de UF a pesos</h2>
+  {% endif %}
+  <p>Tabla mensual de cada año, con el valor del día 1, del día 9 y del último día de cada mes:</p>
   <ul class="enlaces">
-  {% for monto in montos %}
-    <li><a href="{{ ruta('/uf/' ~ monto ~ '-uf-en-pesos/') }}">{{ monto|numero }} UF</a></li>
+  {% for anio in anios %}
+    <li><a href="{{ ruta('/uf/' ~ anio ~ '/') }}">Valor UF {{ anio }}</a></li>
   {% endfor %}
   </ul>
 </section>
+
+{% if montos %}
+<section>
+  <h2>Conversiones frecuentes de UF a pesos</h2>
+  <div class="tabla-desplazable">
+  <table class="tabla">
+    <thead><tr><th>UF</th><th class="num">Pesos chilenos hoy</th></tr></thead>
+    <tbody>
+    {% for monto, destino in montos %}
+      <tr><td><a href="{{ ruta(destino) }}">{{ monto|numero }} UF en pesos</a></td><td class="num" data-uf-monto="{{ monto }}">{{ (monto * cabecera.uf)|pesos(2 if monto < 10 else 0) }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+{% endif %}
 
 {{ m.anuncio("uf_inferior") }}
 

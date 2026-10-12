@@ -1,17 +1,66 @@
 {% extends "base.html" %}
 {% block contenido %}
+{% set dec = 2 if monto < 10 else 0 %}
+{% set en_pesos = monto * cabecera.uf %}
 <h1>{{ pagina.h1 }}</h1>
 <div class="destacado">
   <p class="destacado-etiqueta">{{ monto|numero }} UF el <span data-uf-fecha>{{ hoy|fecha_con_dia }}</span></p>
-  <p class="destacado-valor" data-uf-monto="{{ monto }}">{{ (monto * cabecera.uf)|pesos }}</p>
+  <p class="destacado-valor" data-uf-monto="{{ monto }}">{{ en_pesos|pesos(dec) }}</p>
   <p class="destacado-pie">Con una UF de <span data-uf-hoy>{{ cabecera.uf|pesos(2) }}</span></p>
 </div>
 
-<p>Hoy, {{ monto|numero }} UF equivalen a <strong>{{ (monto * cabecera.uf)|pesos }}</strong> pesos chilenos. Como la UF se reajusta todos los días según la inflación, este monto cambia levemente cada día.</p>
+<p>Hoy, {{ monto|numero }} UF {{ 'equivale' if monto == 1 else 'equivalen' }} a <strong>{{ en_pesos|pesos(dec) }}</strong> pesos chilenos. Como la UF se reajusta todos los días según la inflación, este monto cambia levemente cada día.</p>
 
 {{ m.conversor("uf", "UF", "Pesos chilenos", cabecera.uf, monto, 2, 0, true) }}
 
 {{ m.anuncio("uf_monto_superior") }}
+
+{% if tramo == "salud" %}
+<section class="texto">
+  <h2>¿Dónde se paga un monto como {{ monto|numero }} UF?</h2>
+  <p>Los cobros mensuales que deben mantener su valor en el tiempo se fijan a menudo en unas pocas UF. Es el caso de muchos planes de salud de isapre y de seguros (de vida, de salud complementarios o del auto): el precio está en UF y se paga en pesos según el valor de la UF, así que sube de a poco con la inflación.</p>
+  <p>Un cobro de {{ monto|numero }} UF al mes suma {{ (monto * 12)|numero }} UF al año: unos <strong>{{ (en_pesos * 12)|pesos }}</strong> con la UF de hoy.</p>
+  <p>Si es tu plan de isapre y su precio supera la cotización obligatoria de salud ({{ salud_obligatoria|porcentaje(0) }} de tu remuneración imponible), la diferencia la pagas tú como cotización adicional. Puedes ingresar el valor de tu plan en UF en la <a href="{{ ruta('/calculadoras/sueldo-liquido/') }}">calculadora de sueldo líquido</a>.</p>
+</section>
+{% elif tramo == "arriendo" %}
+<section class="texto">
+  <h2>Un arriendo de {{ monto|numero }} UF</h2>
+  <p>Muchos arriendos de departamentos, casas, oficinas y locales se pactan en UF. Así, la renta sigue a la inflación sin necesidad de pactar reajustes: cada mes se paga en pesos según el valor de la UF del día que fije el contrato.</p>
+  <p>Con la UF de hoy, un arriendo de {{ monto|numero }} UF es de <strong>{{ en_pesos|pesos }}</strong> al mes y de {{ (en_pesos * 12)|pesos }} al año. Si el contrato pide un mes de garantía y el primer mes por adelantado, al firmar necesitarías unos {{ (en_pesos * 2)|pesos }}.</p>
+  <p>¿Tu arriendo está en pesos y se reajusta según el IPC? Usa la <a href="{{ ruta('/calculadoras/reajuste-arriendo-ipc/') }}">calculadora de reajuste de arriendo</a>.</p>
+</section>
+{% elif tramo == "topes" %}
+<section>
+  <h2>{{ monto|numero }} UF y los topes legales en UF</h2>
+  <p>Varias reglas laborales y tributarias de Chile fijan montos en UF de este tamaño:</p>
+  <div class="tabla-desplazable">
+  <table class="tabla tabla-detalle">
+    <thead><tr><th>Monto fijado por ley</th><th class="num">UF</th><th class="num">En pesos hoy</th></tr></thead>
+    <tbody>
+    {% for nombre, uf_tope in topes %}
+      <tr><td>{{ nombre }}</td><td class="num">{{ uf_tope|numero(0 if uf_tope == uf_tope|int else 1) }}</td><td class="num">{{ (uf_tope * cabecera.uf)|pesos }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p>{% if monto > tope_imponible %}Un sueldo imponible de {{ monto|numero }} UF supera el tope imponible: las cotizaciones de AFP y salud se calculan solo sobre {{ tope_imponible|numero(0 if tope_imponible == tope_imponible|int else 1) }} UF, y lo que excede no paga esas cotizaciones, aunque sí paga impuesto.{% else %}Un sueldo imponible de {{ monto|numero }} UF está bajo el tope imponible de {{ tope_imponible|numero(0 if tope_imponible == tope_imponible|int else 1) }} UF, así que paga cotizaciones de AFP y salud sobre todo el monto.{% endif %} Revisa el detalle en la <a href="{{ ruta('/calculadoras/sueldo-liquido/') }}">calculadora de sueldo líquido</a>.</p>
+  <p class="nota">En las liquidaciones de sueldo, los topes se convierten a pesos con la UF del último día del mes; aquí usamos la UF de hoy como referencia.</p>
+</section>
+{% elif tramo == "pie" %}
+<section class="texto">
+  <h2>{{ monto|numero }} UF para el pie de una vivienda</h2>
+  <p>Montos de cientos de UF aparecen sobre todo al ahorrar para comprar una vivienda. Los bancos suelen financiar hasta el 80% del valor de la propiedad, por lo que el pie habitual es de 20%: con {{ monto|numero }} UF de pie podrías optar a una vivienda de hasta {{ (monto * 5)|numero }} UF (unos {{ (en_pesos * 5)|pesos }} hoy), si tu renta alcanza para el dividendo.</p>
+  <p>Los subsidios habitacionales también piden un ahorro mínimo expresado en UF. Mientras ahorras, mira cuánto crece tu dinero con la <a href="{{ ruta('/calculadoras/interes-compuesto/') }}">calculadora de interés compuesto</a> y estima el dividendo con el <a href="{{ ruta('/calculadoras/credito-hipotecario/') }}">simulador de crédito hipotecario</a>.</p>
+</section>
+{% endif %}
+
+{% if hace_un_anio %}
+{% set antes = monto * hace_un_anio[1] %}
+<section class="texto">
+  <h2>{{ monto|numero }} UF hace un año</h2>
+  <p>El {{ hace_un_anio[0]|fecha_larga }}, {{ monto|numero }} UF {{ 'equivalía' if monto == 1 else 'equivalían' }} a {{ antes|pesos(dec) }}. Hoy {{ 'es' if monto == 1 else 'son' }} {{ en_pesos|pesos(dec) }}: {{ (en_pesos - antes)|abs|pesos(dec) }} {{ 'más' if en_pesos >= antes else 'menos' }}, {{ 'un alza' if en_pesos >= antes else 'una baja' }} de {{ ((en_pesos / antes - 1)|abs)|porcentaje(2) }} que refleja la inflación de los últimos 12 meses.</p>
+</section>
+{% endif %}
 
 <section>
   <h2>¿Cuánto valdrán {{ monto|numero }} UF en los próximos días?</h2>
@@ -20,7 +69,7 @@
     <thead><tr><th>Fecha</th><th class="num">Valor UF</th><th class="num">{{ monto|numero }} UF en pesos</th></tr></thead>
     <tbody>
     {% for fecha, valor in proximos %}
-      <tr{% if fecha == hoy %} class="fila-hoy"{% endif %}><td>{{ fecha|fecha_corta }}</td><td class="num">{{ valor|pesos(2) }}</td><td class="num">{{ (monto * valor)|pesos }}</td></tr>
+      <tr{% if fecha == hoy %} class="fila-hoy"{% endif %}><td>{{ fecha|fecha_corta }}</td><td class="num">{{ valor|pesos(2) }}</td><td class="num">{{ (monto * valor)|pesos(dec) }}</td></tr>
     {% endfor %}
     </tbody>
   </table>
@@ -30,6 +79,11 @@
 {% if ejemplo %}
 <section class="texto">
   <h2>Si {{ monto|numero }} UF es el precio de una vivienda</h2>
+  {% if tramo == "vivienda_economica" %}
+  <p>En Chile, los precios de las viviendas se suelen publicar en UF. {{ monto|numero }} UF es un precio que se ve en departamentos pequeños y viviendas económicas; lo que se compra con ese monto cambia mucho según la ciudad y la comuna.</p>
+  {% else %}
+  <p>En Chile, los precios de las viviendas se suelen publicar en UF. {{ monto|numero }} UF es un precio que se ve en departamentos y casas de las grandes ciudades; depende sobre todo de la comuna, del tamaño y de si la propiedad es nueva o usada.</p>
+  {% endif %}
   <p>Con un pie de 20% ({{ ejemplo.pie_uf|numero(0) }} UF, unos {{ (ejemplo.pie_uf * cabecera.uf)|pesos }}) y un crédito de {{ ejemplo.credito_uf|numero(0) }} UF a 25 años con una tasa anual referencial de {{ tasa_referencia|porcentaje(2) }}, el dividendo sería de aproximadamente <strong>{{ ejemplo.dividendo_uf|numero(2) }} UF</strong> al mes ({{ ejemplo.dividendo_pesos|pesos }} hoy), sin contar seguros. Para un dividendo así, los bancos suelen pedir una renta líquida de al menos {{ ejemplo.renta_minima|pesos }}.</p>
   <p><a href="{{ ruta('/calculadoras/credito-hipotecario/') }}">Simula tu crédito con otros plazos y tasas →</a></p>
 </section>
@@ -42,7 +96,7 @@
     <thead><tr><th>Fecha</th><th class="num">Valor UF</th><th class="num">{{ monto|numero }} UF en pesos</th></tr></thead>
     <tbody>
     {% for fecha, valor in historia %}
-      <tr><td>{{ fecha|fecha_corta }}</td><td class="num">{{ valor|pesos(2) }}</td><td class="num">{{ (monto * valor)|pesos }}</td></tr>
+      <tr><td>{{ fecha|fecha_corta }}</td><td class="num">{{ valor|pesos(2) }}</td><td class="num">{{ (monto * valor)|pesos(dec) }}</td></tr>
     {% endfor %}
     </tbody>
   </table>
@@ -54,10 +108,11 @@
 <section>
   <h2>Otros montos</h2>
   <ul class="enlaces">
-  {% for otro in vecinos %}
-    <li><a href="{{ ruta('/uf/' ~ otro ~ '-uf-en-pesos/') }}">{{ otro|numero }} UF en pesos</a></li>
+  {% for otro, destino in vecinos %}
+    <li><a href="{{ ruta(destino) }}">{{ otro|numero }} UF en pesos</a></li>
   {% endfor %}
     <li><a href="{{ ruta('/uf/') }}">Valor UF hoy</a></li>
+    <li><a href="{{ ruta('/uf/' ~ anio_actual ~ '/') }}">Valor UF {{ anio_actual }}</a></li>
   </ul>
 </section>
 {{ m.fuente("Banco Central de Chile, publicado por el SII") }}

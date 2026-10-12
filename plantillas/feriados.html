@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block contenido %}
 <h1>{{ pagina.h1 }}</h1>
-{% if es_actual and proximos %}
+{% if principal and proximos %}
 <div class="destacado" data-proximo-feriado>
   {% if proximos[0].fecha == hoy %}
   <p class="destacado-etiqueta">Hoy es feriado</p>
@@ -12,17 +12,24 @@
   <p class="destacado-pie" data-r="fecha">{{ proximos[0].fecha|fecha_con_dia|capitalizar }}</p>
 </div>
 {% endif %}
+{% if principal and proximo_largo %}
+<p class="aviso"><strong>{{ 'Hoy empieza un fin de semana largo' if proximo_largo.inicio == hoy else 'Próximo fin de semana largo' }}:</strong> {{ proximo_largo.dias }} días, del {{ proximo_largo.inicio|dia_semana }} {{ proximo_largo.inicio|dia_mes }} al {{ proximo_largo.fin|dia_semana }} {{ proximo_largo.fin|dia_mes }}{% if proximo_largo.fin.year != hoy.year %} de {{ proximo_largo.fin.year }}{% endif %} ({{ proximo_largo.feriados|map(attribute='nombre')|join(' y ') }}).</p>
+{% endif %}
+{% if copia_principal %}
+<p class="aviso">Estos son los feriados del año en curso. En la <a href="{{ ruta('/feriados/') }}">página principal de feriados</a> verás además cuál es el próximo feriado y el próximo fin de semana largo.</p>
+{% endif %}
 
-<p>En {{ anio }} hay <strong>{{ lista|length }} feriados nacionales</strong> en Chile, de los cuales {{ en_dia_habil|length }} caen de lunes a viernes y {{ irrenunciables|length }} son irrenunciables para los trabajadores del comercio. {% if largos %}Habrá {{ largos|length }} fines de semana largos.{% endif %}</p>
-
-{{ m.anuncio("feriados_superior") }}
+{% set pasado = anio < hoy.year %}
+<p>En {{ anio }} {{ 'hubo' if pasado else 'hay' }} <strong>{{ lista|length }} feriados nacionales</strong> en Chile, de los cuales {{ en_dia_habil|length }} {{ 'cayeron' if pasado else 'caen' }} de lunes a viernes y {{ irrenunciables|length }} {{ 'fueron' if pasado else 'son' }} irrenunciables para los trabajadores del comercio. {% if largos %}{{ 'Hubo' if pasado else 'El año tiene' }} {{ largos|length }} fines de semana largos.{% endif %}</p>
+<p><a class="boton-secundario" href="{{ ruta(ics) }}">Agregar a mi calendario</a></p>
+<p class="nota">Descarga un archivo .ics con los {{ lista|length }} feriados de {{ anio }} y ábrelo en Google Calendar, Outlook o el calendario de tu teléfono.</p>
 
 <div class="tabla-desplazable">
 <table class="tabla tabla-feriados">
   <thead><tr><th>Fecha</th><th>Día</th><th>Feriado</th><th>Tipo</th></tr></thead>
   <tbody>
   {% for f in lista %}
-    <tr class="{{ 'pasado' if es_actual and f.fecha < hoy else '' }}{{ ' fila-hoy' if f.fecha == hoy else '' }}">
+    <tr class="{{ 'pasado' if principal and f.fecha < hoy else '' }}{{ ' fila-hoy' if f.fecha == hoy else '' }}">
       <td>{{ f.fecha|dia_mes }}</td>
       <td>{{ f.fecha|dia_semana|capitalizar }}</td>
       <td>{{ f.nombre }}{% if f.irrenunciable %} <span class="etiqueta">Irrenunciable</span>{% endif %}{% if f.nota %}<br><small>{{ f.nota }}</small>{% endif %}</td>
@@ -32,6 +39,8 @@
   </tbody>
 </table>
 </div>
+
+{{ m.anuncio("feriados_superior") }}
 
 {% if largos %}
 <section>
@@ -56,10 +65,10 @@
 {{ m.afiliados("feriados") }}
 
 <section>
-  <h2>Otros años</h2>
+  <h2>Feriados por año</h2>
   <ul class="enlaces">
-  {% for otro in otros_anios %}
-    <li><a href="{{ ruta('/feriados/' if otro == hoy.year else '/feriados/' ~ otro ~ '/') }}">Feriados {{ otro }}</a></li>
+  {% for otro, destino in anios if destino != pagina.ruta %}
+    <li><a href="{{ ruta(destino) }}">Feriados {{ otro }}</a></li>
   {% endfor %}
     <li><a href="{{ ruta('/calculadoras/dias-habiles/') }}">Calculadora de días hábiles</a></li>
   </ul>

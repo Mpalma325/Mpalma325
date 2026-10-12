@@ -44,6 +44,7 @@ class Pagina:
     modificada: dt.date | None = None
     en_sitemap: bool = True
     indexar: bool = True
+    canonica: str | None = None    # otra ruta canónica (p. ej. /feriados/<año en curso>/ -> /feriados/)
 
     @property
     def archivo(self) -> str:
@@ -176,6 +177,7 @@ def construir(salida: Path | None = None, demo: bool = False, hoy: dt.date | Non
               cfg: dict | None = None, directorio_datos: Path | None = None) -> dict:
     """Genera el sitio completo. Devuelve un resumen con la cantidad de páginas y advertencias."""
     from .api import escribir_api  # imports diferidos: guias y paginas importan este módulo
+    from .calendario import escribir_calendarios
     from .guias import cargar_guias
     from .paginas import todas_las_paginas
 
@@ -227,6 +229,7 @@ def construir(salida: Path | None = None, demo: bool = False, hoy: dt.date | Non
     (salida / "robots.txt").write_text(seo.robots_txt(cfg), encoding="utf-8")
     (salida / "_headers").write_text(seo.cabeceras_cloudflare(), encoding="utf-8")
     escribir_api(salida, c)  # /api/v1/*.json y /widget.js
+    escribir_calendarios(salida, cfg, hoy, c.feriados_extra, ahora)  # /feriados/<año>.ics
     ads = seo.ads_txt(cfg)
     if ads:
         (salida / "ads.txt").write_text(ads, encoding="utf-8")

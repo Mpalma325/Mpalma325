@@ -34,6 +34,10 @@ from .config import ZONA_CHILE
 
 UN_DIA = dt.timedelta(days=1)
 
+# Primer año con página propia (/feriados/AAAA/). Esas páginas no se borran nunca: cada
+# año se agrega el siguiente y así no se pierden los enlaces cuando cambia el año.
+PRIMER_ANIO_FERIADOS = 2025
+
 
 @dataclass(frozen=True)
 class Feriado:
@@ -257,6 +261,20 @@ def fines_de_semana_largos(anio: int, extras: list[dict] | None = None) -> list[
             dia = fin
         dia += UN_DIA
     return bloques
+
+
+def proximo_fin_de_semana_largo(desde: dt.date, extras: list[dict] | None = None) -> dict | None:
+    """El primer fin de semana largo que empieza en ``desde`` o después (busca también en el año siguiente)."""
+    for anio in (desde.year, desde.year + 1):
+        for bloque in fines_de_semana_largos(anio, extras):
+            if bloque["inicio"] >= desde:
+                return bloque
+    return None
+
+
+def anios_con_pagina(hoy: dt.date) -> list[int]:
+    """Años con página de feriados: desde ``PRIMER_ANIO_FERIADOS`` hasta el año siguiente a ``hoy``."""
+    return list(range(PRIMER_ANIO_FERIADOS, hoy.year + 2))
 
 
 def _rango(inicio: dt.date, fin: dt.date):

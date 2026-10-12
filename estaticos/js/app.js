@@ -253,7 +253,8 @@
     $$('[data-uf-hoy]').forEach(function (el) { el.textContent = pesos(valor, 2); });
     $$('[data-uf-fecha]').forEach(function (el) { el.textContent = fechaLarga(hoy, true); });
     $$('[data-uf-monto]').forEach(function (el) {
-      el.textContent = pesos(valor * parseFloat(el.getAttribute('data-uf-monto')), 0);
+      var monto = parseFloat(el.getAttribute('data-uf-monto'));
+      el.textContent = pesos(valor * monto, Math.abs(monto) < 10 ? 2 : 0);  // con centavos bajo 10 UF
     });
     $$('form[data-es-uf]').forEach(function (form) {
       form.setAttribute('data-tasa', valor);

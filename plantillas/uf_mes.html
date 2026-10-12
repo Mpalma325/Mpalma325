@@ -6,11 +6,9 @@
   El {{ dias[0][0]|dia_mes }} la UF vale {{ dias[0][1]|pesos(2) }} y el {{ dias[-1][0]|dia_mes }}, {{ dias[-1][1]|pesos(2) }}{% if completo and variacion_mes is not none %}: una variación de {{ variacion_mes|porcentaje(2, true) }} en el mes{% endif %}.
 </p>
 
-{% if not completo %}
+{% if pendiente %}
 <p class="aviso">Por ahora se conocen los valores hasta el {{ dias[-1][0]|fecha_larga }}. Los siguientes se sabrán cuando el INE publique el IPC de {{ mes_ipc_segunda|mes_de_anio }}, cerca del día 8 de {{ mes|mes_de_anio }}.</p>
 {% endif %}
-
-{{ m.anuncio("uf_mes_superior") }}
 
 <div class="tabla-desplazable">
 <table class="tabla">
@@ -26,11 +24,15 @@
 <p class="nota">* Valor calculado con la metodología del Banco Central a partir del IPC ya publicado por el INE.</p>
 {% endif %}
 
+{{ m.anuncio("uf_mes_superior") }}
+
+{# Qué le pasa a la UF con cada IPC: sube, baja o se mantiene (en pasado para los meses que ya terminaron). #}
+{% macro efecto(ipc) %}{% if ipc is not none %}{% if ipc > 0 %}, así que la UF {{ 'subió' if pasado else 'sube' }} un poco cada día{% elif ipc < 0 %}, así que la UF {{ 'bajó' if pasado else 'baja' }} levemente cada día{% else %}, así que la UF {{ 'se mantuvo' if pasado else 'se mantiene' }} igual{% endif %}{% endif %}{% endmacro %}
 <section class="texto">
   <h2>¿Qué IPC se aplica en {{ mes|mes_de_anio }}?</h2>
   <ul>
-    <li>Del 1 al 9 de {{ mes.month|nombre_mes }}: IPC de {{ mes_ipc_primera|mes_de_anio }}{% if ipc_primera is not none %} ({{ ipc_primera|porcentaje(1, true) }}){% endif %}.</li>
-    <li>Del 10 al {{ dias[-1][0].day if not completo and dias[-1][0].day >= 10 else '' }}{{ '' if not completo and dias[-1][0].day >= 10 else 'fin' }} de {{ mes.month|nombre_mes }}: IPC de {{ mes_ipc_segunda|mes_de_anio }}{% if ipc_segunda is not none %} ({{ ipc_segunda|porcentaje(1, true) }}){% else %} (aún no publicado){% endif %}.</li>
+    <li>Del 1 al 9 de {{ mes.month|nombre_mes }}: IPC de {{ mes_ipc_primera|mes_de_anio }}{% if ipc_primera is not none %} ({{ ipc_primera|porcentaje(1, true) }}){% endif %}{{ efecto(ipc_primera) }}.</li>
+    <li>Del 10 al {% if pendiente and dias[-1][0].day >= 10 %}{{ dias[-1][0].day }}{% else %}fin{% endif %} de {{ mes.month|nombre_mes }}: IPC de {{ mes_ipc_segunda|mes_de_anio }}{% if ipc_segunda is not none %} ({{ ipc_segunda|porcentaje(1, true) }}){{ efecto(ipc_segunda) }}{% else %} (aún no publicado){% endif %}.</li>
   </ul>
 </section>
 
@@ -46,6 +48,7 @@
     <li><a href="{{ ruta('/uf/' ~ otro.year ~ '/' ~ (otro.month|nombre_mes) ~ '/') }}">{{ otro.month|nombre_mes|capitalizar }}</a></li>
   {% endfor %}
   </ul>
+  <p><a href="{{ ruta('/uf/' ~ mes.year ~ '/') }}">Tabla de la UF {{ mes.year }}: día 1, día 9 y último día de cada mes →</a></p>
   <p><a href="{{ ruta('/uf/') }}">Ver el valor de la UF hoy →</a></p>
 </section>
 {{ m.fuente("Banco Central de Chile, publicado por el SII") }}

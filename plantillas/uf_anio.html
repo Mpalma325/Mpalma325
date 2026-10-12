@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<p class="bajada">Valor de la Unidad de Fomento (UF) en {{ anio }}: el día 1, el día 9 y el último día de cada mes. {{ resumen }}</p>
+
+<div class="tarjetas">
+  <div class="tarjeta"><span class="tarjeta-titulo">UF del {{ desde[0]|fecha_larga }}</span><span class="tarjeta-valor">{{ desde[1]|pesos(2) }}</span></div>
+  <div class="tarjeta"><span class="tarjeta-titulo">UF del {{ hasta[0]|fecha_larga }}</span><span class="tarjeta-valor">{{ hasta[1]|pesos(2) }}</span></div>
+  <div class="tarjeta destacada"><span class="tarjeta-titulo">Variación {% if completo %}del año{% else %}en lo que va de {{ anio }}{% endif %}</span><span class="tarjeta-valor">{{ cambio|porcentaje(2, true) }}</span></div>
+</div>
+
+<div class="tabla-desplazable">
+<table class="tabla">
+  <thead><tr><th>Mes</th><th class="num">Día 1</th><th class="num">Día 9</th><th class="num">Último día</th><th class="num">Variación del mes</th></tr></thead>
+  <tbody>
+  {% for f in filas %}
+    <tr><td><a href="{{ ruta(f.ruta) }}">{{ f.mes.month|nombre_mes|capitalizar }}</a></td><td class="num">{{ f.dia_1|pesos(2) }}</td><td class="num">{{ f.dia_9|pesos(2) }}</td><td class="num">{{ f.ultimo|pesos(2) }}</td><td class="num">{% if f.variacion is not none %}{{ f.variacion|porcentaje(2, true) }}{% else %}—{% endif %}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+<p class="nota">La variación del mes compara el último día del mes con el último día del mes anterior. "—" indica un valor que todavía no se conoce o que no está en nuestros registros.</p>
+{% if meses_con_variacion %}
+<p>{% if mayor_alza.variacion > 0 %}La mayor alza mensual de {{ anio }} fue en {{ mayor_alza.mes.month|nombre_mes }} ({{ mayor_alza.variacion|porcentaje(2, true) }}). {% endif %}
+{% if meses_a_la_baja %}La UF bajó en {{ meses_a_la_baja }} {{ 'mes' if meses_a_la_baja == 1 else 'meses' }}, con la mayor baja en {{ mayor_baja.mes.month|nombre_mes }} ({{ mayor_baja.variacion|porcentaje(2, true) }}): una baja así se debe a un IPC negativo en alguno de los dos meses anteriores.{% else %}No bajó en ninguno de los {{ meses_con_variacion }} meses con datos completos.{% endif %}</p>
+{% endif %}
+
+{{ m.anuncio("uf_anio") }}
+
+<section>
+  <h2>La UF durante {{ anio }}</h2>
+  <figure class="figura">{{ grafico }}</figure>
+</section>
+
+<section class="texto">
+  <h2>¿Por qué la UF cambia cada mes?</h2>
+  <p>La UF sigue a la inflación: entre el día 10 de un mes y el día 9 del siguiente se reajusta según el IPC del mes anterior, que publica el INE. Por eso el valor del día 9 abre cada período y la variación de cada mes de la tabla refleja el IPC de los dos meses anteriores. Haz clic en un mes para ver la UF de todos sus días.</p>
+</section>
+
+<nav class="paginador" aria-label="Años">
+  {% if anterior %}<a href="{{ ruta('/uf/' ~ anterior ~ '/') }}">← UF {{ anterior }}</a>{% else %}<span></span>{% endif %}
+  {% if siguiente %}<a href="{{ ruta('/uf/' ~ siguiente ~ '/') }}">UF {{ siguiente }} →</a>{% endif %}
+</nav>
+<p><a href="{{ ruta('/uf/') }}">Ver el valor de la UF hoy →</a></p>
+{{ m.fuente("Banco Central de Chile, publicado por el SII") }}
+{% endblock %}
