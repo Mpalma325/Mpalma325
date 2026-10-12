@@ -302,6 +302,9 @@ def revisar(archivo: Path, entorno: Environment, variables: dict, hoy: dt.date) 
         return r
     convertidor = markdown.Markdown(extensions=EXTENSIONES, extension_configs=CONFIG_EXTENSIONES)
     r.html = convertidor.convert(md_renderizado)
+    # Las tablas anchas se desplazan dentro de su caja en el celular; app.js las hace enfocables.
+    r.html = r.html.replace("<table>", '<div class="tabla-desplazable"><table>').replace(
+        "</table>", "</table></div>")
     if any(marca in r.html for marca in MARCAS_JINJA):
         errores.append("quedaron marcas de Jinja sin procesar en el HTML")
     r.palabras = contar_palabras(r.html)

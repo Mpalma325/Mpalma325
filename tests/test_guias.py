@@ -104,6 +104,9 @@ def test_render_igual_que_el_validador(contexto):
         _, cuerpo, _ = separar(r.archivo.read_text(encoding="utf-8"))
         esperado = markdown.markdown(referencia.from_string(cuerpo).render(**variables),
                                      extensions=EXTENSIONES, extension_configs=CONFIG_EXTENSIONES)
+        # El sitio además envuelve cada tabla en una caja desplazable.
+        esperado = esperado.replace("<table>", '<div class="tabla-desplazable"><table>').replace(
+            "</table>", "</table></div>")
         assert r.html == esperado, r.archivo.name
 
 
