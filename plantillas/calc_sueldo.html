@@ -94,7 +94,7 @@
   <h2>¿Cómo se calcula el sueldo líquido?</h2>
   <p>Al sueldo bruto imponible se le descuentan:</p>
   <ul>
-    <li><strong>AFP:</strong> 10% para tu cuenta de ahorro más la comisión de tu AFP, sobre un máximo de {{ parametros.tope_imponible_uf|numero(1) }} UF ({{ tope_pesos|pesos }} este mes).</li>
+    <li><strong>AFP:</strong> 10% para tu cuenta de ahorro más la comisión de tu AFP, sobre un máximo de {{ parametros.tope_imponible_uf|numero(1) }} UF ({{ tope_pesos|pesos }} este mes, con la UF del último día del mes).</li>
     <li><strong>Salud:</strong> 7% para Fonasa o tu isapre (si tu plan cuesta más, se descuenta el valor del plan), con el mismo tope.</li>
     <li><strong>Seguro de cesantía:</strong> 0,6% si tu contrato es indefinido, con un tope de {{ parametros.tope_cesantia_uf|numero(1) }} UF ({{ tope_afc_pesos|pesos }}). Con contrato a plazo fijo lo paga solo el empleador.</li>
     <li><strong>Impuesto único:</strong> se calcula sobre el sueldo menos las cotizaciones anteriores, según la <a href="{{ ruta('/impuesto-unico/') }}">tabla del mes</a>.</li>

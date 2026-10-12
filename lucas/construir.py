@@ -16,7 +16,7 @@ from markupsafe import Markup
 from . import __version__, formato, seo
 from .calculos import contexto_parametros
 from .config import RAIZ, Parametros, ahora_chile, cargar_config, cargar_parametros, hoy_chile
-from .datos import Datos, cargar_datos, revisar_frescura
+from .datos import Datos, cargar_datos, mes_siguiente, primer_dia, revisar_frescura
 
 DIRECTORIO_DEMO = RAIZ / "tests" / "fixtures" / "datos_demo"
 
@@ -76,6 +76,12 @@ def crear_contexto(cfg: dict, params: Parametros, datos: Datos, hoy: dt.date,
         raise ErrorConstruccion("Datos insuficientes para construir el sitio:\n- " + "\n- ".join(errores))
     uf_hoy = datos.uf_dia(hoy)
     utm_hoy = datos.utm_mes(hoy) or Datos.ultimo(datos.utm_completa(), hoy)[1]
+    # Los topes de la remuneración del mes se convierten con la UF del último día del mes
+    # (o la última publicada, si aún no se conoce) y el tope de las indemnizaciones, con la
+    # UF del último día del mes anterior (art. 172 del Código del Trabajo).
+    fin_de_mes = mes_siguiente(primer_dia(hoy)) - dt.timedelta(days=1)
+    uf_topes = Datos.ultimo(datos.uf_completa(), fin_de_mes)[1]
+    uf_indemnizaciones = datos.uf_dia(primer_dia(hoy) - dt.timedelta(days=1)) or uf_hoy
     ultimo_ipc = max(datos.ipc)
     return Contexto(
         cfg=cfg,
@@ -83,7 +89,7 @@ def crear_contexto(cfg: dict, params: Parametros, datos: Datos, hoy: dt.date,
         datos=datos,
         hoy=hoy,
         ahora=ahora,
-        p=contexto_parametros(hoy, uf_hoy, utm_hoy, params),
+        p=contexto_parametros(hoy, uf_hoy, utm_hoy, params, uf_topes, uf_indemnizaciones),
         uf_hoy=uf_hoy,
         utm_hoy=utm_hoy,
         dolar=Datos.ultimo(datos.dolar, hoy),

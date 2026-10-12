@@ -22,8 +22,17 @@ from .formato import redondear
 # Parámetros vigentes
 # ---------------------------------------------------------------------------
 
-def contexto_parametros(fecha: dt.date, uf: float, utm: float, params: Parametros) -> dict:
-    """Arma el diccionario de parámetros vigentes en ``fecha`` (se serializa a JSON)."""
+def contexto_parametros(fecha: dt.date, uf: float, utm: float, params: Parametros,
+                        uf_topes: float | None = None, uf_indemnizaciones: float | None = None) -> dict:
+    """Arma el diccionario de parámetros vigentes en ``fecha`` (se serializa a JSON).
+
+    - ``uf_topes``: UF del último día del mes, con la que se convierten los topes imponibles
+      y los montos en UF de la remuneración del mes (art. 16 del DL 3.500, como Previred).
+    - ``uf_indemnizaciones``: UF del último día del mes anterior al pago, para el tope de
+      90 UF de las indemnizaciones (art. 172 del Código del Trabajo).
+
+    Si no se indican, se usa ``uf``.
+    """
     afp = params.vigente("afp", fecha)
     topes = params.vigente("topes_imponibles", fecha)
     imm = params.vigente("ingreso_minimo", fecha)
@@ -39,6 +48,8 @@ def contexto_parametros(fecha: dt.date, uf: float, utm: float, params: Parametro
     return {
         "fecha": fecha.isoformat(),
         "uf": float(uf),
+        "uf_topes": float(uf_topes or uf),
+        "uf_indemnizaciones": float(uf_indemnizaciones or uf),
         "utm": float(utm),
         "imm": float(imm["monto"]),
         "tope_imponible_uf": float(topes["afp_salud_uf"]),
@@ -115,7 +126,7 @@ def sueldo_liquido(bruto: float, p: dict, afp: str = "uno", salud: str = "fonasa
     - ``no_imponible``: colación, movilización y otras asignaciones no imponibles.
     - ``apv``: ahorro previsional voluntario mensual régimen B (rebaja la base del impuesto).
     """
-    uf = p["uf"]
+    uf = p["uf_topes"]
     tope_afp = p["tope_imponible_uf"] * uf
     tope_afc = p["tope_cesantia_uf"] * uf
     imponible = min(bruto, tope_afp)
@@ -174,7 +185,7 @@ def bruto_para_liquido(liquido_objetivo: float, p: dict, **opciones) -> dict:
 
 def costo_empleador(bruto: float, p: dict, contrato: str = "indefinido", no_imponible: float = 0.0) -> dict:
     """Costo mensual aproximado para el empleador (sin mutual adicional por riesgo)."""
-    uf = p["uf"]
+    uf = p["uf_topes"]
     imponible = min(bruto, p["tope_imponible_uf"] * uf)
     imponible_afc = min(bruto, p["tope_cesantia_uf"] * uf)
     sis = redondear(imponible * p["sis"])
@@ -287,7 +298,7 @@ def finiquito(inicio: dt.date, termino: dt.date, remuneracion: float, causal: st
     - Feriado: días pendientes más el proporcional, pagados en días corridos.
     - Remuneración de los días trabajados del último mes que aún no se pagan.
     """
-    tope = p["tope_indemnizacion_uf"] * p["uf"]
+    tope = p["tope_indemnizacion_uf"] * p["uf_indemnizaciones"]
     base = min(remuneracion, tope)
     con_indemnizacion = causal in CAUSALES_CON_INDEMNIZACION
     anios = anios_de_servicio(inicio, termino, p) if con_indemnizacion else 0

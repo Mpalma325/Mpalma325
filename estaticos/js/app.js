@@ -613,7 +613,7 @@
     poner(res, 'total', pesos(r.total));
     var nota = 'Para las indemnizaciones, la remuneración se considera con un tope de ' +
       numero(datos.parametros.tope_indemnizacion_uf) + ' UF (' +
-      pesos(datos.parametros.tope_indemnizacion_uf * datos.parametros.uf) + ').';
+      pesos(datos.parametros.tope_indemnizacion_uf * datos.parametros.uf_indemnizaciones) + ').';
     if (conIndemnizacion && r.anios_indemnizacion === 0) {
       nota = 'La indemnización por años de servicio exige al menos un año de contrato.';
     } else if (obra && r.meses_obra === 0) {

@@ -158,3 +158,21 @@ def test_finiquito_identico(p):
         esperados.append(c.feriado_proporcional(dt.date.fromisoformat(inicio), dt.date.fromisoformat(termino), p))
     errores = [e for py, js in zip(esperados, ejecutar_js(casos)) for e in iguales(_a_json(py), js)]
     assert errores == []
+
+
+def test_topes_con_uf_de_fin_de_mes_identicos(p):
+    q = dict(p, uf_topes=41247.63, uf_indemnizaciones=41097.21)
+    casos = [
+        ("sueldoLiquido", [4_500_000, q, {"afp": "habitat", "salud": "isapre", "plan_isapre_uf": 5.1, "apv": 2_500_000}],
+         c.sueldo_liquido(4_500_000, q, afp="habitat", salud="isapre", plan_isapre_uf=5.1, apv=2_500_000)),
+        ("costoEmpleador", [8_000_000, q, "indefinido", 0], c.costo_empleador(8_000_000, q, "indefinido", 0)),
+    ]
+    resultados = ejecutar_js([{"fn": fn, "args": args} for fn, args, _ in casos])
+    errores = [f"{fn}: {e}" for (fn, _, py), js in zip(casos, resultados) for e in iguales(py, js)]
+    extras = cargar_parametros().feriados_extra()
+    feriados = {f.fecha for anio in (2025, 2026, 2027) for f in feriados_nacionales(anio, extras)}
+    py = c.finiquito(dt.date(2015, 6, 1), dt.date(2026, 10, 9), 5_000_000, "necesidades_empresa", q, feriados, False)
+    js = ejecutar_js([{"fn": "finiquito", "args": ["2015-06-01", "2026-10-09", 5_000_000, "necesidades_empresa", q,
+                                                   sorted(f.isoformat() for f in feriados), False]}])[0]
+    errores += iguales(_a_json(py), js)
+    assert errores == []

@@ -268,3 +268,28 @@ def test_finiquito_por_termino_de_obra(p):
     alto = c.finiquito(D(2026, 1, 5), D(2026, 10, 12), 6_000_000, "termino_obra", p, _feriados())
     assert alto["tope_aplicado"]
     assert alto["indemnizacion_obra"] == round(90 * UF_12_OCTUBRE_2026 / 30 * 2.5 * 9)
+
+
+def test_topes_con_la_uf_de_fin_de_mes(p):
+    """Los topes imponibles usan la UF del último día del mes; las indemnizaciones, la del mes anterior."""
+    import datetime as dt
+    fin_de_mes = dict(p, uf_topes=41247.63, uf_indemnizaciones=41097.21)
+    r = c.sueldo_liquido(5_000_000, fin_de_mes)
+    assert r["imponible"] == pytest.approx(90 * 41247.63)
+    assert c.sueldo_liquido(5_000_000, p)["imponible"] == pytest.approx(90 * UF_12_OCTUBRE_2026)
+    costo = c.costo_empleador(7_000_000, fin_de_mes)
+    assert costo == c.costo_empleador(7_000_000, dict(fin_de_mes, uf=1.0))  # no depende de la UF del día
+    alto = c.finiquito(dt.date(2020, 1, 1), dt.date(2026, 10, 12), 6_000_000, "necesidades_empresa",
+                       fin_de_mes, _feriados())
+    assert alto["indemnizacion_anios"] == round(90 * 41097.21 * 7)
+
+
+def test_contexto_usa_la_uf_de_fin_de_mes(datos_demo, params):
+    import datetime as dt
+    from lucas.construir import crear_contexto
+    from lucas.config import cargar_config
+    contexto = crear_contexto(cargar_config(), params, datos_demo, dt.date(2026, 10, 12),
+                              dt.datetime(2026, 10, 12, 7))
+    assert contexto.p["uf"] == datos_demo.uf_dia(dt.date(2026, 10, 12))
+    assert contexto.p["uf_topes"] == datos_demo.uf_dia(dt.date(2026, 10, 31))
+    assert contexto.p["uf_indemnizaciones"] == datos_demo.uf_dia(dt.date(2026, 9, 30))

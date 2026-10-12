@@ -72,7 +72,7 @@
     var noImponible = o.no_imponible || 0;
     var apv = o.apv || 0;
 
-    var uf = p.uf;
+    var uf = p.uf_topes;
     var topeAfp = p.tope_imponible_uf * uf;
     var topeAfc = p.tope_cesantia_uf * uf;
     var imponible = Math.min(bruto, topeAfp);
@@ -133,7 +133,7 @@
   function costoEmpleador(bruto, p, contrato, noImponible) {
     contrato = contrato || 'indefinido';
     noImponible = noImponible || 0;
-    var uf = p.uf;
+    var uf = p.uf_topes;
     var imponible = Math.min(bruto, p.tope_imponible_uf * uf);
     var imponibleAfc = Math.min(bruto, p.tope_cesantia_uf * uf);
     var sis = redondear(imponible * p.sis);
@@ -242,7 +242,7 @@
     avisoDado = avisoDado === undefined ? true : avisoDado;
     diasPendientes = diasPendientes || 0;
     diasPorPagar = diasPorPagar || 0;
-    var tope = p.tope_indemnizacion_uf * p.uf;
+    var tope = p.tope_indemnizacion_uf * p.uf_indemnizaciones;
     var base = Math.min(remuneracion, tope);
     var conIndemnizacion = CAUSALES_CON_INDEMNIZACION.indexOf(causal) !== -1;
     var anios = conIndemnizacion ? aniosDeServicio(inicio, termino, p) : 0;

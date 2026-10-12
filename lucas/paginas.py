@@ -678,7 +678,7 @@ def paginas_sueldo(c: Contexto) -> list[Pagina]:
     for bruto in SUELDOS:
         r = calculos.sueldo_liquido(bruto, p, afp=barata)
         ejemplos.append((bruto, r["liquido"]))
-    tope_pesos = p["tope_imponible_uf"] * p["uf"]
+    tope_pesos = p["tope_imponible_uf"] * p["uf_topes"]
     descripcion_calc = ("Calcula tu sueldo líquido a partir del bruto, o cuánto bruto necesitas "
                         "para un líquido, con las comisiones de AFP, topes y tabla de impuesto "
                         "vigentes.")
@@ -702,7 +702,7 @@ def paginas_sueldo(c: Contexto) -> list[Pagina]:
             "afps": sorted(p["comisiones_afp"].items(), key=lambda x: x[1]),
             "barata": barata,
             "tope_pesos": tope_pesos,
-            "tope_afc_pesos": p["tope_cesantia_uf"] * p["uf"],
+            "tope_afc_pesos": p["tope_cesantia_uf"] * p["uf_topes"],
             "tabla_impuesto": tabla_impuesto_pesos(p, p["utm"]),
             "ejemplos": ejemplos,
         },
@@ -920,7 +920,7 @@ def paginas_calculadoras(c: Contexto) -> list[Pagina]:
                                            feriados_set, aviso_dado=False)
     ejemplo_vacaciones = calculos.finiquito(calculos.sumar_meses(hoy, -8), hoy, 1_000_000, "renuncia", p,
                                             feriados_set)
-    tope_indemnizacion = p["tope_indemnizacion_uf"] * p["uf"]
+    tope_indemnizacion = p["tope_indemnizacion_uf"] * p["uf_indemnizaciones"]
     descripcion = ("Calcula tu finiquito: indemnización por años de servicio, aviso previo, "
                    "vacaciones pendientes y proporcionales en días corridos, según la causal de término.")
     paginas.append(Pagina(
