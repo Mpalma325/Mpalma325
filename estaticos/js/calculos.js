@@ -209,9 +209,11 @@
   }
 
   function feriadoProporcional(inicio, termino, p) {
-    var anios = tiempoTrabajado(inicio, termino).anios;
+    // Como la Dirección del Trabajo: sin contar el día de inicio.
+    var hasta = sumarDias(termino, -1);
+    var anios = tiempoTrabajado(inicio, hasta).anios;
     var aniversario = sumarMeses(inicio, 12 * anios);
-    var t = tiempoTrabajado(aniversario, termino);
+    var t = tiempoTrabajado(aniversario, hasta);
     var porMes = p.feriado_anual_habiles / 12;
     return {
       desde: aniversario,

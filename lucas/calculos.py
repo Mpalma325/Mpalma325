@@ -251,10 +251,14 @@ def meses_obra_o_faena(inicio: dt.date, termino: dt.date) -> int:
 
 
 def feriado_proporcional(inicio: dt.date, termino: dt.date, p: dict) -> dict:
-    """Días hábiles de feriado ganados desde el último aniversario del contrato (art. 73)."""
-    anios = tiempo_trabajado(inicio, termino)["anios"]
+    """Días hábiles de feriado ganados desde el último aniversario del contrato (art. 73).
+
+    Los meses y días se cuentan como la Dirección del Trabajo: de una fecha a la otra,
+    sin contar el día de inicio (del 15-03-2021 al 17-11-2021 son 8 meses y 2 días).
+    """
+    anios = tiempo_trabajado(inicio, termino - UN_DIA)["anios"]
     aniversario = sumar_meses(inicio, 12 * anios)
-    t = tiempo_trabajado(aniversario, termino)
+    t = tiempo_trabajado(aniversario, termino - UN_DIA)
     por_mes = p["feriado_anual_habiles"] / 12
     return {
         "desde": aniversario,

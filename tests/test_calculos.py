@@ -1,6 +1,7 @@
 import pytest
 
 from lucas import calculos as c
+from lucas.feriados import feriados_nacionales
 from lucas.paginas import tabla_impuesto_pesos
 
 from .conftest import UF_12_OCTUBRE_2026, UTM_OCTUBRE_2026
@@ -205,8 +206,8 @@ def test_feriado_proporcional_en_dias_corridos(p):
     D = dt.date
     proporcional = c.feriado_proporcional(D(2023, 3, 15), D(2026, 10, 12), p)
     assert proporcional["desde"] == D(2026, 3, 15)
-    assert (proporcional["meses"], proporcional["dias"]) == (6, 28)
-    assert proporcional["dias_habiles"] == pytest.approx(1.25 * 6 + 1.25 / 30 * 28)
+    assert (proporcional["meses"], proporcional["dias"]) == (6, 27)
+    assert proporcional["dias_habiles"] == pytest.approx(1.25 * 6 + 1.25 / 30 * 27)
     # 13 días hábiles desde el martes 13 de octubre de 2026: terminan el jueves 29,
     # con dos fines de semana entre medio (4 días inhábiles).
     conversion = c.dias_corridos_de_feriado(13.6667, D(2026, 10, 12), _feriados())
@@ -229,7 +230,7 @@ def test_finiquito_por_necesidades_de_la_empresa(p):
                     _feriados(), aviso_dado=False, dias_pendientes=5, dias_por_pagar=12)
     assert r["indemnizacion_anios"] == 4_800_000
     assert r["aviso_previo"] == 1_200_000
-    assert r["feriado"] == round((17 + 1.25 * 6 + 1.25 / 30 * 28 + 5 - 13) * 40_000)
+    assert r["feriado"] == round((17 + 1.25 * 6 + 1.25 / 30 * 27 + 5 - 13) * 40_000)
     assert r["remuneracion_pendiente"] == 480_000
     assert r["total"] == r["indemnizacion_anios"] + r["aviso_previo"] + r["feriado"] + 480_000
 
@@ -293,3 +294,17 @@ def test_contexto_usa_la_uf_de_fin_de_mes(datos_demo, params):
     assert contexto.p["uf"] == datos_demo.uf_dia(dt.date(2026, 10, 12))
     assert contexto.p["uf_topes"] == datos_demo.uf_dia(dt.date(2026, 10, 31))
     assert contexto.p["uf_indemnizaciones"] == datos_demo.uf_dia(dt.date(2026, 9, 30))
+
+
+def test_feriado_proporcional_como_la_direccion_del_trabajo(p):
+    """Ejemplo de la DT (dt.gob.cl, "¿Cómo se calcula el feriado proporcional?"): ingreso el
+    15-03-2021 y término el 17-11-2021 = 8 meses y 2 días, 10,08 días hábiles y 14,08 corridos."""
+    import datetime as dt
+    D = dt.date
+    proporcional = c.feriado_proporcional(D(2021, 3, 15), D(2021, 11, 17), p)
+    assert (proporcional["meses"], proporcional["dias"]) == (8, 2)
+    assert round(proporcional["dias_habiles"], 2) == 10.08
+    feriados_2021 = {f.fecha for f in feriados_nacionales(2021)}
+    conversion = c.dias_corridos_de_feriado(proporcional["dias_habiles"], D(2021, 11, 17), feriados_2021)
+    assert round(conversion["dias_corridos"], 2) == 14.08
+    assert conversion["inhabiles"] == 4
