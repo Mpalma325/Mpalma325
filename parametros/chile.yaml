@@ -158,12 +158,13 @@ cotizaciones_empleador:
   # aporte del empleador (3,5% = 0,1% cuenta individual + 0,9% rentabilidad
   # protegida + 2,5% seguro social que incluye el SIS). Antes se pagaba aparte.
   # mutual_basica: Ley 16.744, 0,90% básica + 0,03% Ley SANNA (sin la adicional por riesgo).
+  # SIS 2026 según la Superintendencia de Pensiones: 1,54% desde enero, 1,62% desde abril y,
+  # desde agosto, 1,78% dentro del 2,5% del seguro social (Oficio N° 15.295).
   revisar_antes_de: 2027-07-15
   fuente: https://www.chileatiende.gob.cl/fichas/130987-aportes-del-empleador-al-sistema-de-pensiones
   vigencias:
     - {desde: 2026-01-01, sis: 0.0154, aporte_reforma_pensiones: 0.010, mutual_basica: 0.0093}
     - {desde: 2026-04-01, sis: 0.0162, aporte_reforma_pensiones: 0.010, mutual_basica: 0.0093}
-    - {desde: 2026-07-01, sis: 0.0200, aporte_reforma_pensiones: 0.010, mutual_basica: 0.0093}
     - {desde: 2026-08-01, sis: 0.0,    aporte_reforma_pensiones: 0.035, mutual_basica: 0.0093}
     - {desde: 2027-08-01, sis: 0.0,    aporte_reforma_pensiones: 0.0425, mutual_basica: 0.0093}
     - {desde: 2028-08-01, sis: 0.0,    aporte_reforma_pensiones: 0.050, mutual_basica: 0.0093}
