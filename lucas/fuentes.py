@@ -328,19 +328,34 @@ def obtener_serie(indicador: str, anio: int, fuentes_caidas: set[str] | None = N
         "findic.cl": lambda: serie_findic(indicador, anio, intentos=2, timeout=20),
     }
     errores = []
+    combinada: dict[dt.date, float] = {}
+    principal = None
     for nombre in ORDEN_FUENTES[indicador]:
         funcion = disponibles.get(nombre)
         if funcion is None or nombre in caidas:
             continue
         try:
-            return funcion(), nombre
+            serie = funcion()
         except ErrorDescarga as error:
             errores.append(str(error))
             if "No se pudo descargar" in str(error):
                 caidas.add(nombre)
+            continue
+        combinada = {**serie, **combinada}  # las fuentes anteriores tienen prioridad
+        principal = principal or nombre
+        if _cubre_el_anio(combinada, anio):
+            break
+        # Si la fuente solo trae los últimos días (findic.cl), se completa el año con las siguientes.
+    if combinada:
+        return combinada, principal
     if not errores:
         raise SinFuente(f"Ninguna fuente disponible publica {indicador} (configura CMF_API_KEY)")
     raise ErrorDescarga(" | ".join(errores))
+
+
+def _cubre_el_anio(serie: dict[dt.date, float], anio: int) -> bool:
+    """La serie parte a comienzos del año (los primeros días hábiles de enero)."""
+    return bool(serie) and min(serie) <= dt.date(anio, 1, 10)
 
 
 def filtrar_valores_validos(indicador: str, serie: dict[dt.date, float]) -> tuple[dict, list[str]]:

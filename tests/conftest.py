@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import datetime as dt
 import sys
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 import pytest
@@ -24,6 +26,15 @@ HOY = dt.date(2026, 10, 12)
 # la UF del 9-10-2026 ($41.130,94) con el IPC de septiembre de 2026 (+0,4%).
 UTM_OCTUBRE_2026 = 72151.0
 UF_12_OCTUBRE_2026 = 41146.83
+
+
+@pytest.fixture(autouse=True)
+def sin_red(monkeypatch):
+    """Ninguna prueba debe depender de internet: las descargas se simulan."""
+    def bloqueado(*_, **__):
+        raise urllib.error.URLError("red deshabilitada durante las pruebas")
+
+    monkeypatch.setattr(urllib.request, "urlopen", bloqueado)
 
 
 @pytest.fixture(scope="session")

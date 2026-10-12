@@ -213,7 +213,8 @@ def test_detecta_cambio_de_formato_en_la_tabla_de_utm():
 
 def test_dolar_prefiere_la_cmf_si_hay_clave(monkeypatch):
     monkeypatch.setenv("CMF_API_KEY", "clave")
-    monkeypatch.setattr(fuentes, "serie_cmf", lambda indicador, anio, clave: {D(2026, 10, 9): 970.5})
+    monkeypatch.setattr(fuentes, "serie_cmf",
+                        lambda indicador, anio, clave: {D(2026, 1, 2): 907.0, D(2026, 10, 9): 970.5})
     serie, fuente = fuentes.obtener_serie("dolar", 2026, set())
     assert fuente == "api.cmfchile.cl"
 
@@ -273,6 +274,19 @@ def test_findic_anio_completo_o_ultimos_valores(monkeypatch):
 
 def test_dolar_sin_clave_usa_findic(monkeypatch):
     monkeypatch.delenv("CMF_API_KEY", raising=False)
-    monkeypatch.setattr(fuentes, "serie_findic", lambda indicador, anio, **_: {D(2026, 10, 9): 981.61})
+    monkeypatch.setattr(fuentes, "serie_findic",
+                        lambda indicador, anio, **_: {D(2026, 1, 2): 907.13, D(2026, 10, 9): 981.61})
     serie, fuente = fuentes.obtener_serie("dolar", 2026, set())
-    assert fuente == "findic.cl" and serie == {D(2026, 10, 9): 981.61}
+    assert fuente == "findic.cl" and serie[D(2026, 10, 9)] == 981.61
+
+
+def test_completa_el_anio_si_la_primera_fuente_trae_solo_los_ultimos_dias(monkeypatch):
+    """findic.cl sin endpoint anual entrega solo los últimos días: el SII completa el resto del año."""
+    monkeypatch.delenv("CMF_API_KEY", raising=False)
+    monkeypatch.setattr(fuentes, "serie_findic", lambda *_, **__: {D(2026, 10, 9): 981.61, D(2026, 10, 1): 972.0})
+    monkeypatch.setattr(fuentes, "serie_mindicador", lambda *_, **__: (_ for _ in ()).throw(
+        fuentes.ErrorDescarga("No se pudo descargar mindicador")))
+    monkeypatch.setattr(fuentes, "serie_sii", lambda *_, **__: {D(2026, 1, 2): 907.13, D(2026, 10, 1): 972.6})
+    serie, fuente = fuentes.obtener_serie("dolar", 2026, set())
+    assert fuente == "findic.cl"
+    assert serie == {D(2026, 1, 2): 907.13, D(2026, 10, 1): 972.0, D(2026, 10, 9): 981.61}
