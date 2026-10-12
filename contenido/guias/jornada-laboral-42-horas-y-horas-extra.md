@@ -1,7 +1,7 @@
 ---
-titulo: "Jornada de {{ 40 if hoy.isoformat() >= '2028-04-26' else 42 }} horas y horas extra en Chile: cómo se calculan"
+titulo: "Jornada de {{ p.jornada_semanal_horas|int }} horas y horas extra en Chile: cómo se calculan"
 descripcion: "Calendario de la Ley 40 horas, qué cambia con la reducción de jornada, cuántas horas extra puedes hacer y cómo calcular su valor con la fórmula de la DT."
-h1: "Jornada de {{ 40 if hoy.isoformat() >= '2028-04-26' else 42 }} horas y horas extra"
+h1: "Jornada de {{ p.jornada_semanal_horas|int }} horas y horas extra"
 resumen: "Calendario de la Ley 40 horas, qué cambia con la reducción de jornada, cuántas horas extra puedes hacer, cómo se calcula su valor y cuándo puedes cambiarlas por días libres."
 publicada: 2026-10-12
 revisada: 2026-10-12
@@ -25,13 +25,13 @@ faq:
   - pregunta: "¿Cuántas horas extra se pueden hacer al día?"
     respuesta: "Hasta dos horas extraordinarias por día, solo en faenas que no perjudiquen tu salud y con un pacto escrito que dura hasta tres meses y se puede renovar (artículos 31 y 32 del Código del Trabajo)."
   - pregunta: "¿Cómo se calcula el valor de una hora extra?"
-    respuesta: "Divide tu sueldo mensual por 30, multiplícalo por 28 y divide el resultado por 4 veces tu jornada semanal ({{ 4 * (40 if hoy.isoformat() >= '2028-04-26' else 42) }} con jornada de {{ 40 if hoy.isoformat() >= '2028-04-26' else 42 }} horas). Eso es la hora ordinaria; la hora extra vale al menos 1,5 veces ese monto."
+    respuesta: "Divide tu sueldo mensual por 30, multiplícalo por 28 y divide el resultado por 4 veces tu jornada semanal ({{ 4 * p.jornada_semanal_horas|int }} con jornada de {{ p.jornada_semanal_horas|int }} horas). Eso es la hora ordinaria; la hora extra vale al menos 1,5 veces ese monto."
   - pregunta: "¿Me pueden bajar el sueldo por la reducción de jornada?"
     respuesta: "No. La reducción de jornada de la Ley 21.561 no puede significar una rebaja de tu remuneración, y las partes tampoco pueden acordar esa rebaja."
   - pregunta: "¿Puedo cambiar horas extra por días libres?"
     respuesta: "Sí, si lo acuerdas por escrito con tu empleador: cada hora extra se compensa con una hora y media de descanso, con un máximo de cinco días hábiles adicionales de feriado al año, que debes usar dentro de los seis meses siguientes."
 ---
-{% set jornada = 40 if hoy.isoformat() >= '2028-04-26' else 42 %}
+{% set jornada = p.jornada_semanal_horas|int %}
 {% set divisor = 4 * jornada %}
 {% set factor = 1.5 * 28 / (30 * divisor) %}
 {% if jornada == 42 %}Desde el 26 de abril de 2026, la jornada ordinaria máxima en Chile es de **42 horas semanales**, y el 26 de abril de 2028 bajará a 40.{% else %}Desde el 26 de abril de 2028, la jornada ordinaria máxima en Chile es de **40 horas semanales**.{% endif %} Así lo establece la Ley 21.561, conocida como Ley de 40 horas. Lo que trabajes por sobre tu jornada son horas extra: como máximo dos por día y con un recargo de al menos 50%.
