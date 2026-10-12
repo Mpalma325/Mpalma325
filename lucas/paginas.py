@@ -515,16 +515,18 @@ def paginas_uf_proyeccion(c: Contexto) -> list[Pagina]:
 
 FAQ_DOLAR = [
     ("¿Qué es el dólar observado?",
-     "Es el tipo de cambio que publica el Banco Central de Chile cada día hábil, calculado con las "
-     "operaciones de compra y venta de dólares del mercado formal del día hábil anterior. Es el "
-     "valor de referencia para contratos, declaraciones de impuestos y aduanas."),
+     "Es el tipo de cambio que el Banco Central de Chile publica para cada día hábil bancario: "
+     "el promedio ponderado de las compras y ventas de dólares al contado del Mercado Cambiario "
+     "Formal del día hábil bancario anterior. Se usa como referencia en contratos, trámites "
+     "tributarios y estadísticas."),
     ("¿Por qué el dólar de mi banco o casa de cambio es distinto?",
      "Bancos y casas de cambio aplican su propio precio de compra y de venta, con un margen "
      "sobre el dólar observado. Para operaciones reales, consulta siempre el valor de tu "
      "institución."),
     ("¿Hay dólar observado los fines de semana?",
-     "No. El Banco Central lo publica solo en días hábiles. En fines de semana y feriados se "
-     "considera el último valor publicado."),
+     "No. Cada valor rige para un día hábil bancario. Para sábados, domingos y feriados, el "
+     "Banco Central muestra en sus indicadores diarios el último dato disponible; si un contrato "
+     "fija otra regla, se aplica la del contrato."),
     ("¿Cómo convierto dólares a pesos chilenos?",
      "Multiplica la cantidad de dólares por el valor del dólar observado. Para convertir pesos a "
      "dólares, divide el monto en pesos por ese mismo valor."),
@@ -826,16 +828,18 @@ def paginas_utm_impuesto_ipc(c: Contexto) -> list[Pagina]:
         faq=[
             ("¿Qué es la UTM?",
              "La Unidad Tributaria Mensual (UTM) es una unidad de cuenta que se usa para "
-             "determinar impuestos, multas, aranceles y otros montos fijados por ley. Su valor "
+             "determinar impuestos, multas y otros montos fijados por ley. Su valor "
              "cambia cada mes según la inflación."),
             ("¿Cómo se reajusta la UTM?",
              "Cada mes se reajusta según la variación del IPC de dos meses antes. Por ejemplo, "
              "la UTM de noviembre es la de octubre reajustada por el IPC de septiembre."),
             ("¿Qué es la UTA?",
-             "La Unidad Tributaria Anual (UTA) equivale a 12 veces la UTM del mes. Se usa para "
-             "obligaciones tributarias anuales, como algunos límites de la Operación Renta."),
+             "La UTA es la UTM vigente en el último mes del año comercial multiplicada por 12 "
+             "(artículo 8 N° 10 del Código Tributario). Cada mes el SII publica la UTA como 12 veces "
+             "la UTM; en la Operación Renta se usa la de diciembre del año que se declara."),
         ],
         contexto={
+            "tramo_exento": c.p["tramos_impuesto"][0]["hasta"],
             "utm_proximo": utm_proximo,
             "proximo_mes": proximo_mes,
             "proximo_calculado": proximo_mes in c.datos.utm_calculada,
@@ -954,7 +958,7 @@ FAQ_SUELDO = [
      "cesantía e impuesto único."),
     ("¿Qué descuentos se hacen al sueldo bruto?",
      "La cotización de AFP (10% más la comisión de tu AFP), salud (7% en Fonasa o el valor de tu "
-     "plan de isapre si es mayor), seguro de cesantía (0,6% si tu contrato es indefinido) y el "
+     "plan de isapre si es mayor), seguro de cesantía (0,6% si tu contrato es indefinido, durante los primeros 11 años con el mismo empleador) y el "
      "impuesto único de segunda categoría si tu sueldo supera el tramo exento."),
     ("¿Qué es el tope imponible?",
      "Es el monto máximo sobre el cual se calculan las cotizaciones de AFP y salud. Lo que ganes "
@@ -1298,13 +1302,17 @@ def paginas_calculadoras(c: Contexto) -> list[Pagina]:
             ("¿Cuántos días de vacaciones proporcionales me corresponden?",
              f"Por cada mes trabajado desde tu último aniversario ganas "
              f"{numero(p['feriado_anual_habiles'] / 12, 2)} días hábiles de feriado "
-             f"({numero(p['feriado_anual_habiles'])} al año), y la parte proporcional por cada día."),
+             f"({numero(p['feriado_anual_habiles'])} al año, más si tienes feriado progresivo), y la "
+             "parte proporcional por cada día."),
             ("¿Por qué me pagan más días de los que gané?",
              "Porque los días hábiles se convierten a días corridos: desde el día siguiente al término "
              "del contrato se cuentan los días hábiles y se suman los sábados, domingos y feriados "
-             "que quedan entre medio (artículo 73). Para el feriado, el sábado siempre es inhábil."),
+             "que quedan entre medio, según el criterio de la Dirección del Trabajo. Para el feriado, el "
+             "sábado siempre es inhábil (artículo 69)."),
             ("¿Cómo se calcula el valor de cada día?",
-             "Se divide la remuneración mensual por 30 y se multiplica por los días corridos."),
+             "Se divide la remuneración mensual por 30 y se multiplica por los días corridos. Si tu "
+             "remuneración es variable, se usa el promedio de lo ganado en los últimos tres meses "
+             "trabajados (artículo 71)."),
             ("¿Qué pasa con las vacaciones que no tomé de años anteriores?",
              "También se pagan al terminar el contrato. Ingrésalas en el campo de días pendientes."),
             ("¿Y si trabajo en Magallanes, Aysén o Palena?",
@@ -1349,12 +1357,13 @@ def paginas_calculadoras(c: Contexto) -> list[Pagina]:
              "Los bancos suelen financiar hasta el 80% del valor de la vivienda, por lo que el "
              "pie habitual es de 20%. Algunos programas y subsidios permiten financiar más."),
             ("¿Qué renta necesito?",
-             "Muchos bancos exigen que el dividendo no supere el 25% de tu renta líquida, aunque "
-             "cada institución evalúa además tu historial y otras deudas."),
+             "Cada banco define qué parte de tu renta puede ir al dividendo y evalúa además tu "
+             "historial y otras deudas. Como referencia, este simulador considera que el dividendo no "
+             f"supere el {porcentaje(p['carga_financiera_maxima'], 0)} de tu renta líquida."),
             ("¿Por qué mi dividendo real es mayor?",
-             "Porque el dividendo incluye los seguros obligatorios de desgravamen e incendio, "
-             "casi siempre el adicional de sismo (que no es obligatorio, pero los bancos suelen "
-             "pedirlo) y, en algunos casos, comisiones. Pide siempre la cotización formal con la "
+             "Porque al dividendo se suman las primas de los seguros obligatorios de desgravamen e "
+             "incendio y, si lo contrataste, el adicional de sismo, que según la CMF es opcional y "
+             "solo se contrata junto con el de incendio. Pide siempre la cotización formal con la "
              "CAE (carga anual equivalente)."),
         ],
         contexto={"tasa": tasa, "ejemplos": ejemplos_hipotecario, "inicial": inicial_hipotecario,

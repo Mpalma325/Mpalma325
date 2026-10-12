@@ -40,7 +40,7 @@
 
 <section class="texto">
   <h2>¿Para qué se usa la UTM?</h2>
-  <p>La UTM se usa como unidad de medida en normas tributarias, multas de tránsito y municipales, aranceles y beneficios sociales. Por ejemplo, la tabla del impuesto único de segunda categoría se define en UTM: este mes, las remuneraciones con una base tributable de hasta 13,5 UTM ({{ (13.5 * cabecera.utm)|pesos }}) están exentas. <a href="{{ ruta('/impuesto-unico/') }}">Ver la tabla de impuesto único del mes</a>.</p>
+  <p>La UTM se usa como unidad de medida en normas tributarias y en multas, como las de tránsito (de 0,2 a 3 UTM según la gravedad). Por ejemplo, la tabla del impuesto único de segunda categoría se define en UTM: este mes, las remuneraciones con una base tributable de hasta {{ tramo_exento|numero(1) }} UTM ({{ (tramo_exento * cabecera.utm)|pesos }}) están exentas. <a href="{{ ruta('/impuesto-unico/') }}">Ver la tabla de impuesto único del mes</a>.</p>
 </section>
 
 {{ m.afiliados("utm") }}

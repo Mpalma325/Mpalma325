@@ -198,7 +198,7 @@ def construir(salida: Path | None = None, demo: bool = False, hoy: dt.date | Non
     if directorio_datos is None:
         directorio_datos = DIRECTORIO_DEMO if demo else RAIZ / "data"
     datos = cargar_datos(directorio_datos,
-                         mantener_utm_si_ipc_negativo=params.get("utm_se_mantiene_con_ipc_negativo", True))
+                         mantener_utm_si_ipc_negativo=params.get("utm_se_mantiene_con_ipc_negativo", False))
     if datos.demo and not demo:
         raise ErrorConstruccion("Los datos cargados son de demostración; usa --demo o descarga datos reales.")
     if demo:

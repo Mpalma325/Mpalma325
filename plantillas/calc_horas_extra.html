@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block contenido %}
 <h1>{{ pagina.h1 }}</h1>
-<p class="bajada">Calcula cuánto te deben pagar por tus horas extra con la fórmula de la Dirección del Trabajo. Desde el {{ vigente.desde|fecha_larga }} la jornada máxima es de <strong>{{ jornada|numero }} horas</strong> semanales, y cada hora extra se paga con un recargo de {{ recargo|porcentaje(0) }}.</p>
+<p class="bajada">Calcula cuánto te deben pagar por tus horas extra con la fórmula de la Dirección del Trabajo. Desde el {{ vigente.desde|fecha_larga }} la jornada máxima es de <strong>{{ jornada|numero }} horas</strong> semanales, y cada hora extra se paga con un recargo de al menos {{ recargo|porcentaje(0) }} (se puede pactar uno mayor).</p>
 
 <div class="calculadora-layout">
 <form id="calc-horas-extra" class="calculadora" data-calculadora="horas_extra" onsubmit="return false">

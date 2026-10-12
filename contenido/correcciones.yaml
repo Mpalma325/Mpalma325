@@ -13,6 +13,24 @@
 
 correcciones:
   - fecha: 2026-10-12
+    titulo: "Vacaciones proporcionales: conteo de días como la Dirección del Trabajo"
+    detalle: >-
+      Las calculadoras de vacaciones y finiquito contaban también el día de inicio, por lo que
+      sumaban un día de más al feriado proporcional. Ahora cuentan como el ejemplo oficial de
+      la Dirección del Trabajo: del 15-03-2021 al 17-11-2021 son 8 meses y 2 días, es decir,
+      10,08 días hábiles y 14,08 días corridos. La diferencia era de unos 0,04 días hábiles.
+    paginas: [/calculadoras/vacaciones-proporcionales/, /calculadoras/finiquito/]
+
+  - fecha: 2026-10-12
+    titulo: "Seguro de invalidez y sobrevivencia de julio de 2026"
+    detalle: >-
+      Los parámetros tenían una tasa del SIS de 2,00% desde julio de 2026 que no respalda la
+      Superintendencia de Pensiones: la tasa fue 1,62% desde abril y, desde agosto, va
+      incluida en el aporte del empleador de 3,5%. Solo afectaba cálculos con fecha de julio
+      de 2026; hoy el costo para el empleador no cambia.
+    paginas: [/indicadores-previsionales/]
+
+  - fecha: 2026-10-12
     titulo: "Finiquito: indemnización por término de obra o faena"
     detalle: >-
       La calculadora trataba el término de un contrato por obra o faena igual que el

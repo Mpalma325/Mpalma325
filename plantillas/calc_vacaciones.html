@@ -24,7 +24,7 @@
   <div class="campo">
     <label for="v-feriado-anual">Días hábiles de feriado al año</label>
     <input id="v-feriado-anual" name="feriado_anual" inputmode="decimal" autocomplete="off" value="{{ feriado_anual|numero }}">
-    <small>{{ feriado_anual|numero }} por ley; 20 en las regiones de Magallanes y Aysén y en la provincia de Palena.</small>
+    <small>{{ feriado_anual|numero }} por ley; 20 en las regiones de Magallanes y Aysén y en la provincia de Palena. Si te corresponde feriado progresivo, súmale esos días.</small>
   </div>
 </form>
 
@@ -52,7 +52,7 @@
     <li>Por cada mes completo corresponden 1,25 días hábiles, y por cada día adicional, 1,25 ÷ 30.</li>
     <li>A esos días se suman los días pendientes de años anteriores.</li>
     <li>Desde el día siguiente al término se cuentan esos días hábiles en el calendario (de lunes a viernes, sin feriados) y se suman los sábados, domingos y feriados que quedan entre medio.</li>
-    <li>El total de días corridos se multiplica por el valor diario: la remuneración mensual dividida por 30.</li>
+    <li>El total de días corridos se multiplica por el valor diario: la remuneración mensual dividida por 30 o, si es variable, el promedio de los últimos tres meses trabajados (artículo 71).</li>
   </ol>
   <p>Esta calculadora usa el <a href="{{ ruta('/feriados/') }}">calendario real de feriados</a>, incluidos los que se trasladan de fecha, en vez de una aproximación.</p>
 </section>

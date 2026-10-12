@@ -43,7 +43,7 @@
     <div class="campo">
       <label for="f-feriado-anual">Días hábiles de feriado al año</label>
       <input id="f-feriado-anual" name="feriado_anual" inputmode="decimal" autocomplete="off" value="{{ feriado_anual|numero }}">
-      <small>{{ feriado_anual|numero }} por ley; 20 en las regiones de Magallanes y Aysén y en la provincia de Palena.</small>
+      <small>{{ feriado_anual|numero }} por ley; 20 en las regiones de Magallanes y Aysén y en la provincia de Palena. Si te corresponde feriado progresivo, súmale esos días.</small>
     </div>
   </details>
 </form>
@@ -93,9 +93,9 @@
     <li><strong>Años de servicio:</strong> 30 días de la última remuneración mensual por cada año trabajado y fracción superior a seis meses, con un máximo de 11 años. La remuneración se considera con un tope de 90 UF, según la UF del último día del mes anterior al pago.</li>
     <li><strong>Aviso previo:</strong> si el empleador no avisó con 30 días de anticipación, debe pagar una remuneración mensual adicional (también con tope de 90 UF).</li>
     <li><strong>Término de obra o faena:</strong> si el contrato por obra o faena termina porque la obra concluyó y duró al menos un mes, corresponden 2,5 días de remuneración por cada mes trabajado y fracción superior a 15 días (Ley 21.122), con el mismo tope de 90 UF.</li>
-    <li><strong>Vacaciones:</strong> 1,25 días hábiles por cada mes trabajado desde el último aniversario del contrato, más los días pendientes. Se pagan en días corridos: se cuentan los días hábiles desde el día siguiente al término y se suman los sábados, domingos y feriados que quedan entre medio. Cada día vale la remuneración mensual dividida por 30.</li>
+    <li><strong>Vacaciones:</strong> 1,25 días hábiles por cada mes trabajado desde el último aniversario del contrato, más los días pendientes. Se pagan en días corridos: se cuentan los días hábiles desde el día siguiente al término y se suman los sábados, domingos y feriados que quedan entre medio. Cada día vale la remuneración mensual dividida por 30 o, si es variable, el promedio de los últimos tres meses trabajados (artículo 71).</li>
   </ul>
-  <p class="aviso">Resultado referencial y en montos brutos. No considera bonos, horas extra, gratificaciones pendientes, indemnizaciones pactadas ni descuentos (por ejemplo, el aporte del empleador al seguro de cesantía, que puede descontarse de la indemnización por necesidades de la empresa o por término de obra). Tampoco suma el feriado progresivo (un día más por cada tres años trabajados después de diez, artículo 68). Para un cálculo oficial, acude a la Dirección del Trabajo.</p>
+  <p class="aviso">Resultado referencial y en montos brutos. No considera bonos, horas extra, gratificaciones pendientes, indemnizaciones pactadas ni descuentos (por ejemplo, el aporte del empleador al seguro de cesantía, que puede descontarse de la indemnización por necesidades de la empresa o por término de obra). Si tienes feriado progresivo (un día más por cada tres años trabajados después de diez, artículo 68), súmalo en el campo de días de feriado al año. Para un cálculo oficial, acude a la Dirección del Trabajo.</p>
 </section>
 
 {{ m.afiliados("finiquito") }}
