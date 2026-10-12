@@ -37,6 +37,10 @@ RANGOS_VALIDOS = {
     "ipc": (-5, 10),  # variación mensual en %
 }
 
+# Si la fuente falla esta cantidad de veces seguidas, se deja de consultar en esta
+# ejecución (evita que GitHub Actions se quede minutos esperando a una API caída).
+MAX_FALLAS_SEGUIDAS = 4
+
 # recurso de la API CMF y nombre de la lista en su respuesta
 CMF_RECURSOS = {
     "uf": ("uf", "UFs"),
@@ -55,13 +59,13 @@ def _ocultar_claves(texto: str) -> str:
     return re.sub(r"apikey=[^&\s]+", "apikey=***", texto)
 
 
-def descargar_json(url: str, intentos: int = 3, espera: float = 2.0) -> dict:
+def descargar_json(url: str, intentos: int = 3, espera: float = 2.0, timeout: float = 25) -> dict:
     ultimo_error: Exception | None = None
     for intento in range(intentos):
         try:
             solicitud = urllib.request.Request(
                 url, headers={"User-Agent": USER_AGENT, "Accept": "application/json"})
-            with urllib.request.urlopen(solicitud, timeout=30) as respuesta:
+            with urllib.request.urlopen(solicitud, timeout=timeout) as respuesta:
                 return json.loads(respuesta.read().decode("utf-8"))
         except (urllib.error.URLError, TimeoutError, ConnectionError, json.JSONDecodeError,
                 UnicodeDecodeError) as error:
@@ -144,6 +148,7 @@ def actualizar(directorio: Path | None = None, anio_inicio: int = 2018,
     directorio = directorio or RAIZ / "data"
     hoy = hoy or hoy_chile()
     resumen: dict = {"series": {}, "errores": [], "fuentes": set()}
+    fallas_seguidas = 0
 
     for indicador in SERIES:
         ruta = directorio / "series" / f"{indicador}.json"
@@ -155,12 +160,21 @@ def actualizar(directorio: Path | None = None, anio_inicio: int = 2018,
 
         nuevos: dict[dt.date, float] = {}
         for anio in anios:
+            if fallas_seguidas >= MAX_FALLAS_SEGUIDAS:
+                resumen["errores"].append(f"Se omitió {indicador} {anio}: la fuente no responde")
+                continue
+            inicio = time.monotonic()
             try:
                 serie, fuente = obtener_serie(indicador, anio)
                 nuevos.update(serie)
                 resumen["fuentes"].add(fuente)
+                fallas_seguidas = 0
+                print(f"  {indicador} {anio}: {len(serie)} valores ({fuente}, "
+                      f"{time.monotonic() - inicio:.1f} s)", flush=True)
             except ErrorDescarga as error:
+                fallas_seguidas += 1
                 resumen["errores"].append(str(error))
+                print(f"  {indicador} {anio}: ERROR tras {time.monotonic() - inicio:.1f} s: {error}", flush=True)
             time.sleep(pausa)
 
         nuevos, descartados = filtrar_valores_validos(indicador, nuevos)
@@ -180,13 +194,14 @@ def actualizar(directorio: Path | None = None, anio_inicio: int = 2018,
             "ultimo": max(combinado).isoformat() if combinado else None,
         }
 
-    try:
-        ultimos = ultimos_indicadores()
-        with open(directorio / "ultimos.json", "w", encoding="utf-8") as archivo:
-            json.dump(ultimos, archivo, indent=1, ensure_ascii=False)
-            archivo.write("\n")
-    except ErrorDescarga as error:
-        resumen["errores"].append(str(error))
+    if fallas_seguidas < MAX_FALLAS_SEGUIDAS:
+        try:
+            ultimos = ultimos_indicadores()
+            with open(directorio / "ultimos.json", "w", encoding="utf-8") as archivo:
+                json.dump(ultimos, archivo, indent=1, ensure_ascii=False)
+                archivo.write("\n")
+        except ErrorDescarga as error:
+            resumen["errores"].append(str(error))
 
     resumen["fuentes"] = sorted(resumen["fuentes"])
     hubo_cambios = any(s["cambios"] for s in resumen["series"].values())

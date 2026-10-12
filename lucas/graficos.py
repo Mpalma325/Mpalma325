@@ -76,7 +76,7 @@ def grafico_linea(puntos: list[tuple[dt.date, float]], titulo: str, decimales: i
     linea = " ".join(f"{'M' if i == 0 else 'L'}{x(f):.1f},{y(v):.1f}"
                      for i, (f, v) in enumerate(zip(fechas, valores)))
     base = alto - inf
-    area = f"{linea} L{x(xmax):.1f},{base} L{x(xmin):.1f},{base} Z"
+    area = f"{linea} L{x(fechas[-1]):.1f},{base} L{x(xmin):.1f},{base} Z"
 
     partes = [
         f'<svg class="grafico" viewBox="0 0 {ancho} {alto}" role="img" '

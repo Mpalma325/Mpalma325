@@ -134,3 +134,17 @@ def test_actualizar_fusiona_y_escribe(tmp_path, monkeypatch):
     resumen = fuentes.actualizar(tmp_path, anio_inicio=2025, hoy=D(2026, 10, 12), pausa=0)
     assert resumen["series"]["uf"]["total"] == 4
     assert resumen["series"]["uf"]["cambios"] == 0
+
+
+def test_actualizar_deja_de_insistir_si_la_fuente_esta_caida(tmp_path, monkeypatch):
+    llamadas = []
+
+    def caida(indicador, anio):
+        llamadas.append((indicador, anio))
+        raise fuentes.ErrorDescarga("sin respuesta")
+
+    monkeypatch.setattr(fuentes, "obtener_serie", caida)
+    monkeypatch.setattr(fuentes, "ultimos_indicadores", lambda: pytest.fail("no debería consultarse"))
+    resumen = fuentes.actualizar(tmp_path, anio_inicio=2018, hoy=D(2026, 10, 12), pausa=0)
+    assert len(llamadas) == fuentes.MAX_FALLAS_SEGUIDAS
+    assert all(info["total"] == 0 for info in resumen["series"].values())
