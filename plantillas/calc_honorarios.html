@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<p class="bajada">En {{ hoy.year }}, al emitir una boleta de honorarios se retiene el <strong>{{ tasa|porcentaje(2) }}</strong> del monto bruto. Calcula cuánto recibirás o cuánto debes cobrar.</p>
+
+<div class="calculadora-layout">
+<form id="calc-honorarios" class="calculadora" data-calculadora="honorarios" onsubmit="return false">
+  <fieldset class="modo">
+    <legend>¿Qué monto tienes?</legend>
+    <label><input type="radio" name="modo" value="bruto" checked> El bruto de la boleta</label>
+    <label><input type="radio" name="modo" value="liquido"> El líquido que quiero recibir</label>
+  </fieldset>
+  <div class="campo">
+    <label for="h-monto">Monto</label>
+    <input id="h-monto" name="monto" inputmode="numeric" autocomplete="off" value="1.000.000" data-dinero>
+  </div>
+</form>
+<div class="resultado" id="resultado-honorarios" aria-live="polite">
+  <table class="tabla tabla-detalle">
+    <tbody>
+      <tr><th scope="row">Monto bruto (lo que dice la boleta)</th><td class="num" data-r="bruto">{{ ejemplos[4].bruto|pesos }}</td></tr>
+      <tr><th scope="row">Retención ({{ tasa|porcentaje(2) }})</th><td class="num descuento" data-r="retencion">-{{ ejemplos[4].retencion|pesos }}</td></tr>
+      <tr class="total"><th scope="row">Monto líquido</th><td class="num" data-r="liquido">{{ ejemplos[4].liquido|pesos }}</td></tr>
+    </tbody>
+  </table>
+  <button type="button" class="boton-secundario" data-compartir>Copiar enlace a este cálculo</button>
+</div>
+</div>
+
+{{ m.anuncio("honorarios_superior") }}
+
+<section>
+  <h2>Ejemplos con la retención de {{ hoy.year }}</h2>
+  <table class="tabla">
+    <thead><tr><th class="num">Bruto</th><th class="num">Retención</th><th class="num">Líquido</th></tr></thead>
+    <tbody>
+    {% for e in ejemplos %}
+      <tr><td class="num">{{ e.bruto|pesos }}</td><td class="num">{{ e.retencion|pesos }}</td><td class="num">{{ e.liquido|pesos }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Tasa de retención por año</h2>
+  <table class="tabla">
+    <thead><tr><th>Año</th><th class="num">Retención</th></tr></thead>
+    <tbody>
+    {% for e in historial %}
+      <tr{% if e.desde.year == hoy.year %} class="fila-hoy"{% endif %}><td>{{ e.desde.year }}</td><td class="num">{{ e.tasa|porcentaje(2) }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p class="nota">La Ley 21.133 aumenta la retención de forma gradual para que los trabajadores a honorarios coticen para su pensión y salud. La tasa llega a 17% en 2028.</p>
+</section>
+
+{{ m.afiliados("honorarios") }}
+{{ m.faq(pagina) }}
+{{ m.fuente("Servicio de Impuestos Internos") }}
+{% endblock %}

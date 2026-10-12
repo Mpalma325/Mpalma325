@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<div class="destacado">
+  <p class="destacado-etiqueta">{{ monto|numero }} UF el <span data-uf-fecha>{{ hoy|fecha_con_dia }}</span></p>
+  <p class="destacado-valor" data-uf-monto="{{ monto }}">{{ (monto * cabecera.uf)|pesos }}</p>
+  <p class="destacado-pie">Con una UF de <span data-uf-hoy>{{ cabecera.uf|pesos(2) }}</span></p>
+</div>
+
+<p>Hoy, {{ monto|numero }} UF equivalen a <strong>{{ (monto * cabecera.uf)|pesos }}</strong> pesos chilenos. Como la UF se reajusta todos los días según la inflación, este monto cambia levemente cada día.</p>
+
+{{ m.conversor("uf", "UF", "Pesos chilenos", cabecera.uf, monto, 2, 0, true) }}
+
+{{ m.anuncio("uf_monto_superior") }}
+
+<section>
+  <h2>¿Cuánto valdrán {{ monto|numero }} UF en los próximos días?</h2>
+  <div class="tabla-desplazable">
+  <table class="tabla">
+    <thead><tr><th>Fecha</th><th class="num">Valor UF</th><th class="num">{{ monto|numero }} UF en pesos</th></tr></thead>
+    <tbody>
+    {% for fecha, valor in proximos %}
+      <tr{% if fecha == hoy %} class="fila-hoy"{% endif %}><td>{{ fecha|fecha_corta }}</td><td class="num">{{ valor|pesos(2) }}</td><td class="num">{{ (monto * valor)|pesos }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+
+{% if ejemplo %}
+<section class="texto">
+  <h2>Si {{ monto|numero }} UF es el precio de una vivienda</h2>
+  <p>Con un pie de 20% ({{ ejemplo.pie_uf|numero(0) }} UF, unos {{ (ejemplo.pie_uf * cabecera.uf)|pesos }}) y un crédito de {{ ejemplo.credito_uf|numero(0) }} UF a 25 años con una tasa anual referencial de {{ tasa_referencia|porcentaje(2) }}, el dividendo sería de aproximadamente <strong>{{ ejemplo.dividendo_uf|numero(2) }} UF</strong> al mes ({{ ejemplo.dividendo_pesos|pesos }} hoy), sin contar seguros. Para un dividendo así, los bancos suelen pedir una renta líquida de al menos {{ ejemplo.renta_minima|pesos }}.</p>
+  <p><a href="{{ ruta('/calculadoras/credito-hipotecario/') }}">Simula tu crédito con otros plazos y tasas →</a></p>
+</section>
+{% endif %}
+
+<section>
+  <h2>{{ monto|numero }} UF en los últimos 12 meses</h2>
+  <div class="tabla-desplazable">
+  <table class="tabla">
+    <thead><tr><th>Fecha</th><th class="num">Valor UF</th><th class="num">{{ monto|numero }} UF en pesos</th></tr></thead>
+    <tbody>
+    {% for fecha, valor in historia %}
+      <tr><td>{{ fecha|fecha_corta }}</td><td class="num">{{ valor|pesos(2) }}</td><td class="num">{{ (monto * valor)|pesos }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+
+{{ m.afiliados("uf") }}
+
+<section>
+  <h2>Otros montos</h2>
+  <ul class="enlaces">
+  {% for otro in vecinos %}
+    <li><a href="{{ ruta('/uf/' ~ otro ~ '-uf-en-pesos/') }}">{{ otro|numero }} UF en pesos</a></li>
+  {% endfor %}
+    <li><a href="{{ ruta('/uf/') }}">Valor UF hoy</a></li>
+  </ul>
+</section>
+{{ m.fuente("Banco Central de Chile, vía mindicador.cl") }}
+{% endblock %}

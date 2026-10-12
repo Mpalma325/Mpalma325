@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<div class="destacado">
+  <p class="destacado-etiqueta">Sueldo líquido aproximado con AFP {{ barata }}, Fonasa y contrato indefinido</p>
+  <p class="destacado-valor">{{ detalle.liquido|pesos }}</p>
+  <p class="destacado-pie">De un sueldo bruto de {{ bruto|pesos }} ({{ monto_corto }}) · {{ hoy|mes_anio }}</p>
+</div>
+
+<p>Si tu sueldo bruto imponible es de <strong>{{ bruto|pesos }}</strong>, después de los descuentos legales recibirás alrededor de <strong>{{ detalle.liquido|pesos }}</strong> líquidos al mes. Se descuentan {{ detalle.total_descuentos|pesos }} en total: AFP, salud, seguro de cesantía{% if detalle.impuesto > 0 %} e impuesto único{% endif %}.</p>
+
+{{ m.anuncio("sueldo_monto_superior") }}
+
+<section>
+  <h2>Detalle de descuentos</h2>
+  <table class="tabla tabla-detalle">
+    <tbody>
+      <tr><th scope="row">Sueldo bruto imponible</th><td class="num">{{ bruto|pesos }}</td></tr>
+      <tr><th scope="row">AFP {{ barata }} ({{ detalle.tasa_afp_total|porcentaje(2) }})</th><td class="num descuento">-{{ detalle.afp|pesos }}</td></tr>
+      <tr><th scope="row">Salud (Fonasa 7%)</th><td class="num descuento">-{{ detalle.salud|pesos }}</td></tr>
+      <tr><th scope="row">Seguro de cesantía (0,6%)</th><td class="num descuento">-{{ detalle.cesantia|pesos }}</td></tr>
+      <tr><th scope="row">Impuesto único</th><td class="num descuento">-{{ detalle.impuesto|pesos }}</td></tr>
+      <tr class="total"><th scope="row">Sueldo líquido</th><td class="num">{{ detalle.liquido|pesos }}</td></tr>
+    </tbody>
+  </table>
+  <p class="nota">{% if detalle.tope_aplicado %}Las cotizaciones de AFP y salud se calculan sobre el tope imponible de {{ tope_pesos|pesos }}. {% endif %}La base tributable es {{ detalle.base_tributable|pesos }}{% if detalle.impuesto > 0 %}, que paga impuesto con una tasa marginal de {{ detalle.tasa_marginal|porcentaje(1) }}{% else %}, que está exenta de impuesto{% endif %}.</p>
+</section>
+
+<section>
+  <h2>Sueldo líquido de {{ bruto|pesos }} según tu AFP</h2>
+  <div class="tabla-desplazable">
+  <table class="tabla">
+    <thead><tr><th>AFP</th><th class="num">Comisión</th><th class="num">Descuento AFP</th><th class="num">Sueldo líquido</th></tr></thead>
+    <tbody>
+    {% for fila in por_afp %}
+      <tr><td>{{ fila.nombre }}</td><td class="num">{{ fila.comision|porcentaje(2) }}</td><td class="num">{{ fila.afp|pesos }}</td><td class="num">{{ fila.liquido|pesos }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p>Entre la AFP más barata y la más cara hay una diferencia de <strong>{{ (por_afp[0].liquido - por_afp[-1].liquido)|pesos }}</strong> al mes, es decir, {{ ((por_afp[0].liquido - por_afp[-1].liquido) * 12)|pesos }} al año.</p>
+</section>
+
+{{ m.afiliados("sueldo") }}
+
+<section class="texto">
+  <h2>Otras situaciones</h2>
+  <ul>
+    <li><strong>Con contrato a plazo fijo:</strong> no pagas seguro de cesantía, por lo que tu líquido sube a {{ plazo_fijo.liquido|pesos }}.</li>
+    <li><strong>Si {{ bruto|pesos }} es el líquido que quieres recibir:</strong> necesitas un sueldo bruto de aproximadamente {{ inverso.bruto|pesos }}.</li>
+    <li><strong>Costo para el empleador:</strong> además del sueldo, el empleador aporta {{ costo.total_cotizaciones|pesos }} en cotizaciones (seguro de cesantía, reforma de pensiones y mutual), con un costo total de {{ costo.costo_total|pesos }}.</li>
+  </ul>
+  <p><a class="boton" href="{{ ruta('/calculadoras/sueldo-liquido/') }}">Calcula tu caso exacto con isapre, colación o APV</a></p>
+</section>
+
+<nav class="paginador" aria-label="Otros sueldos">
+  {% if anterior %}<a href="{{ ruta('/sueldo-liquido/' ~ anterior ~ '/') }}">← {{ anterior|pesos }}</a>{% else %}<span></span>{% endif %}
+  {% if siguiente %}<a href="{{ ruta('/sueldo-liquido/' ~ siguiente ~ '/') }}">{{ siguiente|pesos }} →</a>{% endif %}
+</nav>
+<section>
+  <h2>Sueldos similares</h2>
+  <ul class="enlaces">
+  {% for otro in vecinos %}
+    <li><a href="{{ ruta('/sueldo-liquido/' ~ otro ~ '/') }}">{{ otro|pesos }} bruto</a></li>
+  {% endfor %}
+    <li><a href="{{ ruta('/sueldo-minimo/') }}">Sueldo mínimo</a></li>
+  </ul>
+</section>
+{{ m.fuente("Superintendencia de Pensiones y SII (parámetros vigentes)") }}
+{% endblock %}

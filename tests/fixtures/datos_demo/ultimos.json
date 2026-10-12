@@ -1,0 +1,32 @@
+{
+ "tpm": {
+  "nombre": "Tasa Política Monetaria (TPM)",
+  "unidad": "Porcentaje",
+  "fecha": "2026-10-09",
+  "valor": 4.5
+ },
+ "libra_cobre": {
+  "nombre": "Libra de Cobre",
+  "unidad": "Dólar",
+  "fecha": "2026-10-09",
+  "valor": 4.25
+ },
+ "imacec": {
+  "nombre": "Imacec",
+  "unidad": "Porcentaje",
+  "fecha": "2026-08-01",
+  "valor": 2.1
+ },
+ "tasa_desempleo": {
+  "nombre": "Tasa de desempleo",
+  "unidad": "Porcentaje",
+  "fecha": "2026-08-01",
+  "valor": 8.4
+ },
+ "bitcoin": {
+  "nombre": "Bitcoin",
+  "unidad": "Dólar",
+  "fecha": "2026-10-09",
+  "valor": 61000.0
+ }
+}

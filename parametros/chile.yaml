@@ -1,0 +1,175 @@
+# =============================================================================
+# Parámetros legales de Chile usados por las calculadoras de Lucas Claras
+# =============================================================================
+#
+# Cada grupo tiene:
+#   vigencias:        lista de entradas; cada una rige desde su fecha `desde`.
+#                     El sitio elige sola la entrada vigente según la fecha del día,
+#                     así que puedes cargar cambios futuros por adelantado.
+#   revisar_antes_de: cuando llega esta fecha, el paso "verificar" de GitHub Actions
+#                     falla y GitHub te manda un correo para que revises el grupo.
+#                     Después de revisarlo, actualiza esta fecha.
+#   fuente:           dónde verificar los valores.
+#
+# Última verificación general: 2026-10-12 (ver docs/MANTENCION.md).
+# Los valores marcados "confianza: media" vienen de normas estables que conviene
+# contrastar con el PDF mensual de indicadores de Previred.
+
+afp:
+  revisar_antes_de: 2027-04-01
+  fuente: https://www.spensiones.cl/portal/institucional/594/w3-propertyvalue-9897.html
+  vigencias:
+    - desde: 2025-10-01
+      cotizacion_obligatoria: 0.10   # DL 3.500, va a la cuenta individual
+      administradoras:               # comisión sobre la remuneración imponible
+        capital:   {nombre: Capital,   comision: 0.0144}
+        cuprum:    {nombre: Cuprum,    comision: 0.0144}
+        habitat:   {nombre: Habitat,   comision: 0.0127}
+        modelo:    {nombre: Modelo,    comision: 0.0058}
+        planvital: {nombre: PlanVital, comision: 0.0116}
+        provida:   {nombre: ProVida,   comision: 0.0145}
+        uno:       {nombre: Uno,       comision: 0.0046}   # 0,49% hasta sep-2025
+
+topes_imponibles:
+  # Se reajustan cada febrero según el Índice de Remuneraciones Reales.
+  revisar_antes_de: 2027-02-01
+  fuente: https://www.spensiones.cl/portal/institucional/594/w3-article-16885.html
+  vigencias:
+    - desde: 2026-01-01
+      afp_salud_uf: 89.9     # Res. Ex. N°27/2026, luego corregida
+      cesantia_uf: 135.1
+    - desde: 2026-02-01
+      afp_salud_uf: 90.0     # Res. SP N°237/2026 (también rige para salud y SIS)
+      cesantia_uf: 135.2     # Res. N°236/2026
+
+seguro_cesantia:
+  # Ley 19.728, art. 5. Confianza: media (norma estable).
+  revisar_antes_de: 2027-06-01
+  fuente: https://www.afc.cl/
+  vigencias:
+    - desde: 2002-10-01
+      trabajador: {indefinido: 0.006, plazo_fijo: 0.0, indefinido_11: 0.0}
+      empleador:  {indefinido: 0.024, plazo_fijo: 0.03, indefinido_11: 0.008}
+
+salud:
+  revisar_antes_de: 2027-06-01
+  fuente: https://www.superdesalud.gob.cl/
+  vigencias:
+    - desde: 2005-01-01
+      tasa: 0.07   # cotización obligatoria Fonasa/Isapre, con el mismo tope de 90 UF
+
+ingreso_minimo:
+  # Próximo reajuste: 2027-01-01, según IPC de mayo a diciembre de 2026 (Ley 21.830).
+  revisar_antes_de: 2027-01-02
+  fuente: https://www.bcn.cl/leychile/navegar?idNorma=1225354
+  vigencias:
+    - desde: 2025-01-01
+      monto: 510000
+      ley: Ley 21.578
+    - desde: 2025-05-01
+      monto: 529000
+      ley: Ley 21.751
+    - desde: 2026-01-01
+      monto: 539000
+      menores_18_mayores_65: 402082
+      no_remuneracional: 347434
+      ley: Ley 21.751
+    - desde: 2026-05-01
+      monto: 553553
+      menores_18_mayores_65: 412938
+      no_remuneracional: 356815
+      ley: Ley 21.830 (publicada en junio de 2026, con efecto desde el 1 de mayo)
+
+gratificacion:
+  # Art. 50 del Código del Trabajo: 25% de lo devengado, con tope de 4,75 IMM al año.
+  revisar_antes_de: 2027-06-01
+  fuente: https://www.bcn.cl/leychile/navegar?idNorma=207436
+  vigencias:
+    - desde: 2003-01-01
+      tasa: 0.25
+      tope_imm_anual: 4.75
+
+impuesto_unico:
+  # Tabla mensual del Impuesto Único de Segunda Categoría, en UTM (Ley 21.210).
+  # impuesto = base × factor − rebaja × UTM. `hasta: null` = sin tope.
+  revisar_antes_de: 2027-01-02
+  fuente: https://www.sii.cl/valores_y_fechas/impuesto_2da_categoria/impuesto2026.htm
+  vigencias:
+    - desde: 2020-01-01
+      tramos:
+        - {hasta: 13.5, factor: 0.0,   rebaja: 0.0}
+        - {hasta: 30,   factor: 0.04,  rebaja: 0.54}
+        - {hasta: 50,   factor: 0.08,  rebaja: 1.74}
+        - {hasta: 70,   factor: 0.135, rebaja: 4.49}
+        - {hasta: 90,   factor: 0.23,  rebaja: 11.14}
+        - {hasta: 120,  factor: 0.304, rebaja: 17.8}
+        - {hasta: 310,  factor: 0.35,  rebaja: 23.32}
+        - {hasta: null, factor: 0.40,  rebaja: 38.82}
+
+retencion_honorarios:
+  # Ley 21.133 (gradualidad corrida por la Ley 21.242). Llega a 17% en 2028.
+  revisar_antes_de: 2028-12-01
+  fuente: https://www.sii.cl/destacados/boletas_honorarios/index.html
+  vigencias:
+    - {desde: 2024-01-01, tasa: 0.1375}
+    - {desde: 2025-01-01, tasa: 0.145}
+    - {desde: 2026-01-01, tasa: 0.1525}
+    - {desde: 2027-01-01, tasa: 0.16}
+    - {desde: 2028-01-01, tasa: 0.17}
+
+apv:
+  # Régimen B: rebaja la base del impuesto hasta 50 UF mensuales (600 UF al año).
+  revisar_antes_de: 2027-06-01
+  fuente: https://www.spensiones.cl/
+  vigencias:
+    - desde: 2011-01-01
+      tope_mensual_uf: 50
+      tope_anual_uf: 600
+      bonificacion_regimen_a: 0.15
+      tope_bonificacion_utm: 6
+
+cotizaciones_empleador:
+  # Reforma de pensiones (Ley 21.735). Desde agosto de 2026 el SIS va DENTRO del
+  # aporte del empleador (3,5% = 0,1% cuenta individual + 0,9% rentabilidad
+  # protegida + 2,5% seguro social que incluye el SIS). Antes se pagaba aparte.
+  # mutual_basica: Ley 16.744, 0,90% básica + 0,03% Ley SANNA (sin la adicional por riesgo).
+  revisar_antes_de: 2027-07-15
+  fuente: https://www.chileatiende.gob.cl/fichas/130987-aportes-del-empleador-al-sistema-de-pensiones
+  vigencias:
+    - {desde: 2026-01-01, sis: 0.0154, aporte_reforma_pensiones: 0.010, mutual_basica: 0.0093}
+    - {desde: 2026-04-01, sis: 0.0162, aporte_reforma_pensiones: 0.010, mutual_basica: 0.0093}
+    - {desde: 2026-07-01, sis: 0.0200, aporte_reforma_pensiones: 0.010, mutual_basica: 0.0093}
+    - {desde: 2026-08-01, sis: 0.0,    aporte_reforma_pensiones: 0.035, mutual_basica: 0.0093}
+    - {desde: 2027-08-01, sis: 0.0,    aporte_reforma_pensiones: 0.0425, mutual_basica: 0.0093}
+    - {desde: 2028-08-01, sis: 0.0,    aporte_reforma_pensiones: 0.050, mutual_basica: 0.0093}
+    - {desde: 2029-08-01, sis: 0.0,    aporte_reforma_pensiones: 0.057, mutual_basica: 0.0093}
+
+credito_hipotecario:
+  # Tasa anual de referencia para los ejemplos de dividendo (no es una oferta).
+  # Revísala cada trimestre en https://www.cmfchile.cl o en los simuladores de los bancos.
+  revisar_antes_de: 2027-01-15
+  fuente: https://www.cmfchile.cl/
+  vigencias:
+    - desde: 2026-01-01
+      tasa_referencia: 0.042
+      carga_financiera_maxima: 0.25   # los bancos suelen exigir dividendo <= 25% de la renta
+
+# La UTM se reajusta cada mes con el IPC de dos meses antes. Este valor indica si
+# la UTM se mantiene cuando ese IPC es negativo (true) o si baja (false). Lo valida
+# el test `test_utm_contra_datos_reales` con los datos reales descargados.
+utm_se_mantiene_con_ipc_negativo: false
+
+feriados_extra:
+  # Feriados por elecciones o leyes especiales (los feriados normales se calculan
+  # solos en lucas/feriados.py). Ley 18.700 art. 169: los días de elecciones son
+  # feriado legal. Próximas elecciones esperadas: municipales y regionales el
+  # 2028-10-29 y presidenciales el 2029-11-18 (confirmar con el Servel y agregarlas).
+  revisar_antes_de: 2027-12-01
+  fuente: https://www.gob.cl/noticias/feriados-2026-revisa-cuantos-habra-y-cuales-son-irrenunciables/
+  lista:
+    - fecha: 2025-11-16
+      nombre: Elecciones presidenciales y parlamentarias
+      nota: Feriado electoral (irrenunciable para trabajadores de centros comerciales)
+    - fecha: 2025-12-14
+      nombre: Segunda vuelta presidencial
+      nota: Feriado electoral (irrenunciable para trabajadores de centros comerciales)

@@ -1,0 +1,113 @@
+# Mantiene el sitio vivo solo: dos veces al día descarga los datos nuevos,
+# corre las pruebas, guarda los datos en el repositorio, construye el sitio y lo
+# publica. Si hay parámetros legales por revisar o datos atrasados, el workflow
+# termina en rojo y GitHub te avisa por correo (el sitio igual se publica).
+#
+# Configuración (Settings → Secrets and variables → Actions):
+#   Variable DESTINO = "cloudflare" (recomendado) o "github-pages".
+#   Para Cloudflare: secretos CLOUDFLARE_API_TOKEN y CLOUDFLARE_ACCOUNT_ID.
+#   Opcional: secreto CMF_API_KEY como fuente de respaldo de los datos.
+# Detalles en docs/GUIA_PUESTA_EN_MARCHA.md.
+name: Actualizar y publicar
+
+on:
+  schedule:
+    # 10:17 y 22:17 UTC: entre 6 y 7 de la mañana y de la tarde en Chile.
+    - cron: "17 10,22 * * *"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: publicar
+  cancel-in-progress: false
+
+jobs:
+  construir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      mantencion: ${{ steps.verificar.outcome }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Instalar dependencias
+        run: pip install -r requirements-dev.txt
+
+      - name: Descargar datos nuevos
+        run: python -m lucas actualizar
+        env:
+          CMF_API_KEY: ${{ secrets.CMF_API_KEY }}
+
+      - name: Pruebas
+        run: python -m pytest -q
+
+      - name: Guardar datos en el repositorio
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          if git diff --cached --quiet; then
+            echo "Sin datos nuevos."
+          else
+            git commit -m "Datos actualizados $(TZ=America/Santiago date +'%Y-%m-%d %H:%M')"
+            git pull --rebase origin "$GITHUB_REF_NAME"
+            git push origin "HEAD:$GITHUB_REF_NAME"
+          fi
+
+      - name: Construir sitio
+        run: python -m lucas construir
+
+      - name: Preparar sitio para GitHub Pages
+        if: vars.DESTINO == 'github-pages'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+      - name: Publicar en Cloudflare
+        if: vars.DESTINO == 'cloudflare'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+
+      - name: Sitio sin publicar
+        if: vars.DESTINO != 'cloudflare' && vars.DESTINO != 'github-pages'
+        run: echo "::notice::El sitio se construyó pero no se publicó. Define la variable DESTINO (cloudflare o github-pages). Ver docs/GUIA_PUESTA_EN_MARCHA.md"
+
+      - name: Verificar mantención
+        id: verificar
+        continue-on-error: true
+        run: python -m lucas verificar
+
+  github-pages:
+    needs: construir
+    if: vars.DESTINO == 'github-pages'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.publicar.outputs.page_url }}
+    steps:
+      - id: publicar
+        uses: actions/deploy-pages@v4
+
+  aviso-mantencion:
+    needs: construir
+    if: needs.construir.outputs.mantencion == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "::error::Hay tareas de mantención pendientes (parámetros por revisar o datos atrasados). Revisa el resumen del job 'construir' y docs/MANTENCION.md."
+          exit 1

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<div class="tarjetas">
+  <div class="tarjeta destacada"><span class="tarjeta-titulo">IPC {{ ultimos_24[0][0]|mes_anio }}</span><span class="tarjeta-valor">{{ ultimos_24[0][1]|porcentaje(1, true) }}</span><span class="tarjeta-pie">Variación mensual</span></div>
+  <div class="tarjeta"><span class="tarjeta-titulo">Últimos 12 meses</span><span class="tarjeta-valor">{{ ipc_12m|porcentaje(1) }}</span><span class="tarjeta-pie">Inflación anual</span></div>
+  <div class="tarjeta"><span class="tarjeta-titulo">En lo que va de {{ ultimos_24[0][0].year }}</span><span class="tarjeta-valor">{{ ipc_anio|porcentaje(1) }}</span><span class="tarjeta-pie">Acumulado del año</span></div>
+</div>
+
+{{ m.anuncio("ipc_superior") }}
+
+<section>
+  <h2>Variación mensual del IPC</h2>
+  <figure class="figura">{{ grafico }}</figure>
+</section>
+
+<section>
+  <h2>IPC de los últimos 24 meses</h2>
+  <div class="tabla-desplazable">
+  <table class="tabla">
+    <thead><tr><th>Mes</th><th class="num">Variación mensual</th><th class="num">Acumulado 12 meses</th></tr></thead>
+    <tbody>
+    {% for mes, valor in ultimos_24 %}
+      <tr><td>{{ mes|mes_anio|capitalizar }}</td><td class="num">{{ valor|porcentaje(1, true) }}</td><td class="num">{% if acumulado_12[mes] is not none %}{{ acumulado_12[mes]|porcentaje(1) }}{% else %}—{% endif %}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="nota">El acumulado de 12 meses se calcula componiendo las variaciones mensuales publicadas (con un decimal), por lo que puede diferir en una décima del dato oficial del INE.</p>
+</section>
+
+<section class="texto">
+  <h2>¿Te subieron el arriendo?</h2>
+  <p>Si tu contrato de arriendo se reajusta según el IPC, usa la <a href="{{ ruta('/calculadoras/reajuste-arriendo-ipc/') }}">calculadora de reajuste de arriendo</a> para saber el nuevo monto. Y si tienes deudas en UF, revisa la <a href="{{ ruta('/uf/proyeccion/') }}">proyección de la UF</a>.</p>
+</section>
+
+{{ m.afiliados("ipc") }}
+{{ m.faq(pagina) }}
+{{ m.fuente("Instituto Nacional de Estadísticas (INE), vía mindicador.cl") }}
+{% endblock %}

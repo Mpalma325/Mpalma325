@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<section class="texto">
+  <p><strong>{{ sitio.nombre }}</strong> es un proyecto independiente hecho en Chile{% if sitio.autores %} por {{ sitio.autores }}{% endif %}. Nuestro objetivo es simple: que cualquier persona encuentre en segundos los indicadores económicos del día y pueda resolver sus dudas de plata —sueldo, boletas, arriendo, créditos— con cálculos claros y correctos.</p>
+
+  <h2>De dónde salen los datos</h2>
+  <ul>
+    <li><strong>UF, dólar observado, euro y UTM:</strong> Banco Central de Chile y Servicio de Impuestos Internos, obtenidos a través de la API pública de mindicador.cl.</li>
+    <li><strong>IPC:</strong> Instituto Nacional de Estadísticas (INE).</li>
+    <li><strong>Parámetros previsionales y tributarios</strong> (comisiones de AFP, topes imponibles, tabla de impuesto único, retención de honorarios, ingreso mínimo): Superintendencia de Pensiones, SII, Dirección del Trabajo y leyes publicadas en el Diario Oficial.</li>
+    <li><strong>Feriados:</strong> calculados según la legislación vigente, incluidos los traslados que establece la ley.</li>
+  </ul>
+
+  <h2>Cómo trabajamos</h2>
+  <ul>
+    <li>Los indicadores se actualizan automáticamente todos los días.</li>
+    <li>Las fórmulas de cada calculadora están probadas con casos de prueba automáticos antes de cada publicación.</li>
+    <li>Revisamos los parámetros legales cada vez que cambia una ley o una tasa, y en cada página indicamos la fuente y la fecha de actualización.</li>
+    <li>Cuando un valor es calculado o proyectado (por ejemplo, la UF futura), lo indicamos explícitamente.</li>
+  </ul>
+
+  <h2>¿Encontraste un error?</h2>
+  <p>Nos importa mucho la exactitud. Si ves un valor o un cálculo que no cuadra, <a href="{{ ruta('/contacto/') }}">escríbenos</a> y lo revisamos a la brevedad.</p>
+
+  <h2>Cómo se financia este sitio</h2>
+  <p>{{ sitio.nombre }} es gratuito. Se financia con publicidad y, en algunos casos, con enlaces de referidos a productos financieros, que siempre identificamos como tales. Esto nunca cambia los resultados de las calculadoras.</p>
+</section>
+{% endblock %}

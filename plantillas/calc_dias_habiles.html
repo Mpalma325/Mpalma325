@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<p class="bajada">Cuenta los días hábiles entre dos fechas, o calcula qué fecha resulta al sumar días hábiles, considerando los feriados legales de Chile de {{ anios[0] }} a {{ anios[-1] }}.</p>
+
+<div class="calculadora-layout">
+<form id="calc-dias" class="calculadora" data-calculadora="dias" onsubmit="return false">
+  <fieldset class="modo">
+    <legend>¿Qué necesitas?</legend>
+    <label><input type="radio" name="modo" value="contar" checked> Contar días hábiles entre dos fechas</label>
+    <label><input type="radio" name="modo" value="sumar"> Sumar días hábiles a una fecha</label>
+  </fieldset>
+  <div class="campo">
+    <label for="d-inicio">Fecha de inicio</label>
+    <input id="d-inicio" name="inicio" type="date" value="{{ hoy.isoformat() }}" min="{{ anios[0] }}-01-01" max="{{ anios[-1] }}-12-31">
+  </div>
+  <div class="campo" data-solo-contar>
+    <label for="d-fin">Fecha de término</label>
+    <input id="d-fin" name="fin" type="date" value="{{ (hoy.replace(day=28)).isoformat() }}" min="{{ anios[0] }}-01-01" max="{{ anios[-1] }}-12-31">
+  </div>
+  <div class="campo" data-solo-sumar hidden>
+    <label for="d-cantidad">Días hábiles a sumar</label>
+    <input id="d-cantidad" name="cantidad" inputmode="numeric" autocomplete="off" value="10">
+  </div>
+  <label class="campo-check"><input type="checkbox" name="sabados"> Considerar los sábados como días hábiles</label>
+  <label class="campo-check" data-solo-contar><input type="checkbox" name="incluir_inicio" checked> Incluir el día de inicio</label>
+</form>
+<div class="resultado" id="resultado-dias" aria-live="polite">
+  <p class="resultado-etiqueta" data-r="etiqueta">Días hábiles</p>
+  <p class="resultado-principal" data-r="principal">—</p>
+  <p class="nota" data-r="detalle"></p>
+  <ul class="lista-feriados" data-r="feriados"></ul>
+</div>
+</div>
+
+{{ m.anuncio("dias_superior") }}
+
+<section class="texto">
+  <h2>¿Cómo cuenta esta calculadora?</h2>
+  <p>Considera hábiles los días de lunes a viernes (y opcionalmente los sábados), excluyendo los feriados legales nacionales, incluidos los que se trasladan de fecha. No considera feriados regionales. Revisa el <a href="{{ ruta('/feriados/') }}">calendario de feriados</a> para más detalles.</p>
+</section>
+
+{{ m.afiliados("feriados") }}
+{{ m.faq(pagina) }}
+{% endblock %}

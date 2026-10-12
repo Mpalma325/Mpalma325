@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<section class="texto">
+  <p>¿Encontraste un error, tienes una sugerencia o quieres proponer una calculadora nueva? Nos encantaría saberlo.</p>
+  {% if sitio.correo_contacto %}
+  <p class="destacado-contacto">Escríbenos a <a href="mailto:{{ sitio.correo_contacto }}">{{ sitio.correo_contacto }}</a></p>
+  {% else %}
+  <p class="destacado-contacto">Muy pronto habilitaremos un correo de contacto.</p>
+  {% endif %}
+  <p>Si reportas un error, cuéntanos en qué página lo viste y qué valor esperabas. Respondemos en un plazo de pocos días hábiles.</p>
+  <p class="nota">No respondemos consultas personales de tipo tributario, legal o de inversión: para eso te recomendamos acudir al SII, a la Dirección del Trabajo o a un asesor certificado.</p>
+</section>
+{% endblock %}

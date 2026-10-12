@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<p class="bajada">Herramientas gratuitas, sin registro y actualizadas con los parámetros legales vigentes en Chile.</p>
+<div class="tarjetas tarjetas-calculadoras">
+{% for nombre, destino, descripcion in calculadoras %}
+  <a class="tarjeta" href="{{ ruta(destino) }}"><span class="tarjeta-titulo">{{ nombre }}</span><span>{{ descripcion }}</span></a>
+{% endfor %}
+</div>
+
+{{ m.anuncio("calculadoras") }}
+
+<section>
+  <h2>Indicadores y tablas</h2>
+  <ul class="enlaces">
+    <li><a href="{{ ruta('/uf/') }}">Valor UF hoy</a></li>
+    <li><a href="{{ ruta('/uf/proyeccion/') }}">UF proyectada</a></li>
+    <li><a href="{{ ruta('/dolar/') }}">Dólar observado</a></li>
+    <li><a href="{{ ruta('/utm/') }}">UTM y UTA</a></li>
+    <li><a href="{{ ruta('/ipc/') }}">IPC</a></li>
+    <li><a href="{{ ruta('/impuesto-unico/') }}">Tabla de impuesto único</a></li>
+    <li><a href="{{ ruta('/sueldo-minimo/') }}">Sueldo mínimo</a></li>
+    <li><a href="{{ ruta('/feriados/') }}">Feriados</a></li>
+  </ul>
+</section>
+{% endblock %}

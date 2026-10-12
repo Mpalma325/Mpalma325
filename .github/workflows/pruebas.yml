@@ -1,0 +1,53 @@
+# Corre las pruebas y construye el sitio en cada push y pull request.
+# Descarga los datos reales para validar las fórmulas de la UF y la UTM contra
+# los valores oficiales, y deja el sitio generado como artefacto descargable.
+name: Pruebas
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Instalar dependencias
+        run: pip install -r requirements-dev.txt
+
+      - name: Descargar datos reales
+        # Si la API no responde, las pruebas igual corren con los datos de demostración.
+        continue-on-error: true
+        run: python -m lucas actualizar
+        env:
+          CMF_API_KEY: ${{ secrets.CMF_API_KEY }}
+
+      - name: Pruebas
+        run: python -m pytest -v
+
+      - name: Construir sitio
+        run: |
+          if [ -f data/series/uf.json ]; then
+            python -m lucas construir
+          else
+            python -m lucas construir --demo
+          fi
+
+      - name: Guardar sitio generado
+        uses: actions/upload-artifact@v4
+        with:
+          name: sitio
+          path: dist
+          retention-days: 7

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<p class="bajada">Descubre cuánto podría crecer tu ahorro si inviertes un monto inicial y aportas todos los meses. Es una simulación: la rentabilidad real puede ser mayor, menor o incluso negativa.</p>
+
+<div class="calculadora-layout">
+<form id="calc-ahorro" class="calculadora" data-calculadora="ahorro" onsubmit="return false">
+  <div class="campo">
+    <label for="ah-inicial">Monto inicial</label>
+    <input id="ah-inicial" name="inicial" inputmode="numeric" autocomplete="off" value="1.000.000" data-dinero>
+  </div>
+  <div class="campo">
+    <label for="ah-aporte">Aporte mensual</label>
+    <input id="ah-aporte" name="aporte" inputmode="numeric" autocomplete="off" value="100.000" data-dinero>
+  </div>
+  <div class="campo">
+    <label for="ah-tasa">Rentabilidad anual esperada (%)</label>
+    <input id="ah-tasa" name="tasa" inputmode="decimal" autocomplete="off" value="5">
+  </div>
+  <div class="campo">
+    <label for="ah-anios">Plazo (años)</label>
+    <input id="ah-anios" name="anios" inputmode="numeric" autocomplete="off" value="10">
+  </div>
+</form>
+<div class="resultado" id="resultado-ahorro" aria-live="polite">
+  <p class="resultado-etiqueta">Ahorro al final del plazo</p>
+  <p class="resultado-principal" data-r="saldo">—</p>
+  <table class="tabla tabla-detalle">
+    <tbody>
+      <tr><th scope="row">Total aportado</th><td class="num" data-r="aportado">—</td></tr>
+      <tr class="total"><th scope="row">Ganancia por intereses</th><td class="num" data-r="ganancia">—</td></tr>
+    </tbody>
+  </table>
+  <div class="grafico-ahorro" data-r="grafico" aria-hidden="true"></div>
+  <button type="button" class="boton-secundario" data-compartir>Copiar enlace a este cálculo</button>
+</div>
+</div>
+
+{{ m.anuncio("ahorro_superior") }}
+
+<section>
+  <h2>¿Cuánto suman $100.000 mensuales en 20 años?</h2>
+  <table class="tabla">
+    <thead><tr><th>Rentabilidad anual</th><th class="num">Aportado</th><th class="num">Ahorro final</th><th class="num">Ganancia</th></tr></thead>
+    <tbody>
+    {% for e in escenarios %}
+      <tr><td>{{ e.tasa|porcentaje(0) }}</td><td class="num">{{ e.aportado|pesos }}</td><td class="num">{{ e.saldo|pesos }}</td><td class="num">{{ e.ganancia|pesos }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p>La diferencia entre una rentabilidad de 3% y una de 7% anual, en 20 años, es de {{ (escenarios[2].saldo - escenarios[0].saldo)|pesos }}. Por eso las comisiones y el tipo de instrumento importan tanto en el largo plazo.</p>
+</section>
+
+{{ m.afiliados("ahorro") }}
+
+<section class="texto">
+  <h2>Antes de invertir</h2>
+  <ul>
+    <li>Ten primero un fondo de emergencia (de 3 a 6 meses de gastos) en un instrumento líquido y de bajo riesgo.</li>
+    <li>Si tu plazo es largo, considera el <strong>APV</strong>: además de la rentabilidad, puede darte beneficios tributarios. Revisa cuánto pagas de impuesto con la <a href="{{ ruta('/calculadoras/sueldo-liquido/') }}">calculadora de sueldo líquido</a>.</li>
+    <li>Compara costos: una diferencia de 1% anual en comisiones puede significar millones de pesos en 20 años.</li>
+    <li>Revisa que la institución esté regulada por la Comisión para el Mercado Financiero (CMF).</li>
+  </ul>
+</section>
+
+{{ m.faq(pagina) }}
+{% endblock %}

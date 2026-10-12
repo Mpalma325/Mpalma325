@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<div class="tarjetas">
+  <div class="tarjeta destacada">
+    <span class="tarjeta-titulo">UTM {{ hoy|mes_anio }}</span>
+    <span class="tarjeta-valor">{{ cabecera.utm|pesos }}</span>
+    <span class="tarjeta-pie">UTA: {{ (cabecera.utm * 12)|pesos }}</span>
+  </div>
+  {% if utm_proximo %}
+  <div class="tarjeta">
+    <span class="tarjeta-titulo">UTM {{ proximo_mes|mes_anio }}</span>
+    <span class="tarjeta-valor">{{ utm_proximo|pesos }}</span>
+    <span class="tarjeta-pie">{% if proximo_calculado %}Calculada con el IPC ya publicado{% else %}Valor publicado{% endif %}</span>
+  </div>
+  {% endif %}
+</div>
+
+<section>
+  <h2>Convertir UTM a pesos</h2>
+  {{ m.conversor("utm", "UTM", "Pesos chilenos", cabecera.utm, 1, 2, 0) }}
+</section>
+
+{{ m.anuncio("utm_superior") }}
+
+<section>
+  <h2>UTM {{ hoy.year }} mes a mes</h2>
+  <div class="tabla-desplazable">
+  <table class="tabla">
+    <thead><tr><th>Mes</th><th class="num">UTM</th><th class="num">UTA</th><th class="num">IPC aplicado</th></tr></thead>
+    <tbody>
+    {% for mes, valor in tabla %}
+      <tr{% if mes.month == hoy.month %} class="fila-hoy"{% endif %}><td>{{ mes|mes_anio|capitalizar }}</td><td class="num">{{ valor|pesos }}</td><td class="num">{{ (valor * 12)|pesos }}</td><td class="num">{% if ipc_de[mes] is not none %}{{ ipc_de[mes]|porcentaje(1, true) }}{% else %}—{% endif %}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="nota">El "IPC aplicado" es la variación del IPC de dos meses antes, con la que se reajustó la UTM de ese mes.</p>
+</section>
+
+<section class="texto">
+  <h2>¿Para qué se usa la UTM?</h2>
+  <p>La UTM se usa como unidad de medida en normas tributarias, multas de tránsito y municipales, aranceles y beneficios sociales. Por ejemplo, la tabla del impuesto único de segunda categoría se define en UTM: este mes, las remuneraciones con una base tributable de hasta 13,5 UTM ({{ (13.5 * cabecera.utm)|pesos }}) están exentas. <a href="{{ ruta('/impuesto-unico/') }}">Ver la tabla de impuesto único del mes</a>.</p>
+</section>
+
+{{ m.afiliados("utm") }}
+
+<section>
+  <h2>UTM por año</h2>
+  <ul class="enlaces">
+  {% for anio in anios %}
+    <li><a href="{{ ruta('/utm/' ~ anio ~ '/') }}">UTM {{ anio }}</a></li>
+  {% endfor %}
+  </ul>
+</section>
+
+{{ m.faq(pagina) }}
+{{ m.fuente("Servicio de Impuestos Internos, vía mindicador.cl") }}
+{% endblock %}

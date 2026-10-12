@@ -1,0 +1,6 @@
+{
+ "demo": true,
+ "aviso": "DATOS FICTICIOS generados por tests/fixtures/generar_datos_demo.py",
+ "fecha_referencia": "2026-10-12",
+ "actualizado": "2026-10-12T07:00:00-03:00"
+}

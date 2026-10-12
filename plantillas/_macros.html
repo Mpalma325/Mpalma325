@@ -1,0 +1,99 @@
+{# Componentes reutilizables de las plantillas. #}
+
+{% macro migas(pagina) %}
+{% if pagina.migas|length > 1 %}
+<nav class="migas" aria-label="Ruta de navegación">
+  <ol>
+  {% for nombre, destino in pagina.migas %}
+    {% if loop.last %}
+    <li aria-current="page">{{ nombre }}</li>
+    {% else %}
+    <li><a href="{{ ruta(destino) }}">{{ nombre }}</a></li>
+    {% endif %}
+  {% endfor %}
+  </ol>
+</nav>
+{% endif %}
+{% endmacro %}
+
+{% macro anuncio(nombre) %}
+{# Bloque de AdSense manual. Sin slot configurado no se muestra nada (Auto ads sigue funcionando). #}
+{% if anuncios_activos and not demo %}
+{% set slot = (adsense.slots or {}).get(nombre) %}
+{% if slot %}
+<div class="anuncio" aria-label="Publicidad">
+  <ins class="adsbygoogle" style="display:block" data-ad-client="{{ adsense.publisher_id }}"
+       data-ad-slot="{{ slot }}" data-ad-format="auto" data-full-width-responsive="true"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div>
+{% endif %}
+{% endif %}
+{% endmacro %}
+
+{% macro afiliados(clave) %}
+{% set lista = afiliados_de(clave) %}
+{% if lista %}
+<aside class="afiliados" aria-label="Recomendaciones">
+  {% for a in lista %}
+  <div class="afiliado">
+    <p class="afiliado-titulo">{{ a.titulo }}</p>
+    <p>{{ a.texto }}</p>
+    <a class="boton" href="{{ a.url }}" rel="sponsored noopener" target="_blank">{{ a.boton or "Conocer más" }}</a>
+  </div>
+  {% endfor %}
+  <p class="nota">Algunos enlaces son de referidos: si te registras, podemos recibir un beneficio sin costo para ti. Nada de esto es una recomendación de inversión personalizada.</p>
+</aside>
+{% endif %}
+{% endmacro %}
+
+{% macro faq(pagina) %}
+{% if pagina.faq %}
+<section class="faq" aria-labelledby="faq-titulo">
+  <h2 id="faq-titulo">Preguntas frecuentes</h2>
+  {% for pregunta, respuesta in pagina.faq %}
+  <details{% if loop.first %} open{% endif %}>
+    <summary>{{ pregunta }}</summary>
+    <p>{{ respuesta }}</p>
+  </details>
+  {% endfor %}
+</section>
+{% endif %}
+{% endmacro %}
+
+{% macro variacion(valor, decimales=2) %}
+{% if valor is not none %}<span class="variacion {{ 'sube' if valor > 0 else ('baja' if valor < 0 else 'igual') }}">{{ valor|porcentaje(decimales, true) }}</span>{% endif %}
+{% endmacro %}
+
+{% macro conversor(id, etiqueta_origen, etiqueta_destino, tasa, inicial=1, decimales_origen=2, decimales_destino=0, es_uf=false) %}
+<form class="conversor" data-conversor{% if es_uf %} data-es-uf{% endif %} data-tasa="{{ tasa }}" data-dec-origen="{{ decimales_origen }}"
+      data-dec-destino="{{ decimales_destino }}" onsubmit="return false">
+  <div class="campo">
+    <label for="{{ id }}-origen">{{ etiqueta_origen }}</label>
+    <input id="{{ id }}-origen" data-lado="origen" inputmode="decimal" autocomplete="off"
+           value="{{ inicial|numero(0 if inicial == inicial|int else decimales_origen) }}">
+  </div>
+  <span class="conversor-igual" aria-hidden="true">=</span>
+  <div class="campo">
+    <label for="{{ id }}-destino">{{ etiqueta_destino }}</label>
+    <input id="{{ id }}-destino" data-lado="destino" inputmode="decimal" autocomplete="off"
+           value="{{ (inicial * tasa)|numero(2 if inicial < 10 and es_uf else decimales_destino) }}">
+  </div>
+</form>
+{% endmacro %}
+
+{% macro enlaces(titulo, items) %}
+{% if items %}
+<section class="enlaces-bloque">
+  <h2>{{ titulo }}</h2>
+  <ul class="enlaces">
+    {% for texto, destino in items %}
+    <li><a href="{{ ruta(destino) }}">{{ texto }}</a></li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% endmacro %}
+
+{% macro fuente(texto) %}
+<p class="fuente">Fuente: {{ texto }}. Actualizado el {{ actualizado|fecha_larga }}.</p>
+{% endmacro %}

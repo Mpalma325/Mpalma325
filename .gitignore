@@ -1,0 +1,13 @@
+# Sitio generado (se publica desde GitHub Actions)
+dist/
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+# Editores y sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

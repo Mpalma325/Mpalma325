@@ -1,0 +1,140 @@
+{% import "_macros.html" as m with context %}
+<!doctype html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ pagina.titulo }}</title>
+<meta name="description" content="{{ pagina.descripcion }}">
+<link rel="canonical" href="{{ url_absoluta(pagina.ruta) }}">
+{% if demo or not pagina.indexar %}
+<meta name="robots" content="noindex">
+{% endif %}
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_CL">
+<meta property="og:site_name" content="{{ sitio.nombre }}">
+<meta property="og:title" content="{{ pagina.titulo }}">
+<meta property="og:description" content="{{ pagina.descripcion }}">
+<meta property="og:url" content="{{ url_absoluta(pagina.ruta) }}">
+<meta property="og:image" content="{{ sitio.url }}/estaticos/img/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0f766e">
+<link rel="icon" href="{{ estatico('img/favicon.svg') }}" type="image/svg+xml">
+<link rel="icon" href="{{ ruta('/favicon.ico') }}" sizes="32x32">
+<link rel="apple-touch-icon" href="{{ estatico('img/apple-touch-icon.png') }}">
+<link rel="stylesheet" href="{{ estatico('css/estilos.css') }}">
+{% if verificacion.google %}
+<meta name="google-site-verification" content="{{ verificacion.google }}">
+{% endif %}
+{% if verificacion.bing %}
+<meta name="msvalidate.01" content="{{ verificacion.bing }}">
+{% endif %}
+{% if anuncios_activos and not demo %}
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ adsense.publisher_id }}" crossorigin="anonymous"></script>
+{% endif %}
+{% if analitica.google_analytics_id and not demo %}
+<script async src="https://www.googletagmanager.com/gtag/js?id={{ analitica.google_analytics_id }}"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','{{ analitica.google_analytics_id }}');</script>
+{% endif %}
+{% for bloque in jsonld %}
+<script type="application/ld+json">{{ bloque|json_seguro }}</script>
+{% endfor %}
+</head>
+<body>
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+{% if demo %}
+<div class="aviso-demo" role="note">Sitio de demostración: todos los valores son <strong>ficticios</strong>.</div>
+{% endif %}
+<header class="cabecera">
+  <div class="contenedor cabecera-fila">
+    <a class="logo" href="{{ ruta('/') }}">
+      <img src="{{ estatico('img/logo.svg') }}" alt="" width="34" height="34">
+      <span>{{ sitio.nombre }}</span>
+    </a>
+    <nav class="menu" aria-label="Principal">
+      <ul>
+        <li><a href="{{ ruta('/uf/') }}">UF</a></li>
+        <li><a href="{{ ruta('/dolar/') }}">Dólar</a></li>
+        <li><a href="{{ ruta('/utm/') }}">UTM</a></li>
+        <li><a href="{{ ruta('/calculadoras/sueldo-liquido/') }}">Sueldo líquido</a></li>
+        <li><a href="{{ ruta('/calculadoras/') }}">Calculadoras</a></li>
+        <li><a href="{{ ruta('/feriados/') }}">Feriados</a></li>
+      </ul>
+    </nav>
+  </div>
+  <div class="cinta">
+    <div class="contenedor cinta-fila">
+      <a href="{{ ruta('/uf/') }}">UF <strong data-uf-hoy>{{ cabecera.uf|pesos(2) }}</strong></a>
+      <a href="{{ ruta('/dolar/') }}">Dólar <strong>{{ cabecera.dolar[1]|pesos(2) }}</strong></a>
+      <a href="{{ ruta('/utm/') }}">UTM <strong>{{ cabecera.utm|pesos }}</strong></a>
+    </div>
+  </div>
+</header>
+
+<main id="contenido" class="contenedor">
+{{ m.migas(pagina) }}
+{% block contenido %}{% endblock %}
+</main>
+
+<footer class="pie">
+  <div class="contenedor">
+    <div class="pie-columnas">
+      <div>
+        <p class="pie-titulo">Indicadores</p>
+        <ul>
+          <li><a href="{{ ruta('/uf/') }}">UF hoy</a></li>
+          <li><a href="{{ ruta('/uf/proyeccion/') }}">UF proyectada</a></li>
+          <li><a href="{{ ruta('/dolar/') }}">Dólar observado</a></li>
+          <li><a href="{{ ruta('/euro/') }}">Euro</a></li>
+          <li><a href="{{ ruta('/utm/') }}">UTM y UTA</a></li>
+          <li><a href="{{ ruta('/ipc/') }}">IPC</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="pie-titulo">Trabajo</p>
+        <ul>
+          <li><a href="{{ ruta('/calculadoras/sueldo-liquido/') }}">Sueldo líquido</a></li>
+          <li><a href="{{ ruta('/sueldo-minimo/') }}">Sueldo mínimo</a></li>
+          <li><a href="{{ ruta('/impuesto-unico/') }}">Impuesto único</a></li>
+          <li><a href="{{ ruta('/calculadoras/boleta-honorarios/') }}">Boleta de honorarios</a></li>
+          <li><a href="{{ ruta('/feriados/') }}">Feriados</a></li>
+          <li><a href="{{ ruta('/calculadoras/dias-habiles/') }}">Días hábiles</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="pie-titulo">Finanzas</p>
+        <ul>
+          <li><a href="{{ ruta('/calculadoras/credito-hipotecario/') }}">Crédito hipotecario</a></li>
+          <li><a href="{{ ruta('/calculadoras/reajuste-arriendo-ipc/') }}">Arriendo por IPC</a></li>
+          <li><a href="{{ ruta('/calculadoras/interes-compuesto/') }}">Interés compuesto</a></li>
+          <li><a href="{{ ruta('/calculadoras/') }}">Todas las calculadoras</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="pie-titulo">{{ sitio.nombre }}</p>
+        <ul>
+          <li><a href="{{ ruta('/acerca/') }}">Quiénes somos</a></li>
+          <li><a href="{{ ruta('/contacto/') }}">Contacto</a></li>
+          <li><a href="{{ ruta('/privacidad/') }}">Privacidad</a></li>
+          <li><a href="{{ ruta('/terminos/') }}">Términos de uso</a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="pie-legal">La información de este sitio es referencial y no constituye asesoría financiera, tributaria ni legal. Datos del Banco Central de Chile, INE y SII obtenidos vía mindicador.cl. Actualizado el {{ actualizado|fecha_larga }}.</p>
+    <p class="pie-legal">© {{ hoy.year }} {{ sitio.nombre }}. Hecho en Chile.</p>
+  </div>
+</footer>
+
+<script type="application/json" id="uf-ventana">{{ uf_ventana|json_seguro }}</script>
+{% if pagina.datos_js is not none %}
+<script type="application/json" id="datos-pagina">{{ pagina.datos_js|json_seguro }}</script>
+{% endif %}
+{% if pagina.calculadora %}
+<script src="{{ estatico('js/calculos.js') }}" defer></script>
+{% endif %}
+<script src="{{ estatico('js/app.js') }}" defer></script>
+{% if analitica.cloudflare_web_analytics_token and not demo %}
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "{{ analitica.cloudflare_web_analytics_token }}"}'></script>
+{% endif %}
+</body>
+</html>

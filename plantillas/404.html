@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<p class="bajada">La página que buscas no existe o cambió de dirección. Quizás te sirva alguna de estas:</p>
+<ul class="enlaces">
+  <li><a href="{{ ruta('/') }}">Inicio</a></li>
+  <li><a href="{{ ruta('/uf/') }}">Valor UF hoy</a></li>
+  <li><a href="{{ ruta('/dolar/') }}">Dólar hoy</a></li>
+  <li><a href="{{ ruta('/calculadoras/sueldo-liquido/') }}">Sueldo líquido</a></li>
+  <li><a href="{{ ruta('/feriados/') }}">Feriados</a></li>
+  <li><a href="{{ ruta('/calculadoras/') }}">Calculadoras</a></li>
+</ul>
+{% endblock %}

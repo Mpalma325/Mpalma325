@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<div class="destacado">
+  <p class="destacado-etiqueta">Valor de la UF del <span data-uf-fecha>{{ hoy|fecha_con_dia }}</span></p>
+  <p class="destacado-valor" data-uf-hoy>{{ cabecera.uf|pesos(2) }}</p>
+  <p class="destacado-pie">{{ m.variacion(variacion_anual) }} en los últimos 12 meses · Valores conocidos hasta el {{ ultimo_conocido|fecha_larga }}</p>
+</div>
+
+<section>
+  <h2>Convertir UF a pesos</h2>
+  {{ m.conversor("uf", "UF", "Pesos chilenos", cabecera.uf, 1, 2, 0, true) }}
+</section>
+
+{{ m.anuncio("uf_superior") }}
+
+<section>
+  <h2>Valor de la UF en los próximos días</h2>
+  <p>La UF de este período se reajusta con el IPC de {{ mes_ipc_vigente|mes_de_anio }}{% if ipc_vigente is not none %} ({{ ipc_vigente|porcentaje(1, true) }}){% endif %}. Ya se conocen sus valores hasta el {{ ultimo_conocido|fecha_larga }}.</p>
+  <div class="tabla-desplazable">
+  <table class="tabla">
+    <thead><tr><th>Fecha</th><th>Día</th><th class="num">Valor UF</th></tr></thead>
+    <tbody>
+    {% for fecha, valor in proximos %}
+      <tr{% if fecha == hoy %} class="fila-hoy"{% endif %}><td>{{ fecha|fecha_corta }}</td><td>{{ fecha|dia_semana|capitalizar }}</td><td class="num">{{ valor|pesos(2) }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p><a href="{{ ruta('/uf/proyeccion/') }}">¿Y después? Mira la proyección de la UF para los próximos 12 meses →</a></p>
+</section>
+
+<section>
+  <h2>La UF en los últimos 12 meses</h2>
+  <figure class="figura">{{ grafico }}</figure>
+</section>
+
+{{ m.afiliados("uf") }}
+
+<section>
+  <h2>Valor UF por mes</h2>
+  <ul class="enlaces">
+  {% for mes in meses_anio %}
+    <li><a href="{{ ruta('/uf/' ~ mes.year ~ '/' ~ (mes.month|nombre_mes) ~ '/') }}">UF {{ mes|mes_anio }}</a></li>
+  {% endfor %}
+  </ul>
+  <p class="nota">Años anteriores: {% for primer_mes in primeros_meses %}<a href="{{ ruta('/uf/' ~ primer_mes.year ~ '/' ~ (primer_mes.month|nombre_mes) ~ '/') }}">{{ primer_mes.year }}</a>{% if not loop.last %} · {% endif %}{% endfor %}</p>
+</section>
+
+<section>
+  <h2>Conversiones frecuentes de UF a pesos</h2>
+  <ul class="enlaces">
+  {% for monto in montos %}
+    <li><a href="{{ ruta('/uf/' ~ monto ~ '-uf-en-pesos/') }}">{{ monto|numero }} UF</a></li>
+  {% endfor %}
+  </ul>
+</section>
+
+{{ m.anuncio("uf_inferior") }}
+
+<section class="texto">
+  <h2>¿Cómo se calcula la UF?</h2>
+  <p>El Banco Central de Chile reajusta la UF todos los días entre el día 10 de cada mes y el día 9 del mes siguiente. El reajuste total del período es igual a la variación del IPC del mes anterior, y se reparte de forma geométrica entre los días del período. Por eso, apenas el INE publica el IPC, quedan determinados los valores diarios de la UF hasta el día 9 del mes siguiente.</p>
+  <p>La fórmula es: <code>UF(día) = UF(día 9) × (1 + IPC)<sup>n/d</sup></code>, donde <em>n</em> es el número de días transcurridos desde el día 9 y <em>d</em> la cantidad de días del período. El resultado se redondea a dos decimales.</p>
+</section>
+
+{{ m.faq(pagina) }}
+{{ m.fuente("Banco Central de Chile e INE, vía mindicador.cl") }}
+{% endblock %}

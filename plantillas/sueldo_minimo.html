@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<div class="tarjetas">
+  <div class="tarjeta destacada"><span class="tarjeta-titulo">Sueldo mínimo bruto</span><span class="tarjeta-valor">{{ imm.monto|pesos }}</span><span class="tarjeta-pie">Desde el {{ imm.desde|fecha_larga }}</span></div>
+  <div class="tarjeta"><span class="tarjeta-titulo">Líquido aproximado</span><span class="tarjeta-valor">{{ liquido.liquido|pesos }}</span><span class="tarjeta-pie">AFP {{ barata }}, Fonasa, contrato indefinido</span></div>
+  {% if imm.menores_18_mayores_65 is defined %}
+  <div class="tarjeta"><span class="tarjeta-titulo">Menores de 18 y mayores de 65</span><span class="tarjeta-valor">{{ imm.menores_18_mayores_65|pesos }}</span><span class="tarjeta-pie">No remuneracional: {{ imm.no_remuneracional|pesos }}</span></div>
+  {% endif %}
+</div>
+
+<p>El ingreso mínimo mensual (IMM) para trabajadores de entre 18 y 65 años es de <strong>{{ imm.monto|pesos }}</strong> bruto, fijado por la {{ imm.ley }}. Después de los descuentos de AFP, salud y seguro de cesantía queda en aproximadamente <strong>{{ liquido.liquido|pesos }}</strong> líquidos ({{ liquido_plazo.liquido|pesos }} con contrato a plazo fijo).</p>
+
+{{ m.anuncio("sueldo_minimo") }}
+
+<section>
+  <h2>Descuentos del sueldo mínimo</h2>
+  <table class="tabla tabla-detalle">
+    <tbody>
+      <tr><th scope="row">Sueldo mínimo bruto</th><td class="num">{{ imm.monto|pesos }}</td></tr>
+      <tr><th scope="row">AFP {{ barata }}</th><td class="num descuento">-{{ liquido.afp|pesos }}</td></tr>
+      <tr><th scope="row">Salud (7%)</th><td class="num descuento">-{{ liquido.salud|pesos }}</td></tr>
+      <tr><th scope="row">Seguro de cesantía (0,6%)</th><td class="num descuento">-{{ liquido.cesantia|pesos }}</td></tr>
+      <tr class="total"><th scope="row">Líquido</th><td class="num">{{ liquido.liquido|pesos }}</td></tr>
+    </tbody>
+  </table>
+  <p class="nota">El tope mensual de la gratificación legal es de {{ gratificacion_tope|pesos }} (4,75 ingresos mínimos al año).</p>
+</section>
+
+<section>
+  <h2>Historial del sueldo mínimo</h2>
+  <table class="tabla">
+    <thead><tr><th>Vigente desde</th><th class="num">Monto</th><th>Ley</th></tr></thead>
+    <tbody>
+    {% for e in historial %}
+      <tr><td>{{ e.desde|fecha_larga }}</td><td class="num">{{ e.monto|pesos }}</td><td>{{ e.ley }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+{{ m.afiliados("sueldo") }}
+{{ m.faq(pagina) }}
+<p><a href="{{ ruta('/calculadoras/sueldo-liquido/') }}">Calcula el líquido de cualquier sueldo →</a></p>
+{{ m.fuente("Biblioteca del Congreso Nacional (leyes de reajuste del ingreso mínimo)") }}
+{% endblock %}

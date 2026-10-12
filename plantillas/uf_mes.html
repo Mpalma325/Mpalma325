@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<p class="bajada">
+  {% if es_futuro %}Valores de la UF ya conocidos para {{ mes|mes_de_anio }}.{% else %}Valores diarios de la Unidad de Fomento en {{ mes|mes_de_anio }}.{% endif %}
+  El {{ dias[0][0]|dia_mes }} la UF vale {{ dias[0][1]|pesos(2) }} y el {{ dias[-1][0]|dia_mes }}, {{ dias[-1][1]|pesos(2) }}{% if completo and variacion_mes is not none %}: una variación de {{ variacion_mes|porcentaje(2, true) }} en el mes{% endif %}.
+</p>
+
+{% if not completo %}
+<p class="aviso">Por ahora se conocen los valores hasta el {{ dias[-1][0]|fecha_larga }}. Los siguientes se sabrán cuando el INE publique el IPC de {{ mes_ipc_segunda|mes_de_anio }}, cerca del día 8 de {{ mes|mes_de_anio }}.</p>
+{% endif %}
+
+{{ m.anuncio("uf_mes_superior") }}
+
+<div class="tabla-desplazable">
+<table class="tabla">
+  <thead><tr><th>Fecha</th><th>Día</th><th class="num">Valor UF</th></tr></thead>
+  <tbody>
+  {% for fecha, valor in dias %}
+    <tr{% if fecha == hoy %} class="fila-hoy"{% endif %}><td>{{ fecha|fecha_corta }}</td><td>{{ fecha|dia_semana|capitalizar }}</td><td class="num">{{ valor|pesos(2) }}{% if fecha in calculados %}<abbr title="Calculado con la fórmula oficial a partir del IPC publicado">*</abbr>{% endif %}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% if calculados %}
+<p class="nota">* Valor calculado con la metodología del Banco Central a partir del IPC ya publicado por el INE.</p>
+{% endif %}
+
+<section class="texto">
+  <h2>¿Qué IPC se aplica en {{ mes|mes_de_anio }}?</h2>
+  <ul>
+    <li>Del 1 al 9 de {{ mes.month|nombre_mes }}: IPC de {{ mes_ipc_primera|mes_de_anio }}{% if ipc_primera is not none %} ({{ ipc_primera|porcentaje(1, true) }}){% endif %}.</li>
+    <li>Del 10 al {{ dias[-1][0].day if not completo and dias[-1][0].day >= 10 else '' }}{{ '' if not completo and dias[-1][0].day >= 10 else 'fin' }} de {{ mes.month|nombre_mes }}: IPC de {{ mes_ipc_segunda|mes_de_anio }}{% if ipc_segunda is not none %} ({{ ipc_segunda|porcentaje(1, true) }}){% else %} (aún no publicado){% endif %}.</li>
+  </ul>
+</section>
+
+<nav class="paginador" aria-label="Meses">
+  {% if anterior %}<a href="{{ ruta('/uf/' ~ anterior.year ~ '/' ~ (anterior.month|nombre_mes) ~ '/') }}">← UF {{ anterior|mes_anio }}</a>{% else %}<span></span>{% endif %}
+  {% if siguiente %}<a href="{{ ruta('/uf/' ~ siguiente.year ~ '/' ~ (siguiente.month|nombre_mes) ~ '/') }}">UF {{ siguiente|mes_anio }} →</a>{% endif %}
+</nav>
+
+<section>
+  <h2>UF {{ mes.year }} mes a mes</h2>
+  <ul class="enlaces">
+  {% for otro in meses_del_anio %}
+    <li><a href="{{ ruta('/uf/' ~ otro.year ~ '/' ~ (otro.month|nombre_mes) ~ '/') }}">{{ otro.month|nombre_mes|capitalizar }}</a></li>
+  {% endfor %}
+  </ul>
+  <p><a href="{{ ruta('/uf/') }}">Ver el valor de la UF hoy →</a></p>
+</section>
+{{ m.fuente("Banco Central de Chile, vía mindicador.cl") }}
+{% endblock %}

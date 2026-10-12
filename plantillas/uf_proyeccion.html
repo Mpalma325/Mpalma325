@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<p class="bajada">¿Cuánto valdrá la UF en los próximos meses? Los valores hasta el <strong>{{ ultimo_oficial|fecha_larga }}</strong> ya se conocen. Para después, proyectamos la UF con tres escenarios de inflación.</p>
+
+<div class="tarjetas">
+  <div class="tarjeta destacada">
+    <span class="tarjeta-titulo">UF proyectada al {{ cierre_anio.fecha|fecha_larga }}</span>
+    <span class="tarjeta-valor">{{ cierre_anio.central|pesos(2) }}</span>
+    <span class="tarjeta-pie">Rango: {{ cierre_anio.baja|pesos(0) }} a {{ cierre_anio.alta|pesos(0) }}</span>
+  </div>
+  <div class="tarjeta">
+    <span class="tarjeta-titulo">UF proyectada en 12 meses</span>
+    <span class="tarjeta-valor">{{ filas[-1].central|pesos(2) }}</span>
+    <span class="tarjeta-pie">{{ filas[-1].fecha|fecha_larga }}</span>
+  </div>
+  <div class="tarjeta">
+    <span class="tarjeta-titulo">Inflación del escenario central</span>
+    <span class="tarjeta-valor">{{ anual_central|porcentaje(1) }}</span>
+    <span class="tarjeta-pie">Anual, según los últimos 12 meses de IPC</span>
+  </div>
+</div>
+
+{{ m.anuncio("proyeccion_superior") }}
+
+<section>
+  <h2>UF proyectada mes a mes</h2>
+  <form class="conversor" onsubmit="return false">
+    <div class="campo">
+      <label for="proy-monto">Calcular en pesos un monto de (UF)</label>
+      <input id="proy-monto" inputmode="decimal" autocomplete="off" value="1" data-proyeccion-monto>
+    </div>
+  </form>
+  <div class="tabla-desplazable">
+  <table class="tabla" data-tabla-proyeccion>
+    <thead><tr><th>Fecha</th><th class="num">Escenario bajo</th><th class="num">Central</th><th class="num">Escenario alto</th></tr></thead>
+    <tbody>
+    {% for fila in filas %}
+      <tr{% if fila.conocida %} class="fila-conocida"{% endif %}>
+        <td>{{ fila.fecha|fecha_corta }}{% if fila.conocida %} <span class="etiqueta">Conocida</span>{% endif %}</td>
+        <td class="num" data-uf="{{ fila.baja }}">{{ fila.baja|pesos(2) }}</td>
+        <td class="num" data-uf="{{ fila.central }}"><strong>{{ fila.central|pesos(2) }}</strong></td>
+        <td class="num" data-uf="{{ fila.alta }}">{{ fila.alta|pesos(2) }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="nota">Valores al día 9 de cada mes, cuando cierra cada período de reajuste de la UF.</p>
+</section>
+
+<section>
+  <h2>Gráfico: UF real y proyectada</h2>
+  <figure class="figura">{{ grafico }}</figure>
+</section>
+
+<section class="texto">
+  <h2>¿Cómo hacemos la proyección?</h2>
+  <ol>
+    <li>Hasta el {{ ultimo_oficial|fecha_larga }} usamos los valores ya determinados por el IPC publicado.</li>
+    <li>Desde ahí, suponemos que la inflación mensual se mantiene constante en cada escenario:
+      <ul>
+        <li><strong>Central:</strong> la inflación de los últimos 12 meses ({{ anual_central|porcentaje(1) }} anual).</li>
+        <li><strong>Bajo:</strong> un punto porcentual menos ({{ anual_baja|porcentaje(1) }} anual).</li>
+        <li><strong>Alto:</strong> un punto porcentual más ({{ anual_alta|porcentaje(1) }} anual).</li>
+      </ul>
+    </li>
+    <li>Cada mes que el INE publica un nuevo IPC, la proyección se actualiza sola.</li>
+  </ol>
+  <p class="aviso">Es una estimación estadística, no un valor oficial ni una recomendación. La inflación real puede quedar fuera de estos escenarios. Para planificar dividendos o arriendos en UF, conviene considerar el escenario alto.</p>
+</section>
+
+{{ m.afiliados("uf") }}
+{{ m.faq(pagina) }}
+{{ m.fuente("Banco Central de Chile e INE (datos); proyección propia") }}
+{% endblock %}

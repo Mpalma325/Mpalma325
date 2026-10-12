@@ -1,0 +1,59 @@
+# =============================================================================
+# Configuración del sitio Lucas Claras
+# =============================================================================
+# Después de editar este archivo, haz commit y push: GitHub Actions reconstruye
+# y publica el sitio solo. Ver docs/GUIA_PUESTA_EN_MARCHA.md.
+
+sitio:
+  nombre: Lucas Claras
+  eslogan: Indicadores y calculadoras para tus finanzas en Chile
+  # URL final del sitio, sin barra al final. Ejemplos:
+  #   https://lucasclaras.cl                     (dominio propio, recomendado)
+  #   https://mpalma325.github.io/lucas-claras   (GitHub Pages sin dominio)
+  url: https://lucasclaras.cl
+  idioma: es-CL
+  # Correo de contacto público (recomendado antes de postular a AdSense).
+  correo_contacto: ""
+  # Quiénes están detrás del sitio, para la página "Quiénes somos". Ej.:
+  # "dos estudiantes de ingeniería y del Magíster en Ciencia de Datos"
+  autores: ""
+  # Año desde el que se descargan datos la primera vez.
+  anio_inicio_datos: 2018
+
+monetizacion:
+  adsense:
+    # Activa los anuncios cuando Google apruebe el sitio.
+    activo: false
+    # Tu ID de editor, p. ej. "ca-pub-1234567890123456". Genera ads.txt automáticamente.
+    publisher_id: ""
+    # Bloques de anuncios manuales (opcional; sin esto funcionan los "Auto ads").
+    # nombre_del_bloque: "id_del_slot"   p. ej. uf_superior: "1234567890"
+    slots: {}
+
+  # Enlaces de referidos o afiliados. Se muestran en las secciones indicadas,
+  # siempre con el aviso de que son referidos. Secciones disponibles: uf, dolar,
+  # euro, utm, ipc, sueldo, honorarios, arriendo, hipotecario, ahorro, feriados, todas.
+  afiliados: []
+  # Ejemplo (borra el "#" de cada línea y usa tu propio enlace):
+  # - titulo: Invierte tu ahorro desde $1.000
+  #   texto: Fondos mutuos y APV con comisiones bajas, regulados por la CMF.
+  #   url: https://fintual.cl/r/TU-CODIGO
+  #   boton: Abrir cuenta
+  #   secciones: [ahorro, sueldo]
+  #   activo: true
+
+analitica:
+  # Cloudflare Web Analytics (gratis, sin cookies): token del "beacon".
+  cloudflare_web_analytics_token: ""
+  # Google Analytics 4 (opcional), p. ej. "G-XXXXXXXXXX".
+  google_analytics_id: ""
+
+verificacion:
+  # Códigos de verificación de Google Search Console y Bing Webmaster Tools
+  # (solo si eliges verificar con etiqueta HTML; con DNS no hace falta).
+  google: ""
+  bing: ""
+
+indexnow:
+  # Clave de IndexNow (Bing/Yandex): cualquier texto hexadecimal de 32 caracteres.
+  clave: ""

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block contenido %}
+<section class="portada">
+  <h1>{{ pagina.h1 }}</h1>
+  <p class="bajada">Valores actualizados al <strong>{{ hoy|fecha_con_dia }}</strong>. Datos oficiales del Banco Central, INE y SII, y calculadoras gratuitas con los parámetros legales vigentes.</p>
+</section>
+
+<section class="tarjetas" aria-label="Indicadores de hoy">
+  <a class="tarjeta destacada" href="{{ ruta('/uf/') }}">
+    <span class="tarjeta-titulo">UF hoy</span>
+    <span class="tarjeta-valor" data-uf-hoy>{{ cabecera.uf|pesos(2) }}</span>
+    <span class="tarjeta-pie">{% if uf_manana %}Mañana: {{ uf_manana|pesos(2) }}<br>{% endif %}{{ m.variacion(uf_variacion_anual) }} <small>en 12 meses</small></span>
+  </a>
+  <a class="tarjeta" href="{{ ruta('/dolar/') }}">
+    <span class="tarjeta-titulo">Dólar observado</span>
+    <span class="tarjeta-valor">{{ cabecera.dolar[1]|pesos(2) }}</span>
+    <span class="tarjeta-pie">{{ cabecera.dolar[0]|dia_mes }} {{ m.variacion(dolar_variacion) }}</span>
+  </a>
+  <a class="tarjeta" href="{{ ruta('/euro/') }}">
+    <span class="tarjeta-titulo">Euro</span>
+    <span class="tarjeta-valor">{{ euro_valor|pesos(2) }}</span>
+    <span class="tarjeta-pie">{{ m.variacion(euro_variacion) }}</span>
+  </a>
+  <a class="tarjeta" href="{{ ruta('/utm/') }}">
+    <span class="tarjeta-titulo">UTM {{ hoy|mes_anio }}</span>
+    <span class="tarjeta-valor">{{ cabecera.utm|pesos }}</span>
+    <span class="tarjeta-pie">{{ m.variacion(utm_variacion) }} <small>vs. mes anterior</small></span>
+  </a>
+  <a class="tarjeta" href="{{ ruta('/ipc/') }}">
+    <span class="tarjeta-titulo">IPC {{ ipc_mes|mes_anio }}</span>
+    <span class="tarjeta-valor">{{ ipc_valor|porcentaje(1, true) }}</span>
+    <span class="tarjeta-pie">{{ ipc_12m|porcentaje(1) }} <small>en 12 meses</small></span>
+  </a>
+  {% if proximos_feriados %}
+  <a class="tarjeta" href="{{ ruta('/feriados/') }}">
+    <span class="tarjeta-titulo">{{ 'Hoy es feriado' if proximos_feriados[0].fecha == hoy else 'Próximo feriado' }}</span>
+    <span class="tarjeta-valor tarjeta-valor-texto">{{ proximos_feriados[0].fecha|dia_mes }}</span>
+    <span class="tarjeta-pie">{{ proximos_feriados[0].nombre }} ({{ proximos_feriados[0].fecha|dia_semana }})</span>
+  </a>
+  {% endif %}
+</section>
+
+{{ m.anuncio("inicio_superior") }}
+
+<section>
+  <h2>Calculadoras más usadas</h2>
+  <div class="tarjetas tarjetas-calculadoras">
+    <a class="tarjeta" href="{{ ruta('/calculadoras/sueldo-liquido/') }}"><span class="tarjeta-titulo">Sueldo líquido</span><span>De bruto a líquido y al revés, con tu AFP y salud.</span></a>
+    <a class="tarjeta" href="{{ ruta('/calculadoras/boleta-honorarios/') }}"><span class="tarjeta-titulo">Boleta de honorarios</span><span>Retención {{ hoy.year }} y monto a cobrar.</span></a>
+    <a class="tarjeta" href="{{ ruta('/calculadoras/reajuste-arriendo-ipc/') }}"><span class="tarjeta-titulo">Arriendo por IPC</span><span>Cuánto sube tu arriendo este período.</span></a>
+    <a class="tarjeta" href="{{ ruta('/calculadoras/credito-hipotecario/') }}"><span class="tarjeta-titulo">Crédito hipotecario</span><span>Dividendo en UF y pesos, y renta mínima.</span></a>
+    <a class="tarjeta" href="{{ ruta('/uf/proyeccion/') }}"><span class="tarjeta-titulo">UF proyectada</span><span>Cuánto podría valer la UF en los próximos meses.</span></a>
+    <a class="tarjeta" href="{{ ruta('/calculadoras/interes-compuesto/') }}"><span class="tarjeta-titulo">Interés compuesto</span><span>Cuánto crece tu ahorro mes a mes.</span></a>
+  </div>
+</section>
+
+{% if otros %}
+<section>
+  <h2>Otros indicadores</h2>
+  <table class="tabla">
+    <thead><tr><th>Indicador</th><th class="num">Valor</th><th>Fecha</th></tr></thead>
+    <tbody>
+    {% for o in otros %}
+      <tr>
+        <td>{{ o.nombre }}</td>
+        <td class="num">{% if o.unidad == "%" %}{{ o.valor|numero(2) }}%{% else %}US${{ o.valor|numero(2) }}{% endif %}</td>
+        <td>{{ o.fecha|fecha_corta }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+
+<section class="texto">
+  <h2>Indicadores confiables y calculadoras claras</h2>
+  <p>{{ sitio.nombre }} reúne en un solo lugar los indicadores económicos que más se consultan en Chile —UF, dólar, euro, UTM e IPC— y calculadoras para resolver dudas del día a día: cuánto te queda líquido de tu sueldo, cuánto retener en una boleta de honorarios o cuánto sube tu arriendo.</p>
+  <p>Los valores se actualizan automáticamente cada día con datos del Banco Central de Chile, el Instituto Nacional de Estadísticas y el Servicio de Impuestos Internos. Las calculadoras usan los parámetros legales vigentes (topes imponibles, comisiones de AFP, tabla de impuesto único y tasas de retención), con su fuente indicada. <a href="{{ ruta('/acerca/') }}">Conoce cómo trabajamos</a>.</p>
+</section>
+{% endblock %}

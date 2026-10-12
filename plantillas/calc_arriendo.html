@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<p class="bajada">Ingresa tu arriendo actual y el período del reajuste. Usamos las variaciones mensuales del IPC publicadas por el INE; el último dato disponible es el de <strong>{{ ultimo|mes_de_anio }}</strong>.</p>
+
+<div class="calculadora-layout">
+<form id="calc-arriendo" class="calculadora" data-calculadora="arriendo" onsubmit="return false">
+  <div class="campo">
+    <label for="a-monto">Arriendo actual</label>
+    <input id="a-monto" name="monto" inputmode="numeric" autocomplete="off" value="500.000" data-dinero>
+  </div>
+  <div class="campo">
+    <label for="a-desde">Desde el IPC de</label>
+    <select id="a-desde" name="desde">
+      {% for mes in meses %}
+      <option value="{{ mes.strftime('%Y-%m') }}"{% if loop.index == 6 %} selected{% endif %}>{{ mes|mes_anio|capitalizar }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="campo">
+    <label for="a-hasta">Hasta el IPC de</label>
+    <select id="a-hasta" name="hasta">
+      {% for mes in meses %}
+      <option value="{{ mes.strftime('%Y-%m') }}"{% if loop.first %} selected{% endif %}>{{ mes|mes_anio|capitalizar }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="botones-rapidos">
+    {% for p in periodos %}
+    <button type="button" class="boton-chico" data-periodo="{{ p.meses }}">Últimos {{ p.meses }} {{ 'mes' if p.meses == 1 else 'meses' }}</button>
+    {% endfor %}
+  </div>
+</form>
+<div class="resultado" id="resultado-arriendo" aria-live="polite">
+  <p class="resultado-etiqueta">Nuevo arriendo</p>
+  <p class="resultado-principal" data-r="nuevo">—</p>
+  <table class="tabla tabla-detalle">
+    <tbody>
+      <tr><th scope="row">Variación del IPC en el período</th><td class="num" data-r="variacion">—</td></tr>
+      <tr><th scope="row">Aumento</th><td class="num" data-r="diferencia">—</td></tr>
+      <tr><th scope="row">Meses considerados</th><td class="num" data-r="meses">—</td></tr>
+    </tbody>
+  </table>
+  <button type="button" class="boton-secundario" data-compartir>Copiar enlace a este cálculo</button>
+</div>
+</div>
+
+{{ m.anuncio("arriendo_superior") }}
+
+<section>
+  <h2>Variación acumulada del IPC hasta {{ ultimo|mes_de_anio }}</h2>
+  <table class="tabla">
+    <thead><tr><th>Período</th><th class="num">Variación</th><th class="num">Arriendo de $500.000 queda en</th></tr></thead>
+    <tbody>
+    {% for p in periodos %}
+      <tr><td>{{ p.desde|mes_anio|capitalizar }} a {{ p.hasta|mes_anio }}</td><td class="num">{{ p.variacion|porcentaje(2, true) }}</td><td class="num">{{ (500000 * (1 + p.variacion))|pesos }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="texto">
+  <h2>Cómo leer tu contrato</h2>
+  <p>La mayoría de los contratos dice algo como "la renta se reajustará cada seis meses según la variación que experimente el IPC". En ese caso, usa los últimos seis meses con IPC publicado antes de la fecha del reajuste. Si tu contrato está en UF, no necesitas esta calculadora: el arriendo se reajusta solo con el <a href="{{ ruta('/uf/') }}">valor de la UF</a>.</p>
+</section>
+
+{{ m.afiliados("arriendo") }}
+{{ m.faq(pagina) }}
+{{ m.fuente("Instituto Nacional de Estadísticas (INE), vía mindicador.cl") }}
+{% endblock %}

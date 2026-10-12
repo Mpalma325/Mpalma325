@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<p class="bajada">Tabla del Impuesto Único de Segunda Categoría para remuneraciones, expresada en pesos con la UTM del mes. Se aplica sobre la renta líquida imponible: el sueldo menos las cotizaciones obligatorias de AFP, salud y seguro de cesantía.</p>
+
+{% for tabla in tablas %}
+<section>
+  <h2>{{ tabla.mes|mes_anio|capitalizar }} (UTM {{ tabla.utm|pesos }})</h2>
+  <div class="tabla-desplazable">
+  <table class="tabla">
+    <thead><tr><th>Renta desde</th><th>Hasta</th><th class="num">Factor</th><th class="num">Cantidad a rebajar</th></tr></thead>
+    <tbody>
+    {% for fila in tabla.filas %}
+      <tr><td>{{ fila.desde|pesos(2) }}</td><td>{% if fila.hasta is none %}y más{% else %}{{ fila.hasta|pesos(2) }}{% endif %}</td><td class="num">{% if fila.factor == 0 %}Exento{% else %}{{ fila.factor|porcentaje(1) }}{% endif %}</td><td class="num">{{ fila.rebaja|pesos(2) }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+{% if loop.first %}{{ m.anuncio("impuesto_superior") }}{% endif %}
+{% endfor %}
+
+<section class="texto">
+  <h2>Cómo usar la tabla</h2>
+  <ol>
+    <li>Calcula tu renta líquida imponible: sueldo imponible menos AFP, salud (hasta el 7%) y seguro de cesantía.</li>
+    <li>Ubica el tramo en que cae ese monto.</li>
+    <li>Multiplica la renta por el factor del tramo y réstale la cantidad a rebajar.</li>
+  </ol>
+  <p>¿Prefieres que lo haga una calculadora? Usa la <a href="{{ ruta('/calculadoras/sueldo-liquido/') }}">calculadora de sueldo líquido</a>, que aplica esta tabla automáticamente.</p>
+</section>
+
+{{ m.afiliados("sueldo") }}
+{{ m.faq(pagina) }}
+{{ m.fuente("Servicio de Impuestos Internos (tabla en UTM de la Ley 21.210)") }}
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<p class="bajada">Calcula cuánto recibirás líquido según tu sueldo bruto, o cuánto bruto necesitas pedir para recibir un líquido determinado. Usa los parámetros vigentes al {{ hoy|fecha_larga }}: UF {{ cabecera.uf|pesos(2) }}, UTM {{ cabecera.utm|pesos }} y tope imponible de {{ parametros.tope_imponible_uf|numero(1) }} UF.</p>
+
+<div class="calculadora-layout">
+<form id="calc-sueldo" class="calculadora" data-calculadora="sueldo" onsubmit="return false">
+  <fieldset class="modo">
+    <legend>¿Qué quieres calcular?</legend>
+    <label><input type="radio" name="modo" value="bruto" checked> Mi líquido a partir del bruto</label>
+    <label><input type="radio" name="modo" value="liquido"> El bruto para un líquido</label>
+  </fieldset>
+  <div class="campo">
+    <label for="s-monto" data-etiqueta-bruto="Sueldo bruto mensual" data-etiqueta-liquido="Sueldo líquido que quieres recibir">Sueldo bruto mensual</label>
+    <input id="s-monto" name="monto" inputmode="numeric" autocomplete="off" value="1.000.000" data-dinero>
+  </div>
+  <div class="campo">
+    <label for="s-afp">AFP</label>
+    <select id="s-afp" name="afp">
+      {% for clave, comision in afps %}
+      <option value="{{ clave }}"{% if clave == barata %} selected{% endif %}>{{ parametros.nombres_afp[clave] }} ({{ (parametros.tasa_afp + comision)|porcentaje(2) }})</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="campo">
+    <label for="s-salud">Sistema de salud</label>
+    <select id="s-salud" name="salud">
+      <option value="fonasa">Fonasa (7%)</option>
+      <option value="isapre">Isapre</option>
+    </select>
+  </div>
+  <div class="campo" data-solo-isapre hidden>
+    <label for="s-plan">Precio de tu plan de isapre (UF)</label>
+    <input id="s-plan" name="plan" inputmode="decimal" autocomplete="off" value="0">
+  </div>
+  <div class="campo">
+    <label for="s-contrato">Tipo de contrato</label>
+    <select id="s-contrato" name="contrato">
+      <option value="indefinido">Indefinido</option>
+      <option value="plazo_fijo">Plazo fijo o por obra</option>
+      <option value="indefinido_11">Indefinido con más de 11 años</option>
+    </select>
+  </div>
+  <details class="opciones">
+    <summary>Más opciones</summary>
+    <div class="campo">
+      <label for="s-noimp">Colación y movilización (no imponible)</label>
+      <input id="s-noimp" name="no_imponible" inputmode="numeric" autocomplete="off" value="0" data-dinero>
+    </div>
+    <div class="campo">
+      <label for="s-apv">APV régimen B mensual</label>
+      <input id="s-apv" name="apv" inputmode="numeric" autocomplete="off" value="0" data-dinero>
+    </div>
+    <label class="campo-check" data-solo-bruto><input type="checkbox" name="gratificacion"> El monto es mi sueldo base: sumar gratificación legal (25%, tope {{ (parametros.gratificacion_tope_imm_anual * parametros.imm / 12)|pesos }})</label>
+  </details>
+</form>
+
+<div class="resultado" id="resultado-sueldo" aria-live="polite">
+  <p class="resultado-etiqueta" data-r-etiqueta>Sueldo líquido</p>
+  <p class="resultado-principal" data-r="principal">{{ inicial.liquido|pesos }}</p>
+  <table class="tabla tabla-detalle">
+    <tbody>
+      <tr><th scope="row">Sueldo bruto imponible</th><td class="num" data-r="bruto">{{ inicial.bruto|pesos }}</td></tr>
+      <tr data-fila="gratificacion" hidden><th scope="row">Incluye gratificación</th><td class="num" data-r="gratificacion">$0</td></tr>
+      <tr data-fila="no_imponible" hidden><th scope="row">Colación y movilización</th><td class="num" data-r="no_imponible">$0</td></tr>
+      <tr><th scope="row">AFP <span data-r="tasa_afp">({{ inicial.tasa_afp_total|porcentaje(2) }})</span></th><td class="num descuento" data-r="afp">-{{ inicial.afp|pesos }}</td></tr>
+      <tr><th scope="row">Salud</th><td class="num descuento" data-r="salud">-{{ inicial.salud|pesos }}</td></tr>
+      <tr><th scope="row">Seguro de cesantía</th><td class="num descuento" data-r="cesantia">-{{ inicial.cesantia|pesos }}</td></tr>
+      <tr data-fila="apv" hidden><th scope="row">APV</th><td class="num descuento" data-r="apv">$0</td></tr>
+      <tr><th scope="row">Impuesto único</th><td class="num descuento" data-r="impuesto">-{{ inicial.impuesto|pesos }}</td></tr>
+      <tr class="total"><th scope="row">Sueldo líquido</th><td class="num" data-r="liquido">{{ inicial.liquido|pesos }}</td></tr>
+    </tbody>
+  </table>
+  <p class="nota" data-r="nota">Base tributable: {{ inicial.base_tributable|pesos }} · Tasa marginal de impuesto: {{ inicial.tasa_marginal|porcentaje(1) }}{% if inicial.tope_aplicado %} · Se aplicó el tope imponible{% endif %}</p>
+  <details class="costo-empleador">
+    <summary>Costo para el empleador: <strong data-r="costo_total">{{ costo.costo_total|pesos }}</strong></summary>
+    <table class="tabla tabla-detalle">
+      <tbody>
+        <tr><th scope="row">Seguro de cesantía (empleador)</th><td class="num" data-r="e_cesantia">{{ costo.cesantia|pesos }}</td></tr>
+        <tr><th scope="row">Aporte reforma de pensiones{% if parametros.sis == 0 %} (incluye SIS){% endif %}</th><td class="num" data-r="e_reforma">{{ costo.reforma|pesos }}</td></tr>
+        <tr data-fila="e_sis"{% if parametros.sis == 0 %} hidden{% endif %}><th scope="row">SIS</th><td class="num" data-r="e_sis">{{ costo.sis|pesos }}</td></tr>
+        <tr><th scope="row">Mutual (tasa básica)</th><td class="num" data-r="e_mutual">{{ costo.mutual|pesos }}</td></tr>
+      </tbody>
+    </table>
+    <p class="nota">No incluye la cotización adicional de la mutual según riesgo de la empresa.</p>
+  </details>
+  <button type="button" class="boton-secundario" data-compartir>Copiar enlace a este cálculo</button>
+</div>
+</div>
+
+{{ m.anuncio("sueldo_superior") }}
+
+<section class="texto">
+  <h2>¿Cómo se calcula el sueldo líquido?</h2>
+  <p>Al sueldo bruto imponible se le descuentan:</p>
+  <ul>
+    <li><strong>AFP:</strong> 10% para tu cuenta de ahorro más la comisión de tu AFP, sobre un máximo de {{ parametros.tope_imponible_uf|numero(1) }} UF ({{ tope_pesos|pesos }} este mes).</li>
+    <li><strong>Salud:</strong> 7% para Fonasa o tu isapre (si tu plan cuesta más, se descuenta el valor del plan), con el mismo tope.</li>
+    <li><strong>Seguro de cesantía:</strong> 0,6% si tu contrato es indefinido, con un tope de {{ parametros.tope_cesantia_uf|numero(1) }} UF ({{ tope_afc_pesos|pesos }}). Con contrato a plazo fijo lo paga solo el empleador.</li>
+    <li><strong>Impuesto único:</strong> se calcula sobre el sueldo menos las cotizaciones anteriores, según la <a href="{{ ruta('/impuesto-unico/') }}">tabla del mes</a>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Comisiones de AFP vigentes</h2>
+  <table class="tabla">
+    <thead><tr><th>AFP</th><th class="num">Comisión</th><th class="num">Descuento total</th></tr></thead>
+    <tbody>
+    {% for clave, comision in afps %}
+      <tr><td>{{ parametros.nombres_afp[clave] }}</td><td class="num">{{ comision|porcentaje(2) }}</td><td class="num">{{ (parametros.tasa_afp + comision)|porcentaje(2) }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+{{ m.afiliados("sueldo") }}
+
+<section>
+  <h2>Sueldo líquido según sueldo bruto</h2>
+  <p>Con AFP {{ parametros.nombres_afp[barata] }}, Fonasa y contrato indefinido:</p>
+  <div class="tabla-desplazable">
+  <table class="tabla">
+    <thead><tr><th>Sueldo bruto</th><th class="num">Sueldo líquido</th></tr></thead>
+    <tbody>
+    {% for bruto, liquido in ejemplos %}
+      <tr><td><a href="{{ ruta('/sueldo-liquido/' ~ bruto ~ '/') }}">{{ bruto|pesos }}</a></td><td class="num">{{ liquido|pesos }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+
+{{ m.faq(pagina) }}
+{{ m.fuente("Superintendencia de Pensiones, SII y Previred (parámetros); Banco Central (UF)") }}
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<div class="destacado">
+  <p class="destacado-etiqueta">{{ divisa.simbolo }}{{ monto|numero }} según el {{ divisa.nombre }} observado del {{ fecha|fecha_larga }}</p>
+  <p class="destacado-valor">{{ (monto * valor)|pesos }}</p>
+  <p class="destacado-pie">1 {{ divisa.nombre }} = {{ valor|pesos(2) }}</p>
+</div>
+
+<p>{{ monto|numero }} {{ divisa.plural }} equivalen a <strong>{{ (monto * valor)|pesos }}</strong> pesos chilenos al tipo de cambio oficial publicado por el Banco Central. {% if hace_un_anio %}Hace un año, el mismo monto equivalía a {{ (monto * hace_un_anio[1])|pesos }}.{% endif %}</p>
+
+{{ m.conversor(divisa.clave, divisa.plural|capitalizar ~ " (" ~ divisa.simbolo ~ ")", "Pesos chilenos", valor, monto, 2, 0) }}
+
+<p class="aviso">Si vas a comprar o vender {{ divisa.plural }}, el valor real dependerá de tu banco o casa de cambio, que aplican su propio margen sobre el {{ divisa.nombre }} observado.</p>
+
+{{ m.anuncio(divisa.clave ~ "_monto") }}
+
+<section>
+  <h2>{{ monto|numero }} {{ divisa.plural }} en los últimos días hábiles</h2>
+  <div class="tabla-desplazable">
+  <table class="tabla">
+    <thead><tr><th>Fecha</th><th class="num">{{ divisa.nombre|capitalizar }}</th><th class="num">{{ monto|numero }} {{ divisa.plural }} en pesos</th></tr></thead>
+    <tbody>
+    {% for f, v in ultimos %}
+      <tr><td>{{ f|fecha_corta }}</td><td class="num">{{ v|pesos(2) }}</td><td class="num">{{ (monto * v)|pesos }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+
+{{ m.afiliados(divisa.clave) }}
+
+<section>
+  <h2>Otros montos</h2>
+  <ul class="enlaces">
+  {% for otro in vecinos %}
+    <li><a href="{{ ruta('/' ~ divisa.clave ~ '/' ~ otro ~ '-' ~ divisa.plural ~ '-en-pesos/') }}">{{ otro|numero }} {{ divisa.plural }}</a></li>
+  {% endfor %}
+    <li><a href="{{ ruta('/' ~ divisa.clave ~ '/') }}">{{ divisa.nombre|capitalizar }} hoy</a></li>
+  </ul>
+</section>
+{{ m.fuente("Banco Central de Chile, vía mindicador.cl") }}
+{% endblock %}

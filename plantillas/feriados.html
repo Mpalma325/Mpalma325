@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+{% if es_actual and proximos %}
+<div class="destacado" data-proximo-feriado>
+  {% if proximos[0].fecha == hoy %}
+  <p class="destacado-etiqueta">Hoy es feriado</p>
+  {% else %}
+  <p class="destacado-etiqueta">Próximo feriado</p>
+  {% endif %}
+  <p class="destacado-valor destacado-texto" data-r="nombre">{{ proximos[0].nombre }}</p>
+  <p class="destacado-pie" data-r="fecha">{{ proximos[0].fecha|fecha_con_dia|capitalizar }}</p>
+</div>
+{% endif %}
+
+<p>En {{ anio }} hay <strong>{{ lista|length }} feriados nacionales</strong> en Chile, de los cuales {{ en_dia_habil|length }} caen de lunes a viernes y {{ irrenunciables|length }} son irrenunciables para los trabajadores del comercio. {% if largos %}Habrá {{ largos|length }} fines de semana largos.{% endif %}</p>
+
+{{ m.anuncio("feriados_superior") }}
+
+<div class="tabla-desplazable">
+<table class="tabla tabla-feriados">
+  <thead><tr><th>Fecha</th><th>Día</th><th>Feriado</th><th>Tipo</th></tr></thead>
+  <tbody>
+  {% for f in lista %}
+    <tr class="{{ 'pasado' if es_actual and f.fecha < hoy else '' }}{{ ' fila-hoy' if f.fecha == hoy else '' }}">
+      <td>{{ f.fecha|dia_mes }}</td>
+      <td>{{ f.fecha|dia_semana|capitalizar }}</td>
+      <td>{{ f.nombre }}{% if f.irrenunciable %} <span class="etiqueta">Irrenunciable</span>{% endif %}{% if f.nota %}<br><small>{{ f.nota }}</small>{% endif %}</td>
+      <td>{{ f.tipo }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+
+{% if largos %}
+<section>
+  <h2>Fines de semana largos {{ anio }}</h2>
+  <ul class="lista-largos">
+  {% for b in largos %}
+    <li><strong>{{ b.dias }} días:</strong> del {{ b.inicio|dia_semana }} {{ b.inicio|dia_mes }} al {{ b.fin|dia_semana }} {{ b.fin|dia_mes }} ({{ b.feriados|map(attribute='nombre')|join(', ') }})</li>
+  {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<section>
+  <h2>Feriados regionales</h2>
+  <ul>
+  {% for f in regionales %}
+    <li><strong>{{ f.fecha|dia_semana|capitalizar }} {{ f.fecha|dia_mes }}:</strong> {{ f.nombre }} ({{ f.regional }}).</li>
+  {% endfor %}
+  </ul>
+</section>
+
+{{ m.afiliados("feriados") }}
+
+<section>
+  <h2>Otros años</h2>
+  <ul class="enlaces">
+  {% for otro in otros_anios %}
+    <li><a href="{{ ruta('/feriados/' if otro == hoy.year else '/feriados/' ~ otro ~ '/') }}">Feriados {{ otro }}</a></li>
+  {% endfor %}
+    <li><a href="{{ ruta('/calculadoras/dias-habiles/') }}">Calculadora de días hábiles</a></li>
+  </ul>
+</section>
+
+{{ m.faq(pagina) }}
+<p class="fuente">Calculado según la legislación vigente (leyes 2.977, 19.668, 19.973, 20.215, 20.299, 20.983 y 21.357, entre otras). Si se aprueba un feriado especial, lo agregamos apenas se publica la ley.</p>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<p class="bajada">Valor de la Unidad Tributaria Mensual (UTM) y de la Unidad Tributaria Anual (UTA) en cada mes de {{ anio }}.</p>
+
+{{ m.anuncio("utm_anio") }}
+
+<div class="tabla-desplazable">
+<table class="tabla">
+  <thead><tr><th>Mes</th><th class="num">UTM</th><th class="num">UTA</th><th class="num">IPC aplicado</th></tr></thead>
+  <tbody>
+  {% for mes, valor in filas %}
+    <tr><td>{{ mes|mes_anio|capitalizar }}</td><td class="num">{{ valor|pesos }}{% if mes in calculados %}<abbr title="Calculada con el IPC ya publicado; el SII confirma el valor oficial">*</abbr>{% endif %}</td><td class="num">{{ (valor * 12)|pesos }}</td><td class="num">{% if ipc_de[mes] is not none %}{{ ipc_de[mes]|porcentaje(1, true) }}{% else %}—{% endif %}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% if calculados %}<p class="nota">* Calculada con la metodología de reajuste a partir del IPC ya publicado.</p>{% endif %}
+
+<section>
+  <h2>Otros años</h2>
+  <ul class="enlaces">
+  {% for otro in anios if otro != anio %}
+    <li><a href="{{ ruta('/utm/' ~ otro ~ '/') }}">UTM {{ otro }}</a></li>
+  {% endfor %}
+    <li><a href="{{ ruta('/utm/') }}">UTM de este mes</a></li>
+  </ul>
+</section>
+{{ m.fuente("Servicio de Impuestos Internos, vía mindicador.cl") }}
+{% endblock %}

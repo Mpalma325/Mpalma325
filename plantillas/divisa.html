@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<div class="destacado">
+  <p class="destacado-etiqueta">{{ divisa.nombre|capitalizar }} observado del {{ fecha|fecha_con_dia }}</p>
+  <p class="destacado-valor">{{ valor|pesos(2) }}</p>
+  <p class="destacado-pie">{{ m.variacion(variacion) }} respecto del valor anterior{% if anterior %} ({{ anterior[1]|pesos(2) }} el {{ anterior[0]|dia_mes }}){% endif %} · {{ m.variacion(variacion_anual) }} en 12 meses</p>
+</div>
+
+<section>
+  <h2>Convertir {{ divisa.plural }} a pesos</h2>
+  {{ m.conversor(divisa.clave, divisa.plural|capitalizar ~ " (" ~ divisa.simbolo ~ ")", "Pesos chilenos", valor, 100, 2, 0) }}
+  <p class="nota">Para convertir pesos a {{ divisa.plural }}, escribe el monto en pesos en el segundo campo.</p>
+</section>
+
+{{ m.anuncio(divisa.clave ~ "_superior") }}
+
+{% if maximo_anio %}
+<section>
+  <h2>El {{ divisa.nombre }} en {{ hoy.year }}</h2>
+  <div class="tarjetas">
+    <div class="tarjeta"><span class="tarjeta-titulo">Promedio {{ hoy.year }}</span><span class="tarjeta-valor">{{ promedio_anio|pesos(2) }}</span></div>
+    <div class="tarjeta"><span class="tarjeta-titulo">Máximo {{ hoy.year }}</span><span class="tarjeta-valor">{{ maximo_anio|pesos(2) }}</span></div>
+    <div class="tarjeta"><span class="tarjeta-titulo">Mínimo {{ hoy.year }}</span><span class="tarjeta-valor">{{ minimo_anio|pesos(2) }}</span></div>
+  </div>
+</section>
+{% endif %}
+
+<section>
+  <h2>{{ divisa.nombre|capitalizar }} en los últimos 12 meses</h2>
+  <figure class="figura">{{ grafico }}</figure>
+</section>
+
+<section>
+  <h2>Últimos 30 valores del {{ divisa.nombre }}</h2>
+  <div class="tabla-desplazable">
+  <table class="tabla">
+    <thead><tr><th>Fecha</th><th>Día</th><th class="num">Valor</th></tr></thead>
+    <tbody>
+    {% for f, v in ultimos_30 %}
+      <tr><td>{{ f|fecha_corta }}</td><td>{{ f|dia_semana|capitalizar }}</td><td class="num">{{ v|pesos(2) }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+
+{{ m.afiliados(divisa.clave) }}
+
+{% if meses %}
+<section>
+  <h2>{{ divisa.nombre|capitalizar }} observado por mes</h2>
+  <ul class="enlaces">
+  {% for mes in meses %}
+    <li><a href="{{ ruta('/' ~ divisa.clave ~ '/' ~ mes.year ~ '/' ~ (mes.month|nombre_mes) ~ '/') }}">{{ mes|mes_anio|capitalizar }}</a></li>
+  {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<section>
+  <h2>Conversiones frecuentes</h2>
+  <ul class="enlaces">
+  {% for monto in montos %}
+    <li><a href="{{ ruta('/' ~ divisa.clave ~ '/' ~ monto ~ '-' ~ divisa.plural ~ '-en-pesos/') }}">{{ monto|numero }} {{ divisa.plural }}</a></li>
+  {% endfor %}
+  </ul>
+</section>
+
+{{ m.faq(pagina) }}
+{{ m.fuente("Banco Central de Chile, vía mindicador.cl") }}
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<section class="texto">
+  <p>Última actualización: 12 de octubre de 2026.</p>
+  <h2>Uso de la información</h2>
+  <p>La información y los resultados de las calculadoras de {{ sitio.nombre }} son <strong>referenciales</strong> y tienen fines informativos. No constituyen asesoría financiera, tributaria, previsional ni legal. Antes de tomar una decisión, verifica los valores con la fuente oficial o con un profesional.</p>
+
+  <h2>Exactitud</h2>
+  <p>Hacemos nuestro mejor esfuerzo para que los datos estén actualizados y los cálculos sean correctos, pero no podemos garantizar que estén libres de errores u omisiones, ni que reflejen cambios normativos recientes. Los valores oficiales son los que publican el Banco Central de Chile, el INE, el SII y los demás organismos competentes.</p>
+
+  <h2>Proyecciones</h2>
+  <p>Las proyecciones (por ejemplo, de la UF o de un ahorro) son estimaciones basadas en supuestos explícitos y no garantizan resultados futuros.</p>
+
+  <h2>Publicidad y referidos</h2>
+  <p>El sitio puede incluir publicidad y enlaces de referidos. No somos responsables de los productos, servicios ni contenidos de sitios de terceros.</p>
+
+  <h2>Propiedad intelectual</h2>
+  <p>Los textos, el diseño y el código de {{ sitio.nombre }} son de sus autores. Los datos públicos pertenecen a sus respectivas fuentes. Puedes citar nuestros contenidos enlazando a la página original.</p>
+</section>
+{% endblock %}
