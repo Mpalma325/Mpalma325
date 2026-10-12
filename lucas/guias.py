@@ -392,7 +392,7 @@ def contexto_de_revision(demo: bool = False, hoy: dt.date | None = None) -> tupl
     if not (RAIZ / "data" / "series" / "uf.json").exists():
         demo = True
     datos = cargar_datos(DIRECTORIO_DEMO if demo else RAIZ / "data",
-                         mantener_utm_si_ipc_negativo=params.get("utm_se_mantiene_con_ipc_negativo", True))
+                         mantener_utm_si_ipc_negativo=params.get("utm_se_mantiene_con_ipc_negativo", False))
     if hoy is None:
         referencia = datos.meta.get("fecha_referencia") if demo else None
         hoy = dt.date.fromisoformat(referencia) if referencia else hoy_chile()

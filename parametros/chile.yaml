@@ -31,9 +31,11 @@ afp:
         uno:       {nombre: Uno,       comision: 0.0046}   # 0,49% hasta sep-2025
 
 topes_imponibles:
-  # Se reajustan cada febrero según el Índice de Remuneraciones Reales.
+  # La Superintendencia de Pensiones los reajusta una vez al año por resolución,
+  # según el Índice de Remuneraciones Reales (si es negativo, se mantienen). El mes
+  # en que rigen puede variar: revisen la resolución de cada año.
   revisar_antes_de: 2027-02-01
-  fuente: https://www.spensiones.cl/portal/institucional/594/w3-article-16885.html
+  fuente: https://www.spensiones.cl/portal/institucional/594/w3-article-16921.html
   vigencias:
     - desde: 2026-01-01
       afp_salud_uf: 89.9     # Res. Ex. N°27/2026, luego corregida
@@ -43,9 +45,10 @@ topes_imponibles:
       cesantia_uf: 135.2     # Res. N°236/2026
 
 seguro_cesantia:
-  # Ley 19.728, art. 5. Confianza: media (norma estable).
+  # Ley 19.728, art. 5. El trabajador con contrato indefinido cotiza 0,6% solo durante
+  # sus primeros 11 años con el mismo empleador.
   revisar_antes_de: 2027-06-01
-  fuente: https://www.afc.cl/
+  fuente: https://www.spensiones.cl/portal/institucional/594/w3-propertyvalue-9902.html
   vigencias:
     - desde: 2002-10-01
       trabajador: {indefinido: 0.006, plazo_fijo: 0.0, indefinido_11: 0.0}
@@ -82,6 +85,8 @@ ingreso_minimo:
 
 gratificacion:
   # Art. 50 del Código del Trabajo: 25% de lo devengado, con tope de 4,75 IMM al año.
+  # El tope anual usa el ingreso mínimo vigente al 31 de diciembre; si sube durante
+  # el año, el empleador reliquida (Dirección del Trabajo).
   revisar_antes_de: 2027-06-01
   fuente: https://www.bcn.cl/leychile/navegar?idNorma=207436
   vigencias:
@@ -118,17 +123,18 @@ retencion_honorarios:
     - {desde: 2028-01-01, tasa: 0.17}
 
 iva:
-  # Tasa general del IVA (DL 825, art. 14): 19% desde el 1-10-2003 (Ley 19.888).
+  # Tasa general del IVA (DL 825, art. 14): 19% desde el 1-10-2003 (Ley 19.888); la
+  # Ley 20.102 (2006) derogó la vuelta al 18% prevista para 2007.
   # Se calcula sobre el neto y se redondea al peso. Para desglosar un precio con
   # IVA incluido: neto = total / (1 + tasa) redondeado al peso; IVA = total − neto.
   revisar_antes_de: 2027-10-01
-  fuente: https://www.sii.cl/
+  fuente: https://www.sii.cl/preguntas_frecuentes/impuestos_mensuales/001_130_0572.htm
   vigencias:
     - {desde: 2003-10-01, tasa: 0.19, ley: Ley 19.888}
 
 impuesto_timbres:
   # Impuesto de Timbres y Estampillas de las operaciones de crédito de dinero
-  # (DL 3.475, art. 1 N° 3): 0,066% del monto por cada mes o fracción entre la
+  # (DL 3.475, art. 1 N° 3, tasas de la Ley 20.780): 0,066% del monto por cada mes o fracción entre la
   # emisión y el vencimiento, con un máximo de 0,8% (13 meses o más); 0,332% si es
   # a la vista o sin plazo. Vigente desde el 1-1-2016 (SII, Circular N° 17 de 2015).
   revisar_antes_de: 2027-10-01
