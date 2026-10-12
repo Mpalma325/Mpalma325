@@ -2,10 +2,12 @@
 
 - Tablas de "Valores y fechas" del SII (oficial, sin clave): UF (incluidos los
   valores futuros hasta el día 9), UTM e IPC al día; dólar con ~10 días de atraso.
-- API de la CMF, con una clave gratuita (https://api.cmfchile.cl): dólar y euro al
-  día. Se activa definiendo ``CMF_API_KEY`` (en GitHub: Settings → Secrets → Actions).
-- https://mindicador.cl (sin clave): trae todo, además de TPM, cobre e IMACEC, pero
-  no responde desde los servidores de GitHub Actions.
+- API de la CMF, con una clave gratuita (https://api.cmfchile.cl): respaldo oficial
+  para el dólar y el euro. Se activa definiendo ``CMF_API_KEY`` (en GitHub:
+  Settings → Secrets → Actions).
+- https://findic.cl (sin clave, no oficial): dólar, euro y otros indicadores al día.
+- https://mindicador.cl (sin clave, no oficial): mismo formato, pero no responde
+  desde los servidores de GitHub Actions.
 
 Los datos se guardan en ``data/`` y GitHub Actions los sube al repositorio en
 cada actualización: así el sitio siempre tiene un respaldo aunque la API se caiga.
@@ -27,6 +29,7 @@ from .config import RAIZ, ahora_chile, hoy_chile
 from .datos import SERIES, SERIES_MENSUALES, escribir_serie, leer_serie, primer_dia
 
 MINDICADOR = "https://mindicador.cl/api"
+FINDIC = "https://findic.cl/api"  # mismo formato que mindicador.cl
 SII = "https://www.sii.cl/valores_y_fechas"
 CMF = "https://api.cmfchile.cl/api-sbifv3/recursos_api"
 USER_AGENT = "LucasClaras/1.0 (sitio de indicadores; contacto en el sitio)"
@@ -103,6 +106,28 @@ def serie_mindicador(indicador: str, anio: int, **opciones) -> dict[dt.date, flo
         # la parte de la fecha corresponde siempre al día chileno.
         fecha = dt.date.fromisoformat(punto["fecha"][:10])
         serie[fecha] = float(punto["valor"])
+    return serie
+
+
+def serie_findic(indicador: str, anio: int, **opciones) -> dict[dt.date, float]:
+    """findic.cl publica el mismo formato que mindicador.cl y sí responde desde GitHub Actions.
+
+    Se pide el año completo; si ese endpoint no existe, se usan los últimos valores
+    publicados (suficiente para la actualización diaria).
+    """
+    def leer(respuesta: dict) -> dict[dt.date, float]:
+        return {dt.date.fromisoformat(p["fecha"][:10]): float(p["valor"]) for p in respuesta.get("serie", [])}
+
+    try:
+        serie = leer(descargar_json(f"{FINDIC}/{indicador}/{anio}", **opciones))
+        if serie:
+            return serie
+    except ErrorDescarga:
+        pass
+    serie = {f: v for f, v in leer(descargar_json(f"{FINDIC}/{indicador}", **opciones)).items()
+             if f.year == anio}
+    if not serie:
+        raise ErrorDescarga(f"findic.cl no tiene datos de {indicador} {anio}")
     return serie
 
 
@@ -274,15 +299,15 @@ def serie_sii(indicador: str, anio: int, **opciones) -> dict[dt.date, float]:
 
 
 # Orden de fuentes por indicador. El SII es oficial y no requiere clave, pero su
-# página del dólar se actualiza con ~10 días de atraso; por eso para el dólar y el
-# euro se prefiere la API de la CMF (con clave). mindicador.cl no responde desde
-# los servidores de GitHub Actions, pero sí desde otros lugares.
+# página del dólar se actualiza con ~10 días de atraso y no publica el euro; para
+# esos dos se usa la API oficial de la CMF (si hay clave) o findic.cl (sin clave).
+# mindicador.cl no responde desde los servidores de GitHub Actions.
 ORDEN_FUENTES = {
-    "uf": ("sii.cl", "api.cmfchile.cl", "mindicador.cl"),
-    "utm": ("sii.cl", "api.cmfchile.cl", "mindicador.cl"),
-    "ipc": ("sii.cl", "api.cmfchile.cl", "mindicador.cl"),
-    "dolar": ("api.cmfchile.cl", "mindicador.cl", "sii.cl"),
-    "euro": ("api.cmfchile.cl", "mindicador.cl"),
+    "uf": ("sii.cl", "api.cmfchile.cl", "findic.cl", "mindicador.cl"),
+    "utm": ("sii.cl", "api.cmfchile.cl", "findic.cl", "mindicador.cl"),
+    "ipc": ("sii.cl", "api.cmfchile.cl", "findic.cl", "mindicador.cl"),
+    "dolar": ("api.cmfchile.cl", "findic.cl", "mindicador.cl", "sii.cl"),
+    "euro": ("api.cmfchile.cl", "findic.cl", "mindicador.cl"),
 }
 
 
@@ -300,6 +325,7 @@ def obtener_serie(indicador: str, anio: int, fuentes_caidas: set[str] | None = N
         # Un solo intento corto: si mindicador no responde, se pasa a la siguiente fuente.
         "mindicador.cl": lambda: serie_mindicador(indicador, anio, intentos=1, timeout=20),
         "api.cmfchile.cl": (lambda: serie_cmf(indicador, anio, clave)) if clave else None,
+        "findic.cl": lambda: serie_findic(indicador, anio, intentos=2, timeout=20),
     }
     errores = []
     for nombre in ORDEN_FUENTES[indicador]:
@@ -328,9 +354,9 @@ def filtrar_valores_validos(indicador: str, serie: dict[dt.date, float]) -> tupl
     return validos, descartados
 
 
-def ultimos_indicadores(**opciones) -> dict:
-    """Último valor de todos los indicadores que publica mindicador.cl (TPM, cobre, IMACEC, etc.)."""
-    respuesta = descargar_json(MINDICADOR, **opciones)
+def ultimos_indicadores(base: str = FINDIC, **opciones) -> dict:
+    """Último valor de otros indicadores (TPM, cobre, IMACEC, desempleo...) desde findic.cl o mindicador.cl."""
+    respuesta = descargar_json(base, **opciones)
     resultado = {}
     for codigo, item in respuesta.items():
         if isinstance(item, dict) and "valor" in item and "fecha" in item:
@@ -406,14 +432,19 @@ def actualizar(directorio: Path | None = None, anio_inicio: int = 2018,
             "ultimo": max(combinado).isoformat() if combinado else None,
         }
 
-    if "mindicador.cl" not in fuentes_caidas:
+    for nombre, base in (("findic.cl", FINDIC), ("mindicador.cl", MINDICADOR)):
+        if nombre in fuentes_caidas:
+            continue
         try:
-            ultimos = ultimos_indicadores(intentos=1, timeout=20)
+            ultimos = ultimos_indicadores(base, intentos=1, timeout=20)
+        except ErrorDescarga as error:
+            resumen["errores"].append(str(error))
+            continue
+        if ultimos:
             with open(directorio / "ultimos.json", "w", encoding="utf-8") as archivo:
                 json.dump(ultimos, archivo, indent=1, ensure_ascii=False)
                 archivo.write("\n")
-        except ErrorDescarga as error:
-            resumen["errores"].append(str(error))
+            break
 
     resumen["fuentes"] = sorted(resumen["fuentes"])
     hubo_cambios = any(s["cambios"] for s in resumen["series"].values())

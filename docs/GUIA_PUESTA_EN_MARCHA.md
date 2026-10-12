@@ -33,14 +33,18 @@ Revisen las páginas y los textos. Si algo no les gusta, las plantillas están e
 1. Elijan un nombre corto y fácil de recordar. Ideas: `lucasclaras.cl`, `cuentasclaras.cl`, `calculalucas.cl`, `indicadoreshoy.cl`. Revisen la disponibilidad en [nic.cl](https://www.nic.cl).
 2. Regístrenlo en NIC Chile (necesitan RUT; cuesta unos $10.000 al año). Activen la renovación automática para no perderlo.
 
-## Paso 4: Pedir la clave gratuita de la API de la CMF (5 minutos)
+## Paso 4 (recomendado): Clave gratuita de la API de la CMF (5 minutos)
 
-El sitio lee la UF, la UTM y el IPC desde las tablas oficiales del SII, sin clave. Pero el SII publica el **dólar con unos 10 días de atraso** y no publica el **euro**, y mindicador.cl no responde desde los servidores de GitHub. La API de la Comisión para el Mercado Financiero (CMF) resuelve las dos cosas y es gratis:
+El sitio se alimenta solo, sin claves:
 
-1. Pidan una clave en [api.cmfchile.cl](https://api.cmfchile.cl) (formulario con su correo; llega al instante).
+- **SII** (oficial): UF, UTM e IPC.
+- **findic.cl** (servicio gratuito no oficial): dólar del día, euro y otros indicadores. El SII publica el dólar con unos 10 días de atraso y no publica el euro.
+
+Como findic.cl no es oficial, conviene agregar el respaldo oficial de la Comisión para el Mercado Financiero (CMF):
+
+1. Pidan una clave en [api.cmfchile.cl](https://api.cmfchile.cl) (formulario con su correo).
 2. Guárdenla en GitHub como secreto `CMF_API_KEY` (*Settings → Secrets and variables → Actions → New repository secret*).
-
-Sin esta clave el sitio funciona, pero muestra el último dólar que publicó el SII y omite las páginas del euro. Además, el aviso de mantención les llegará por "dólar atrasado".
+3. Para comprobar que funciona, corran el workflow **Pruebas** y revisen el paso *Diagnosticar fuentes de datos*: deben aparecer líneas `OK api.cmfchile.cl`.
 
 ## Paso 5: Publicar en Cloudflare (gratis, permite uso comercial)
 
@@ -122,7 +126,7 @@ Postulen cuando el sitio lleve algunas semanas en línea y ya tenga páginas ind
 
 ## Lista final
 
-- [ ] Secreto `CMF_API_KEY` configurado (dólar al día y euro).
+- [ ] Secreto `CMF_API_KEY` configurado (respaldo oficial del dólar y el euro).
 - [ ] El workflow **Actualizar y publicar** termina en verde.
 - [ ] `https://lucasclaras.cl` muestra el sitio, con el candado HTTPS.
 - [ ] `https://lucasclaras.cl/sitemap.xml` y `/robots.txt` responden.

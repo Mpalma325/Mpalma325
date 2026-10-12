@@ -281,15 +281,15 @@ def revisar_frescura(datos: Datos, hoy: dt.date) -> tuple[list[str], list[str]]:
         errores.append(f"No se conoce la UF de hoy ({hoy}). Último dato oficial: {max(datos.uf)}")
     if not datos.euro_vigente(hoy):
         advertencias.append("No hay datos recientes del euro: se omiten sus páginas "
-                            "(configura CMF_API_KEY si mindicador.cl no responde)")
+                            "(revisa findic.cl o configura CMF_API_KEY)")
     for nombre, limite in (("dolar", 7), ("euro", 7)):
         if not getattr(datos, nombre):
             continue
         ultima = max(getattr(datos, nombre))
         atraso = (hoy - ultima).days
         if atraso > limite:
-            advertencias.append(f"El último {nombre} es del {ultima} ({atraso} días de atraso). "
-                                "Configura el secreto CMF_API_KEY para tenerlo al día")
+            advertencias.append(f"El último {nombre} es del {ultima} ({atraso} días de atraso). Revisa "
+                                "las fuentes con: python -m lucas diagnosticar (o configura CMF_API_KEY)")
     if datos.utm_mes(hoy) is None:
         advertencias.append(f"No se conoce la UTM de {hoy:%m-%Y}")
     ultimo_ipc = max(datos.ipc)

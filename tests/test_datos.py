@@ -125,7 +125,7 @@ def test_actualizar_fusiona_y_escribe(tmp_path, monkeypatch):
         return {D(anio, 3, 1): valores[indicador], D(anio, 3, 2): valores[indicador] + 1}, "prueba"
 
     monkeypatch.setattr(fuentes, "obtener_serie", falsa_serie)
-    monkeypatch.setattr(fuentes, "ultimos_indicadores", lambda **_: {"tpm": {"valor": 4.5}})
+    monkeypatch.setattr(fuentes, "ultimos_indicadores", lambda *_, **__: {"tpm": {"valor": 4.5}})
     resumen = fuentes.actualizar(tmp_path, anio_inicio=2025, hoy=D(2026, 10, 12), pausa=0)
     assert resumen["series"]["uf"]["total"] == 4      # 2 días × 2 años
     assert resumen["series"]["utm"]["total"] == 2     # series mensuales: un valor por mes
@@ -147,7 +147,7 @@ def test_actualizar_deja_de_insistir_si_la_fuente_esta_caida(tmp_path, monkeypat
         raise fuentes.ErrorDescarga("sin respuesta")
 
     monkeypatch.setattr(fuentes, "obtener_serie", caida)
-    monkeypatch.setattr(fuentes, "ultimos_indicadores", lambda **_: {})
+    monkeypatch.setattr(fuentes, "ultimos_indicadores", lambda *_, **__: {})
     resumen = fuentes.actualizar(tmp_path, anio_inicio=2018, hoy=D(2026, 10, 12), pausa=0)
     # Por cada indicador se intentan solo los años más recientes antes de rendirse
     assert len(llamadas) == fuentes.MAX_FALLAS_SEGUIDAS * 5
@@ -225,22 +225,22 @@ def test_el_sii_es_la_fuente_principal(monkeypatch):
     assert fuente == "sii.cl" and serie[D(2026, 1, 1)] == 39727.06
 
 
-def test_si_el_sii_falla_usa_mindicador(monkeypatch):
+def test_si_el_sii_falla_usa_otra_fuente(monkeypatch):
     def sii_caido(url, **_):
         raise fuentes.ErrorDescarga(f"No se pudo descargar {url}: timeout")
 
     monkeypatch.delenv("CMF_API_KEY", raising=False)
     monkeypatch.setattr(fuentes, "descargar_texto", sii_caido)
-    monkeypatch.setattr(fuentes, "serie_mindicador", lambda *_, **__: {D(2026, 1, 1): 39731.79})
+    monkeypatch.setattr(fuentes, "serie_findic", lambda *_, **__: {D(2026, 1, 1): 39731.79})
     caidas = set()
     serie, fuente = fuentes.obtener_serie("uf", 2026, caidas)
-    assert fuente == "mindicador.cl" and caidas == {"sii.cl"}
+    assert fuente == "findic.cl" and caidas == {"sii.cl"}
 
 
-def test_euro_sin_mindicador_ni_cmf_no_tiene_fuente(monkeypatch):
+def test_euro_sin_fuentes_disponibles(monkeypatch):
     monkeypatch.delenv("CMF_API_KEY", raising=False)
     with pytest.raises(fuentes.SinFuente):
-        fuentes.obtener_serie("euro", 2026, {"mindicador.cl"})
+        fuentes.obtener_serie("euro", 2026, {"mindicador.cl", "findic.cl"})
 
 
 def test_indicador_sin_fuente_no_corta_la_descarga(tmp_path, monkeypatch):
@@ -251,7 +251,28 @@ def test_indicador_sin_fuente_no_corta_la_descarga(tmp_path, monkeypatch):
         return {D(anio, 1, 1): {"uf": 41000.0, "dolar": 950.0, "utm": 72000.0, "ipc": 0.3}[indicador]}, "sii.cl"
 
     monkeypatch.setattr(fuentes, "obtener_serie", obtener)
-    monkeypatch.setattr(fuentes, "ultimos_indicadores", lambda **_: {})
+    monkeypatch.setattr(fuentes, "ultimos_indicadores", lambda *_, **__: {})
     resumen = fuentes.actualizar(tmp_path, anio_inicio=2018, hoy=D(2026, 10, 12), pausa=0)
     assert resumen["series"]["euro"]["total"] == 0
     assert resumen["series"]["utm"]["total"] == 9 and resumen["series"]["ipc"]["total"] == 9
+
+
+def test_findic_anio_completo_o_ultimos_valores(monkeypatch):
+    llamadas = []
+
+    def falsa(url, **_):
+        llamadas.append(url)
+        if url.endswith("/2026"):
+            raise fuentes.ErrorDescarga(f"No se pudo descargar {url}: HTTP Error 404")
+        return {"serie": [{"fecha": "2026-10-09", "valor": 981.61}, {"fecha": "2025-12-30", "valor": 900.0}]}
+
+    monkeypatch.setattr(fuentes, "descargar_json", falsa)
+    assert fuentes.serie_findic("dolar", 2026) == {D(2026, 10, 9): 981.61}
+    assert llamadas == ["https://findic.cl/api/dolar/2026", "https://findic.cl/api/dolar"]
+
+
+def test_dolar_sin_clave_usa_findic(monkeypatch):
+    monkeypatch.delenv("CMF_API_KEY", raising=False)
+    monkeypatch.setattr(fuentes, "serie_findic", lambda indicador, anio, **_: {D(2026, 10, 9): 981.61})
+    serie, fuente = fuentes.obtener_serie("dolar", 2026, set())
+    assert fuente == "findic.cl" and serie == {D(2026, 10, 9): 981.61}

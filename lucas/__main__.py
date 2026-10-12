@@ -128,6 +128,8 @@ def comando_diagnosticar(args) -> int:
                for i in ("uf", "dolar", "euro", "utm", "ipc")]
     pruebas += [("sii.cl", i, lambda i=i: fuentes.serie_sii(i, anio, intentos=1, timeout=30))
                 for i in ("uf", "dolar", "utm", "ipc")]
+    pruebas += [("findic.cl", i, lambda i=i: fuentes.serie_findic(i, anio, intentos=1, timeout=20))
+                for i in ("uf", "dolar", "euro", "utm", "ipc")]
     clave = os.environ.get("CMF_API_KEY", "").strip()
     if clave:
         pruebas += [("api.cmfchile.cl", i, lambda i=i: fuentes.serie_cmf(i, anio, clave))
@@ -150,9 +152,7 @@ def comando_diagnosticar(args) -> int:
                 caidas.add(fuente)
     if args.detalle:
         import re as _re
-        for url in ("https://www.bcentral.cl/inicio",
-                    "https://si3.bcentral.cl/indicadoressiete/secure/IndicadoresDiarios.aspx",
-                    "https://findic.cl/api/dolar"):
+        for url in ("https://findic.cl/api/", "https://findic.cl/api/euro/2026"):
             inicio = time.monotonic()
             try:
                 texto = fuentes.descargar_texto(url, intentos=1, timeout=20)
