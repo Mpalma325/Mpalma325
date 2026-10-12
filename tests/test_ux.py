@@ -349,6 +349,26 @@ def test_valores_iniciales_dias_habiles_finiquito_y_vacaciones(sitio, params):
     assert periodo == texto_tiempo(0, proporcional["meses"], proporcional["dias"]) == "8 meses, 1 día"
 
 
+def _campo(html: str, identificador: str) -> str:
+    return re.search(rf'id="{identificador}"[^>]*value="([^"]*)"', html).group(1)
+
+
+def test_valores_por_defecto_del_formulario_son_los_del_resultado_inicial(sitio):
+    """El resultado inicial se calcula en Python con estos valores: si cambia el valor por
+    defecto de un campo, hay que cambiarlo también en lucas/paginas.py (paginas_calculadoras)."""
+    arriendo = leer(sitio, "/calculadoras/reajuste-arriendo-ipc/")
+    assert _campo(arriendo, "a-monto") == "500.000"
+    hipotecario = leer(sitio, "/calculadoras/credito-hipotecario/")
+    assert (_campo(hipotecario, "hi-valor"), _campo(hipotecario, "hi-pie"), _campo(hipotecario, "hi-seguros")) == ("3.000", "20", "0")
+    assert '<option value="25" selected>' in hipotecario
+    ahorro = leer(sitio, "/calculadoras/interes-compuesto/")
+    assert [_campo(ahorro, c) for c in ("ah-inicial", "ah-aporte", "ah-tasa", "ah-anios")] == ["1.000.000", "100.000", "5", "10"]
+    dias = leer(sitio, "/calculadoras/dias-habiles/")
+    assert (_campo(dias, "d-inicio"), _campo(dias, "d-fin")) == (HOY.isoformat(), HOY.replace(day=28).isoformat())
+    assert 'name="incluir_inicio" checked' in dias and 'name="sabados">' in dias
+    assert _campo(leer(sitio, "/calculadoras/boleta-honorarios/"), "h-monto") == "1.000.000"
+
+
 def test_tabla_de_dias_habiles_por_mes(sitio, params):
     html = leer(sitio, "/calculadoras/dias-habiles/")
     assert f"Días hábiles de cada mes de {HOY.year}" in html
