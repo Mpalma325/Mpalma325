@@ -1,10 +1,12 @@
-"""Descarga de datos desde APIs públicas.
+"""Descarga de datos desde fuentes públicas.
 
-Fuente principal: https://mindicador.cl (gratuita y sin clave; replica datos del
-Banco Central, INE y SII). Respaldo opcional: API de la CMF, que requiere una
-clave gratuita (https://api.cmfchile.cl). Si defines la variable de entorno
-``CMF_API_KEY`` (en GitHub: Settings → Secrets → Actions), se usa cuando
-mindicador.cl falla.
+1. Tablas de "Valores y fechas" del SII (oficial, sin clave): UF (incluidos los
+   valores futuros hasta el día 9), dólar observado, UTM e IPC.
+2. https://mindicador.cl (sin clave): además trae el euro y otros indicadores
+   (TPM, cobre, IMACEC...). Ojo: no responde desde los servidores de GitHub Actions.
+3. API de la CMF, con una clave gratuita (https://api.cmfchile.cl): si defines la
+   variable de entorno ``CMF_API_KEY`` (en GitHub: Settings → Secrets → Actions),
+   se usa como respaldo y para obtener el euro.
 
 Los datos se guardan en ``data/`` y GitHub Actions los sube al repositorio en
 cada actualización: así el sitio siempre tiene un respaldo aunque la API se caiga.
@@ -39,8 +41,8 @@ RANGOS_VALIDOS = {
     "ipc": (-5, 10),  # variación mensual en %
 }
 
-# Si la fuente falla esta cantidad de veces seguidas, se deja de consultar en esta
-# ejecución (evita que GitHub Actions se quede minutos esperando a una API caída).
+# Si un indicador falla esta cantidad de años seguidos, se dejan de pedir sus años
+# más antiguos (evita que GitHub Actions se quede minutos esperando).
 MAX_FALLAS_SEGUIDAS = 4
 
 # recurso de la API CMF y nombre de la lista en su respuesta
@@ -55,6 +57,10 @@ CMF_RECURSOS = {
 
 class ErrorDescarga(Exception):
     pass
+
+
+class SinFuente(ErrorDescarga):
+    """Ninguna fuente disponible publica el indicador (no hubo intento de descarga)."""
 
 
 def _ocultar_claves(texto: str) -> str:
@@ -160,49 +166,71 @@ def _numero_o_nada(texto: str) -> float | None:
 
 
 def serie_diaria_sii(html: str, anio: int) -> dict[dt.date, float]:
-    """Lee una grilla día × mes (UF o dólar): filas 1..31 y una columna por mes."""
+    """Lee los valores diarios (UF o dólar) de una página del SII.
+
+    La página trae dos formatos y se leen ambos: una grilla día × mes (filas 1 a 31
+    y una columna por mes) y una tabla por mes (título con el nombre del mes y filas
+    con pares día-valor).
+    """
     serie: dict[dt.date, float] = {}
+
+    def guardar(mes: int, dia_texto: str, valor_texto: str) -> None:
+        if not dia_texto.strip().isdigit():
+            return
+        valor = _numero_o_nada(valor_texto)
+        if valor is None:
+            return
+        try:
+            serie[dt.date(anio, mes, int(dia_texto))] = valor
+        except ValueError:
+            pass
+
     for tabla in tablas_html(html):
         columnas: dict[int, int] = {}
+        mes_de_tabla: int | None = None
         for fila in tabla:
             meses = {i: _mes_de_texto(celda) for i, celda in enumerate(fila)}
-            if sum(1 for m in meses.values() if m) >= 3:
+            if sum(1 for m in meses.values() if m) >= 3:  # encabezado de la grilla
                 columnas = {i: m for i, m in meses.items() if m}
                 continue
-            if not columnas or not fila or not fila[0].strip().isdigit():
+            if len(fila) == 1 and _mes_de_texto(fila[0]) and len(fila[0]) > 3:  # título "Octubre"
+                mes_de_tabla = _mes_de_texto(fila[0])
                 continue
-            dia = int(fila[0])
-            for i, mes in columnas.items():
-                if i < len(fila) and 1 <= dia <= 31:
-                    valor = _numero_o_nada(fila[i])
-                    if valor is not None:
-                        try:
-                            serie[dt.date(anio, mes, dia)] = valor
-                        except ValueError:
-                            pass
+            if columnas and fila and fila[0].strip().isdigit():
+                for i, mes in columnas.items():
+                    if i < len(fila):
+                        guardar(mes, fila[0], fila[i])
+            elif mes_de_tabla:
+                for i in range(0, len(fila) - 1, 2):
+                    guardar(mes_de_tabla, fila[i], fila[i + 1])
     return serie
 
 
 def serie_mensual_sii(html: str, anio: int, columna: str) -> dict[dt.date, float]:
-    """Lee la tabla mensual de la UTM: ``columna`` es "utm" o "ipc" (variación mensual en %)."""
+    """Lee la tabla anual de UTM, UTA e IPC del SII.
+
+    Cada fila de datos es: mes, UTM, UTA, IPC (índice), variación mensual, variación
+    acumulada del año y variación en 12 meses. ``columna`` es "utm" o "ipc" (variación
+    mensual en %). Se valida que la UTA sea 12 veces la UTM para detectar si el SII
+    cambió el formato de la tabla.
+    """
     serie: dict[dt.date, float] = {}
     for tabla in tablas_html(html):
-        indice = None
         for fila in tabla:
-            encabezados = [celda.lower() for celda in fila]
-            if any("utm" in e for e in encabezados) and _mes_de_texto(fila[0]) is None:
-                if columna == "utm":
-                    indice = next((i for i, e in enumerate(encabezados) if e.startswith("utm")), None)
-                else:
-                    indice = next((i for i, e in enumerate(encabezados)
-                                   if "mensual" in e and ("var" in e or "ipc" in e)), None)
-                continue
             mes = _mes_de_texto(fila[0]) if fila else None
-            if indice is None or mes is None or indice >= len(fila):
+            if mes is None or len(fila) < 5:
                 continue
-            valor = _numero_o_nada(fila[indice])
-            if valor is not None:
-                serie[dt.date(anio, mes, 1)] = valor
+            utm, uta = _numero_o_nada(fila[1]), _numero_o_nada(fila[2])
+            if utm is None:
+                continue
+            if uta is not None and abs(uta - 12 * utm) > 12:
+                raise ErrorDescarga("La tabla de UTM del SII cambió de formato (UTA ≠ 12 × UTM)")
+            if columna == "utm":
+                serie[dt.date(anio, mes, 1)] = utm
+            else:
+                variacion = _numero_o_nada(fila[4])
+                if variacion is not None:
+                    serie[dt.date(anio, mes, 1)] = variacion
     return serie
 
 
@@ -240,19 +268,19 @@ def serie_sii(indicador: str, anio: int, **opciones) -> dict[dt.date, float]:
 
 def obtener_serie(indicador: str, anio: int, fuentes_caidas: set[str] | None = None
                   ) -> tuple[dict[dt.date, float], str]:
-    """Serie de un año: primero mindicador.cl, luego la CMF (si hay clave) y luego el SII.
+    """Serie de un año desde la primera fuente que responda.
 
-    ``fuentes_caidas`` acumula las fuentes que fallaron en esta ejecución para no
-    volver a esperarlas en cada consulta.
+    Orden: SII (oficial, sin clave; UF, dólar, UTM e IPC), mindicador.cl (también
+    trae el euro, pero no responde desde algunos servidores en la nube) y la API de
+    la CMF si hay clave. ``fuentes_caidas`` acumula las fuentes que no respondieron
+    en esta ejecución para no volver a esperarlas.
     """
     caidas = fuentes_caidas if fuentes_caidas is not None else set()
     clave = os.environ.get("CMF_API_KEY", "").strip()
     intentos = [
-        # Un solo intento corto: si mindicador no responde (pasa desde algunos
-        # servidores en la nube), se pasa de inmediato a la siguiente fuente.
+        ("sii.cl", (lambda: serie_sii(indicador, anio)) if indicador in SII_PAGINAS else None),
         ("mindicador.cl", lambda: serie_mindicador(indicador, anio, intentos=1, timeout=20)),
         ("api.cmfchile.cl", (lambda: serie_cmf(indicador, anio, clave)) if clave else None),
-        ("sii.cl", (lambda: serie_sii(indicador, anio)) if indicador in SII_PAGINAS else None),
     ]
     errores = []
     for nombre, funcion in intentos:
@@ -264,7 +292,9 @@ def obtener_serie(indicador: str, anio: int, fuentes_caidas: set[str] | None = N
             errores.append(str(error))
             if "No se pudo descargar" in str(error):
                 caidas.add(nombre)
-    raise ErrorDescarga(" | ".join(errores) or f"Sin fuentes disponibles para {indicador} {anio}")
+    if not errores:
+        raise SinFuente(f"Ninguna fuente disponible publica {indicador} (configura CMF_API_KEY)")
+    raise ErrorDescarga(" | ".join(errores))
 
 
 def filtrar_valores_validos(indicador: str, serie: dict[dt.date, float]) -> tuple[dict, list[str]]:
@@ -303,18 +333,19 @@ def actualizar(directorio: Path | None = None, anio_inicio: int = 2018,
     directorio = directorio or RAIZ / "data"
     hoy = hoy or hoy_chile()
     resumen: dict = {"series": {}, "errores": [], "fuentes": set()}
-    fallas_seguidas = 0
     fuentes_caidas: set[str] = set()
 
     for indicador in SERIES:
         ruta = directorio / "series" / f"{indicador}.json"
         existente = leer_serie(ruta)
         if existente:
-            anios = sorted({hoy.year, (hoy - dt.timedelta(days=45)).year})
+            anios = sorted({hoy.year, (hoy - dt.timedelta(days=45)).year}, reverse=True)
         else:
-            anios = list(range(anio_inicio, hoy.year + 1))
+            # Del más reciente al más antiguo: lo importante primero.
+            anios = list(range(hoy.year, anio_inicio - 1, -1))
 
         nuevos: dict[dt.date, float] = {}
+        fallas_seguidas = 0  # por indicador; las fuentes caídas se recuerdan en fuentes_caidas
         for anio in anios:
             if fallas_seguidas >= MAX_FALLAS_SEGUIDAS:
                 resumen["errores"].append(f"Se omitió {indicador} {anio}: la fuente no responde")
@@ -327,6 +358,11 @@ def actualizar(directorio: Path | None = None, anio_inicio: int = 2018,
                 fallas_seguidas = 0
                 print(f"  {indicador} {anio}: {len(serie)} valores ({fuente}, "
                       f"{time.monotonic() - inicio:.1f} s)", flush=True)
+            except SinFuente as error:
+                # No es una falla de red: simplemente no hay de dónde sacar este indicador.
+                resumen["errores"].append(str(error))
+                print(f"  {indicador}: {error}", flush=True)
+                break
             except ErrorDescarga as error:
                 fallas_seguidas += 1
                 resumen["errores"].append(str(error))
@@ -350,7 +386,7 @@ def actualizar(directorio: Path | None = None, anio_inicio: int = 2018,
             "ultimo": max(combinado).isoformat() if combinado else None,
         }
 
-    if fallas_seguidas < MAX_FALLAS_SEGUIDAS and "mindicador.cl" not in fuentes_caidas:
+    if "mindicador.cl" not in fuentes_caidas:
         try:
             ultimos = ultimos_indicadores(intentos=1, timeout=20)
             with open(directorio / "ultimos.json", "w", encoding="utf-8") as archivo:

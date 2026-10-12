@@ -144,9 +144,11 @@ def test_actualizar_deja_de_insistir_si_la_fuente_esta_caida(tmp_path, monkeypat
         raise fuentes.ErrorDescarga("sin respuesta")
 
     monkeypatch.setattr(fuentes, "obtener_serie", caida)
-    monkeypatch.setattr(fuentes, "ultimos_indicadores", lambda **_: pytest.fail("no debería consultarse"))
+    monkeypatch.setattr(fuentes, "ultimos_indicadores", lambda **_: {})
     resumen = fuentes.actualizar(tmp_path, anio_inicio=2018, hoy=D(2026, 10, 12), pausa=0)
-    assert len(llamadas) == fuentes.MAX_FALLAS_SEGUIDAS
+    # Por cada indicador se intentan solo los años más recientes antes de rendirse
+    assert len(llamadas) == fuentes.MAX_FALLAS_SEGUIDAS * 5
+    assert llamadas[0] == ("uf", 2026)
     assert all(info["total"] == 0 for info in resumen["series"].values())
 
 
@@ -160,11 +162,24 @@ HTML_UF = """
 </tbody></table>
 """
 
+# Estructura real de sii.cl/valores_y_fechas/utm/utm2026.htm (encabezado en dos filas)
 HTML_UTM = """
-<table><tr><th>Mes</th><th>UTM</th><th>UTA</th><th>IPC Índice</th><th>Var. Mensual</th></tr>
-<tr><td>Enero</td><td>$ 69.751</td><td>$ 837.012</td><td>130,02</td><td>0,3</td></tr>
-<tr><td>Febrero</td><td>$ 69.960</td><td>$ 839.520</td><td>130,40</td><td>-0,1</td></tr>
-<tr><td>Marzo</td><td></td><td></td><td></td><td></td></tr>
+<table>
+<tr><th rowspan="2">2026</th><th rowspan="2">UTM (1)</th><th rowspan="2">UTA (2)</th>
+    <th>Indice de Precios al Consumidor</th><th colspan="3">Variación Porcentual</th></tr>
+<tr><th>Valor en puntos (6)</th><th>Mensual (3)</th><th>Acumulado 2026 (4)</th><th>Ultimos 12 meses (5)</th></tr>
+<tr><td>Enero</td><td>69.751</td><td>837.012</td><td>109,71</td><td>0,4</td><td>0,4</td><td>2,8</td></tr>
+<tr><td>Febrero</td><td>69.960</td><td>839.520</td><td>109,60</td><td>-0,1</td><td>0,3</td><td>2,6</td></tr>
+<tr><td>Noviembre</td><td>72.440</td><td>869.280</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Diciembre</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+</table>
+"""
+
+# Estructura real de las tablas por mes de sii.cl (UF y dólar)
+HTML_MES = """
+<table><tr><th colspan="6">Octubre</th></tr>
+<tr><th>1</th><td>41.065,38</td><th>11</th><td>41.141,53</td><th>21</th><td>41.194,55</td></tr>
+<tr><th>2</th><td>41.073,57</td><th>12</th><td>41.146,83</td><th>22</th><td></td></tr>
 </table>
 """
 
@@ -175,19 +190,58 @@ def test_lee_grilla_diaria_del_sii():
                      D(2026, 1, 31): 39900.0, D(2026, 3, 31): 40001.5}
 
 
-def test_lee_tabla_mensual_del_sii():
-    assert fuentes.serie_mensual_sii(HTML_UTM, 2026, "utm") == {D(2026, 1, 1): 69751.0, D(2026, 2, 1): 69960.0}
-    assert fuentes.serie_mensual_sii(HTML_UTM, 2026, "ipc") == {D(2026, 1, 1): 0.3, D(2026, 2, 1): -0.1}
+def test_lee_tabla_por_mes_del_sii():
+    serie = fuentes.serie_diaria_sii(HTML_MES, 2026)
+    assert serie == {D(2026, 10, 1): 41065.38, D(2026, 10, 11): 41141.53, D(2026, 10, 21): 41194.55,
+                     D(2026, 10, 2): 41073.57, D(2026, 10, 12): 41146.83}
 
 
-def test_usa_el_sii_si_mindicador_falla(monkeypatch):
-    def caida(*_, **__):
-        raise fuentes.ErrorDescarga("No se pudo descargar https://mindicador.cl: timeout")
+def test_lee_tabla_de_utm_e_ipc_del_sii():
+    assert fuentes.serie_mensual_sii(HTML_UTM, 2026, "utm") == {
+        D(2026, 1, 1): 69751.0, D(2026, 2, 1): 69960.0, D(2026, 11, 1): 72440.0}
+    assert fuentes.serie_mensual_sii(HTML_UTM, 2026, "ipc") == {D(2026, 1, 1): 0.4, D(2026, 2, 1): -0.1}
+
+
+def test_detecta_cambio_de_formato_en_la_tabla_de_utm():
+    roto = HTML_UTM.replace("837.012", "1.234")
+    with pytest.raises(fuentes.ErrorDescarga):
+        fuentes.serie_mensual_sii(roto, 2026, "utm")
+
+
+def test_el_sii_es_la_fuente_principal(monkeypatch):
+    monkeypatch.setattr(fuentes, "descargar_texto", lambda url, **_: HTML_UF)
+    monkeypatch.setattr(fuentes, "serie_mindicador", lambda *_, **__: pytest.fail("no debería consultarse"))
+    serie, fuente = fuentes.obtener_serie("uf", 2026, set())
+    assert fuente == "sii.cl" and serie[D(2026, 1, 1)] == 39727.06
+
+
+def test_si_el_sii_falla_usa_mindicador(monkeypatch):
+    def sii_caido(url, **_):
+        raise fuentes.ErrorDescarga(f"No se pudo descargar {url}: timeout")
 
     monkeypatch.delenv("CMF_API_KEY", raising=False)
-    monkeypatch.setattr(fuentes, "serie_mindicador", caida)
-    monkeypatch.setattr(fuentes, "descargar_texto", lambda url, **_: HTML_UF)
+    monkeypatch.setattr(fuentes, "descargar_texto", sii_caido)
+    monkeypatch.setattr(fuentes, "serie_mindicador", lambda *_, **__: {D(2026, 1, 1): 39731.79})
     caidas = set()
     serie, fuente = fuentes.obtener_serie("uf", 2026, caidas)
-    assert fuente == "sii.cl" and serie[D(2026, 1, 1)] == 39727.06
-    assert caidas == {"mindicador.cl"}
+    assert fuente == "mindicador.cl" and caidas == {"sii.cl"}
+
+
+def test_euro_sin_mindicador_ni_cmf_no_tiene_fuente(monkeypatch):
+    monkeypatch.delenv("CMF_API_KEY", raising=False)
+    with pytest.raises(fuentes.SinFuente):
+        fuentes.obtener_serie("euro", 2026, {"mindicador.cl"})
+
+
+def test_indicador_sin_fuente_no_corta_la_descarga(tmp_path, monkeypatch):
+    """Sin mindicador ni CMF, el euro no tiene fuente: eso no debe detener la UTM ni el IPC."""
+    def obtener(indicador, anio, caidas=None):
+        if indicador == "euro":
+            raise fuentes.SinFuente("Ninguna fuente disponible publica euro")
+        return {D(anio, 1, 1): {"uf": 41000.0, "dolar": 950.0, "utm": 72000.0, "ipc": 0.3}[indicador]}, "sii.cl"
+
+    monkeypatch.setattr(fuentes, "obtener_serie", obtener)
+    monkeypatch.setattr(fuentes, "ultimos_indicadores", lambda **_: {})
+    resumen = fuentes.actualizar(tmp_path, anio_inicio=2018, hoy=D(2026, 10, 12), pausa=0)
+    assert resumen["series"]["euro"]["total"] == 0
+    assert resumen["series"]["utm"]["total"] == 9 and resumen["series"]["ipc"]["total"] == 9

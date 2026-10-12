@@ -42,7 +42,8 @@ def comando_actualizar(args) -> int:
         print(f"::warning::{error}")
         lineas.append(f"- ⚠️ {error}")
     _resumen_github("\n".join(lineas))
-    sin_datos = [s for s, info in resumen["series"].items() if not info["total"]]
+    from .datos import SERIES_OBLIGATORIAS
+    sin_datos = [s for s, info in resumen["series"].items() if not info["total"] and s in SERIES_OBLIGATORIAS]
     if sin_datos:
         print(f"::error::No hay datos para: {', '.join(sin_datos)}")
         return 1
@@ -148,7 +149,7 @@ def comando_diagnosticar(args) -> int:
             if "No se pudo descargar" in str(error):
                 caidas.add(fuente)
     if args.detalle and "sii.cl" not in caidas:
-        for pagina in ("uf/uf{anio}.htm", "utm/utm{anio}.htm"):
+        for pagina in ("dolar/dolar{anio}.htm", "utm/utm{anio}.htm"):
             try:
                 html = fuentes.descargar_texto(f"{fuentes.SII}/{pagina.format(anio=anio)}", intentos=1)
             except fuentes.ErrorDescarga as error:
@@ -158,7 +159,7 @@ def comando_diagnosticar(args) -> int:
             print(f"\n{pagina.format(anio=anio)}: {len(tablas)} tablas")
             for numero, tabla in enumerate(tablas):
                 print(f"  tabla {numero}: {len(tabla)} filas")
-                for fila in tabla[:3]:
+                for fila in tabla[:3] + tabla[-2:]:
                     print("    ", [celda[:18] for celda in fila[:14]])
     return 0
 

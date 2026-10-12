@@ -35,11 +35,11 @@ jobs:
           CMF_API_KEY: ${{ secrets.CMF_API_KEY }}
 
       - name: Descargar datos reales
-        # Dos años bastan para validar las fórmulas. Si la API no responde, las
-        # pruebas igual corren con los datos de demostración.
+        # Valida las fórmulas con varios años de datos oficiales. Si las fuentes no
+        # responden, las pruebas igual corren con los datos de demostración.
         continue-on-error: true
         timeout-minutes: 8
-        run: python -m lucas actualizar --desde 2025
+        run: python -m lucas actualizar
         env:
           CMF_API_KEY: ${{ secrets.CMF_API_KEY }}
 
