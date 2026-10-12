@@ -51,7 +51,7 @@
   <h2>Feriados</h2>
   <p><code>GET {{ cortable(url_api ~ 'feriados/' ~ hoy.year ~ '.json') }}</code> (disponible para {% for anio in anios_feriados %}{{ anio }}{% if not loop.last %}{{ ' y ' if loop.revindex == 2 else ', ' }}{% endif %}{% endfor %}). En <code>feriados</code> vienen los feriados nacionales, incluidos los trasladados y los especiales (como los días de elecciones), y en <code>regionales</code> los que rigen solo en una región o comuna. Cada feriado se ve así:</p>
   <pre><code>{{ ejemplo_feriado }}</code></pre>
-  <p><code>tipo</code> es <code>Civil</code> o <code>Religioso</code>; <code>irrenunciable</code> indica si los trabajadores del comercio tienen derecho a no trabajar ese día; <code>nota</code> explica traslados y casos especiales. Revisa también el <a href="{{ ruta('/feriados/') }}">calendario de feriados</a>.</p>
+  <p><code>tipo</code> es <code>Civil</code> o <code>Religioso</code>; <code>irrenunciable</code> indica si los trabajadores del comercio no pueden ser obligados a trabajar ese día (salvo las excepciones de la ley); <code>nota</code> explica traslados y casos especiales. Revisa también el <a href="{{ ruta('/feriados/') }}">calendario de feriados</a>.</p>
 </section>
 
 <section class="texto">
