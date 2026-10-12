@@ -2,7 +2,13 @@
 
 **Sitio web de indicadores económicos y calculadoras financieras para Chile que se actualiza solo y se monetiza con publicidad y enlaces de referidos.**
 
-Valor de la UF, dólar, euro, UTM e IPC del día; páginas como "1.000 UF en pesos" o "sueldo líquido de $1.000.000"; archivo mensual de la UF y el dólar; **UF proyectada**; calculadoras de sueldo líquido, finiquito, vacaciones proporcionales, boletas de honorarios, reajuste de arriendo por IPC, crédito hipotecario, interés compuesto y días hábiles; y el calendario de feriados. En total, unas 350 páginas que se regeneran solas todos los días.
+- **Indicadores del día:** UF, dólar, euro, UTM e IPC, con archivo por mes y por año y la **UF proyectada**.
+- **11 calculadoras:** sueldo líquido, finiquito (incluida la obra o faena), vacaciones proporcionales, boletas de honorarios, IVA, horas extra (jornada de 42 horas), crédito de consumo con CAE, crédito hipotecario, reajuste de arriendo por IPC, interés compuesto y días hábiles.
+- **15 guías** verificadas con fuentes oficiales (finiquito, vacaciones, gratificación, liquidación, honorarios, impuesto único, IVA, CAE, arriendo, hipotecario, UF, UTM, dólar...), con cifras que se actualizan solas.
+- **Indicadores previsionales del mes**, calendario de **feriados** (con archivo `.ics`), página de **metodología** e historial de correcciones.
+- **API gratuita** de indicadores en JSON y **widget** para otros sitios, para conseguir enlaces.
+
+En total, unas 350 páginas que se regeneran solas dos veces al día.
 
 > ⚠️ **Esta rama vive temporalmente en el repositorio de perfil `Mpalma325/Mpalma325`.** La sesión de Claude no tenía permiso para crear repositorios nuevos. **No la fusiones con `main` de ese repositorio** (reemplazaría el README del perfil). Muévela a su propio repositorio con los pasos de la sección [Mover a un repositorio propio](#mover-a-un-repositorio-propio).
 
@@ -26,12 +32,14 @@ Valor de la UF, dólar, euro, UTM e IPC del día; páginas como "1.000 UF en pes
 ## Lista para lanzar
 
 - [ ] Mover el código a un repositorio propio (abajo)
-- [ ] Revisar textos y parámetros (`config.yaml`, `parametros/chile.yaml`)
+- [ ] Revisar textos y parámetros (`config.yaml`, `parametros/chile.yaml`) y completar `sitio.equipo` ("Quiénes somos")
 - [ ] Pedir la clave gratuita de la API de la CMF (respaldo oficial para el dólar y el euro)
 - [ ] Comprar el dominio y publicar en Cloudflare → [guía paso a paso](docs/GUIA_PUESTA_EN_MARCHA.md)
+- [ ] Crear el correo de contacto gratis con Cloudflare Email Routing
 - [ ] Registrar el sitio en Google Search Console y Bing Webmaster Tools
 - [ ] Postular a Google AdSense cuando el sitio tenga algunas semanas indexado
-- [ ] Inscribirse en programas de referidos y agregarlos a `config.yaml`
+- [ ] Inscribirse en programas de referidos y agregarlos a `config.yaml` → [programas verificados](docs/MONETIZACION.md)
+- [ ] Seguir el plan de las primeras 8 semanas → [lanzamiento](docs/LANZAMIENTO.md)
 
 ## Probarlo en tu computador
 
@@ -52,6 +60,7 @@ Con datos reales (requiere internet):
 python -m lucas actualizar         # descarga UF, dólar, euro, UTM e IPC a data/
 python -m lucas construir          # genera el sitio en dist/
 python -m lucas verificar          # revisa parámetros por actualizar y datos atrasados
+python -m lucas guias --demo       # valida las guías de contenido/guias/
 ```
 
 Pruebas: `python -m pytest` (las de paridad con JavaScript requieren Node.js).
@@ -60,7 +69,9 @@ Pruebas: `python -m pytest` (las de paridad con JavaScript requieren Node.js).
 
 | Carpeta / archivo | Qué contiene |
 |---|---|
-| `lucas/` | El generador en Python: descarga de datos (`fuentes.py`), metodología UF/UTM (`datos.py`), fórmulas (`calculos.py`), feriados (`feriados.py`), páginas (`paginas.py`) y construcción (`construir.py`). |
+| `lucas/` | El generador en Python: descarga de datos (`fuentes.py`), metodología UF/UTM (`datos.py`), fórmulas (`calculos.py`), feriados (`feriados.py`, `calendario.py`), páginas (`paginas.py` y `paginas_*.py`), guías (`guias.py`), API (`api.py`), fuentes y metodología (`confianza.py`) y construcción (`construir.py`). |
+| `contenido/` | Las guías en Markdown (`guias/`, formato en `LEEME.md`) y el historial público de correcciones (`correcciones.yaml`). |
+| `widget/` | El widget que otros sitios insertan (`widget.js`, se publica en la raíz del sitio). |
 | `plantillas/` | Plantillas HTML (Jinja2) de cada tipo de página. |
 | `estaticos/` | CSS, JavaScript de las calculadoras (`calculos.js` replica `calculos.py`) e imágenes. |
 | `parametros/chile.yaml` | Parámetros legales con fecha de vigencia y fuente: comisiones AFP, topes, tabla de impuesto único, sueldo mínimo, retención de honorarios, feriados especiales. |
@@ -97,4 +108,6 @@ Decisiones de diseño:
 
 - [Guía de puesta en marcha](docs/GUIA_PUESTA_EN_MARCHA.md): dominio, Cloudflare, Search Console, AdSense y referidos.
 - [Plan de negocio](docs/PLAN_DE_NEGOCIO.md): mercado, competencia, proyección de ingresos, hoja de ruta y roles.
-- [Mantención](docs/MANTENCION.md): qué actualizar y cuándo, y cómo agregar páginas o calculadoras.
+- [Mantención](docs/MANTENCION.md): qué actualizar y cuándo, y cómo agregar páginas, guías o calculadoras.
+- [Monetización](docs/MONETIZACION.md): programas de referidos verificados, AdSense en Chile, impuestos y otras fuentes de ingreso.
+- [Lanzamiento](docs/LANZAMIENTO.md): plan de 8 semanas para conseguir visitas y enlaces, con borradores de mensajes.

@@ -32,7 +32,9 @@ En el resumen del job (pestaña *Actions* → la ejecución en rojo → *Summary
 | Cuándo | Qué revisar | Dónde verificar |
 |---|---|---|
 | **Enero** | Reajuste del ingreso mínimo (la Ley 21.830 fija uno para el 1 de enero de 2027 según el IPC) | [bcn.cl](https://www.bcn.cl), [dt.gob.cl](https://www.dt.gob.cl) |
-| **Febrero** | Topes imponibles (AFP, salud y seguro de cesantía) | [spensiones.cl](https://www.spensiones.cl), PDF de indicadores de [previred.com](https://www.previred.com) |
+| **Febrero** | Topes imponibles (AFP, salud y seguro de cesantía). La Superintendencia los fija por resolución una vez al año y el mes en que rigen puede variar | [spensiones.cl](https://www.spensiones.cl), PDF de indicadores de [previred.com](https://www.previred.com) |
+| **Cada mes** | Comparar `/indicadores-previsionales/` con el PDF de Previred (5 minutos) | [previred.com](https://www.previred.com) |
+| **Antes del 1-12-2026** | La Ley 21.719 de datos personales: si se aprobó la postergación (boletín 18.623-07), actualizar la sección de `plantillas/privacidad.html` y su fecha | [bcn.cl](https://www.bcn.cl) |
 | **Cada vez que se anuncie** | Cambio de comisión de alguna AFP | [spensiones.cl](https://www.spensiones.cl/portal/institucional/594/w3-propertyvalue-9897.html) |
 | **Mayo** (o cuando haya ley) | Sueldo mínimo | Diario Oficial, Dirección del Trabajo |
 | **Cada trimestre** | Tasa hipotecaria de referencia (`credito_hipotecario`) | Simuladores de bancos, CMF |
@@ -89,6 +91,15 @@ Las guías son archivos Markdown en `contenido/guias/`. El formato completo est�
 
 Los enlaces de referidos de las guías se ubican con la categoría de la guía (`trabajo`, `impuestos`, `vivienda`, `ahorro`, `indicadores`) en `monetizacion.afiliados[].secciones`.
 
+En las guías, conviertan los topes con `p.uf_topes` (AFP, salud, cesantía, planes de isapre) o `p.uf_indemnizaciones` (tope de 90 UF de las indemnizaciones), nunca con `uf_hoy`: así coinciden con las calculadoras.
+
+## Anuncios
+
+- Al activar AdSense, creen bloques de *display* y anoten sus IDs en `config.yaml` (`monetizacion.adsense.slots`, con los nombres que usan las plantillas en `m.anuncio("...")`). Los bloques tienen tamaño fijo (336×280 en celular y 728×250 en escritorio) para que la página no salte al cargar.
+- El rótulo visible es "Anuncios": es uno de los dos que permite la política de AdSense.
+- Unas semanas después de activar los anuncios, revisen en Search Console que las Core Web Vitals sigan bien.
+- Los valores por defecto de cada calculadora están en su plantilla y en `paginas_calculadoras` (para el resultado inicial sin JavaScript): si cambian uno, cambien el otro (una prueba lo vigila).
+
 ## API y widget
 
 - La API `v1` es un contrato público: se pueden **agregar** campos, nunca quitar ni cambiar los existentes. Un cambio incompatible va en `/api/v2/`, manteniendo `v1`.
@@ -100,7 +111,13 @@ Los enlaces de referidos de las guías se ubican con la categoría de la guía (
 
 ### Agregar montos a las páginas en serie
 
-En `lucas/paginas.py`, editen las listas `MONTOS_UF`, `MONTOS_DOLAR`, `MONTOS_EURO` o `SUELDOS`. Cada monto nuevo genera una página nueva con su propio título y contenido.
+En `lucas/paginas.py`, editen las listas `MONTOS_UF`, `MONTOS_DOLAR` o `SUELDOS`. Cada monto nuevo genera una página nueva con su propio título y contenido (`CONVERSIONES_EURO` solo arma la tabla de `/euro/`). Agreguen montos de a poco y según lo que muestre Search Console: muchas páginas casi iguales perjudican al sitio. No quiten de `MONTOS_UF` los montos 1.000 y 2.000 a 6.000, porque los enlazan la calculadora hipotecaria y la guía de la UF.
+
+### Historial de correcciones y fuentes
+
+- Cuando corrijan un error que pudo afectar un valor, un cálculo o un texto legal, agreguen una entrada **al principio** de `contenido/correcciones.yaml` (se publica en `/metodologia/`). No borren las antiguas.
+- Si una página nueva usa `m.fuente(...)` con un organismo que el sitio no conoce, agréguenlo a `FUENTES_OFICIALES` en `lucas/confianza.py` con una URL oficial verificada (una prueba lo exige).
+- Si cambian `plantillas/feriados.html`, las reglas de `lucas/feriados.py` o `feriados_extra`, actualicen `REVISION_FERIADOS` en `lucas/paginas.py` (es la fecha de modificación que va al sitemap).
 
 ### Agregar una calculadora nueva
 
