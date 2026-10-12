@@ -1,16 +1,16 @@
 # =============================================================================
-# Configuración del sitio Lucas Claras
+# Configuración del sitio Saca la Cuenta
 # =============================================================================
 # Después de editar este archivo, haz commit y push: GitHub Actions reconstruye
 # y publica el sitio solo. Ver docs/GUIA_PUESTA_EN_MARCHA.md.
 
 sitio:
-  nombre: Lucas Claras
+  nombre: Saca la Cuenta
   eslogan: Indicadores y calculadoras para tus finanzas en Chile
   # URL final del sitio, sin barra al final. Ejemplos:
-  #   https://lucasclaras.cl                     (dominio propio, recomendado)
-  #   https://mpalma325.github.io/lucas-claras   (GitHub Pages sin dominio)
-  url: https://lucasclaras.cl
+  #   https://sacalacuenta.cl                     (dominio propio, recomendado)
+  #   https://mpalma325.github.io/saca-la-cuenta   (GitHub Pages sin dominio)
+  url: https://sacalacuenta.cl
   idioma: es-CL
   # Correo de contacto público (recomendado antes de postular a AdSense).
   correo_contacto: ""
@@ -29,7 +29,7 @@ sitio:
   # Perfiles públicos del sitio (no los personales): Instagram, LinkedIn, GitHub, etc.
   # Se muestran en "Quiénes somos" y en Contacto, y van en sameAs del JSON-LD.
   redes: []
-  # - https://www.instagram.com/lucasclaras.cl/
+  # - https://www.instagram.com/sacalacuenta.cl/
   # Repositorio público del código, si deciden publicarlo (p. ej. en GitHub). Aparece en
   # Contacto como canal para reportar errores. Déjenlo vacío si el repositorio es privado.
   repositorio: ""

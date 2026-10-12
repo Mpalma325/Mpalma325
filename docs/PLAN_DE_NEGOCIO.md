@@ -1,4 +1,4 @@
-# Plan de negocio: Lucas Claras
+# Plan de negocio: Saca la Cuenta
 
 > **En una frase:** un sitio de herramientas financieras para Chile que atrae visitas desde Google y las convierte en ingresos por publicidad y referidos, funcionando en piloto automático.
 

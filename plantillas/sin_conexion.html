@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<p class="bajada">No pudimos cargar esta página porque no hay conexión a internet.</p>
+<section class="texto">
+  <p>Las páginas que ya visitaste siguen disponibles, y las calculadoras funcionan sin conexión. Cuando vuelva la conexión, los valores del día se actualizan solos.</p>
+  <ul class="enlaces">
+    <li><a href="{{ ruta('/') }}">Inicio</a></li>
+    <li><a href="{{ ruta('/calculadoras/') }}">Calculadoras</a></li>
+  </ul>
+</section>
+{% endblock %}

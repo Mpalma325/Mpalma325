@@ -1,5 +1,5 @@
 /*
- * Cálculos de Lucas Claras para el navegador.
+ * Cálculos de Saca la Cuenta para el navegador.
  *
  * Replica paso a paso lucas/calculos.py: mismas operaciones y mismo orden, para
  * que Python y JavaScript den exactamente el mismo resultado. Si cambias una

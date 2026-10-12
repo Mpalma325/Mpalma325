@@ -185,4 +185,10 @@ def cabeceras_cloudflare() -> str:
         # regla puede fijar Cache-Control para estas rutas (Cloudflare uniría los valores).
         "/widget.js\n"
         "  Cache-Control: public, max-age=3600\n"
+        # App instalable: el service worker se revisa siempre para que las versiones
+        # nuevas lleguen de inmediato.
+        "/sw.js\n"
+        "  Cache-Control: no-cache\n"
+        "/manifest.webmanifest\n"
+        "  Cache-Control: public, max-age=86400\n"
     )

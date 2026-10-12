@@ -1,4 +1,4 @@
-# Guías de Lucas Claras
+# Guías de Saca la Cuenta
 
 Las guías son artículos explicativos que acompañan a las calculadoras ("Cómo se calcula el
 finiquito", "Qué es la UF", etc.). Sirven para atraer búsquedas informativas desde Google y

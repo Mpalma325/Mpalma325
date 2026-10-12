@@ -30,7 +30,7 @@ from lucas.seo import sitemap_xml
 
 from .conftest import DEMO, HOY
 
-URL = "https://lucasclaras.cl"
+URL = "https://sacalacuenta.cl"
 DOLAR_DEMO = dt.date(2026, 10, 9)  # último dólar y euro de la demo (el 12 de octubre es feriado)
 
 
@@ -298,7 +298,7 @@ def test_calendario_ics_valido(sitio, params):
             assert campos["DTSTART;VALUE=DATE"] == f"{feriado.fecha:%Y%m%d}"
             assert campos["DTEND;VALUE=DATE"] == f"{feriado.fecha + dt.timedelta(days=1):%Y%m%d}"
             assert campos["SUMMARY"] == feriado.nombre.replace(",", "\\,")
-            assert campos["UID"].endswith("@lucasclaras.cl") and campos["UID"] not in uids
+            assert campos["UID"].endswith("@sacalacuenta.cl") and campos["UID"] not in uids
             uids.add(campos["UID"])
     assert 'href="/feriados/2026.ics"' in html(salida, "/feriados/")
     assert "Agregar a mi calendario" in leer(salida, "/feriados/2025/").visible
@@ -312,7 +312,7 @@ def test_ics_escapa_pliega_y_usa_hora_utc():
     assert calendario._escapar("a,b;c\\d\ne") == "a\\,b\\;c\\\\d\\ne"
     texto = calendario.calendario_feriados(2026, [], cargar_config(), dt.datetime(2026, 10, 12, 7, 0))
     assert "DTSTAMP:20261012T100000Z" in texto  # 07:00 en Chile (horario de verano, UTC-3)
-    assert "UID:20261012-encuentro-de-dos-mundos@lucasclaras.cl" in texto
+    assert "UID:20261012-encuentro-de-dos-mundos@sacalacuenta.cl" in texto
 
 
 # ---------------------------------------------------------------------------

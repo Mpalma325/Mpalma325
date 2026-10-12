@@ -1,5 +1,5 @@
 [project]
-name = "lucas-claras"
+name = "saca-la-cuenta"
 version = "1.0.0"
 description = "Sitio estático de indicadores y calculadoras financieras para Chile"
 requires-python = ">=3.11"

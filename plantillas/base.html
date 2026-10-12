@@ -1,6 +1,6 @@
 {% import "_macros.html" as m with context %}
 <!doctype html>
-<html lang="es-CL">
+<html lang="es-CL" data-base="{{ sitio.ruta_base }}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -24,6 +24,8 @@
 <link rel="icon" href="{{ estatico('img/favicon.svg') }}" type="image/svg+xml">
 <link rel="icon" href="{{ ruta('/favicon.ico') }}" sizes="32x32">
 <link rel="apple-touch-icon" href="{{ estatico('img/apple-touch-icon.png') }}">
+<link rel="manifest" href="{{ ruta('/manifest.webmanifest') }}">
+<meta name="apple-mobile-web-app-title" content="{{ sitio.nombre }}">
 <link rel="stylesheet" href="{{ estatico('css/estilos.css') }}">
 {% if verificacion.google %}
 <meta name="google-site-verification" content="{{ verificacion.google }}">
@@ -50,6 +52,9 @@
 <a class="saltar" href="#contenido">Saltar al contenido</a>
 {% if demo %}
 <div class="aviso-demo" role="note">Sitio de demostración: todos los valores son <strong>ficticios</strong>.</div>
+{% endif %}
+{% if pagina.ruta != '/sin-conexion/' %}
+<div class="aviso-sin-conexion" data-sin-conexion role="status" hidden>Sin conexión: estás viendo la última versión guardada de esta página y los valores pueden no ser los de hoy.</div>
 {% endif %}
 <header class="cabecera">
   <div class="contenedor cabecera-fila">
@@ -132,6 +137,7 @@
           <li><a href="{{ ruta('/contacto/') }}">Contacto</a></li>
           <li><a href="{{ ruta('/privacidad/') }}">Privacidad</a></li>
           <li><a href="{{ ruta('/terminos/') }}">Términos de uso</a></li>
+          <li><a href="{{ ruta('/app/') }}">Instala la app</a></li>
           <li><a href="{{ ruta('/widget/') }}">Widget para tu sitio</a></li>
           <li><a href="{{ ruta('/api/') }}">API de indicadores</a></li>
         </ul>

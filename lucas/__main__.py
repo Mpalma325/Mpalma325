@@ -1,4 +1,4 @@
-"""Línea de comandos de Lucas Claras.
+"""Línea de comandos de Saca la Cuenta.
 
     python -m lucas actualizar      # descarga datos nuevos a data/
     python -m lucas construir       # genera el sitio en dist/

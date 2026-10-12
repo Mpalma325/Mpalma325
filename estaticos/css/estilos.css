@@ -1,4 +1,4 @@
-/* Lucas Claras: estilos (sin dependencias, modo claro y oscuro). */
+/* Saca la Cuenta: estilos (sin dependencias, modo claro y oscuro). */
 
 :root {
   --fondo: #f6f7f9;
@@ -103,7 +103,7 @@ code { background: var(--superficie-2); padding: .1em .35em; border-radius: 6px;
   .menu ul { flex-wrap: wrap; }
 }
 
-.aviso-demo { background: #fde68a; color: #422006; text-align: center; padding: .5rem 1rem; font-size: .95rem; }
+.aviso-demo, .aviso-sin-conexion { background: #fde68a; color: #422006; text-align: center; padding: .5rem 1rem; font-size: .95rem; }
 
 /* Contenido ---------------------------------------------------------------- */
 

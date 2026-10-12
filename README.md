@@ -1,4 +1,4 @@
-# Lucas Claras
+# Saca la Cuenta
 
 **Sitio web de indicadores económicos y calculadoras financieras para Chile que se actualiza solo y se monetiza con publicidad y enlaces de referidos.**
 
@@ -17,7 +17,7 @@ En total, unas 350 páginas que se regeneran solas dos veces al día.
 ## Cómo genera ingresos
 
 ```
- Google (búsquedas)  ──►  Lucas Claras  ──►  Publicidad (AdSense)
+ Google (búsquedas)  ──►  Saca la Cuenta  ──►  Publicidad (AdSense)
  "valor uf hoy"           ~350 páginas       Referidos (Fintual, Global66, ...)
  "sueldo líquido 1 millón" útiles y rápidas   Productos propios (más adelante)
           ▲                     │
@@ -90,13 +90,13 @@ Decisiones de diseño:
 
 ## Mover a un repositorio propio
 
-1. En GitHub, crea un repositorio **vacío** llamado `lucas-claras` (sin README ni licencia). Puede ser privado si publicas en Cloudflare.
+1. En GitHub, crea un repositorio **vacío** llamado `saca-la-cuenta` (sin README ni licencia). Puede ser privado si publicas en Cloudflare.
 2. En tu computador:
 
    ```bash
-   git clone --branch ccr-eb6f7695-mr7j22 https://github.com/Mpalma325/Mpalma325.git lucas-claras
-   cd lucas-claras
-   git remote set-url origin https://github.com/Mpalma325/lucas-claras.git
+   git clone --branch ccr-eb6f7695-mr7j22 https://github.com/Mpalma325/Mpalma325.git saca-la-cuenta
+   cd saca-la-cuenta
+   git remote set-url origin https://github.com/Mpalma325/saca-la-cuenta.git
    git push -u origin ccr-eb6f7695-mr7j22:main
    git checkout -B main origin/main
    ```

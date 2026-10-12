@@ -256,7 +256,7 @@ def _render_pagina(contexto, pagina: Pagina, **globales) -> str:
 def test_404_sin_canonica(sitio):
     html = (sitio / "404.html").read_text(encoding="utf-8")
     assert 'rel="canonical"' not in html and '<meta name="robots" content="noindex">' in html
-    assert '<link rel="canonical" href="https://lucasclaras.cl/calculadoras/iva/">' in leer(sitio, "/calculadoras/iva/")
+    assert '<link rel="canonical" href="https://sacalacuenta.cl/calculadoras/iva/">' in leer(sitio, "/calculadoras/iva/")
 
 
 def test_meta_de_adsense_aunque_los_anuncios_no_esten_activos(contexto):
@@ -287,7 +287,7 @@ def test_resultado_accesible_y_para_compartir(sitio, ruta):
     h1 = re.search(r"<h1>(.*?)</h1>", html).group(1)
     assert whatsapp.group(2) == h1
     assert whatsapp.group(1).startswith("https://wa.me/?text=")
-    assert quote(f"https://lucasclaras.cl{ruta}") in whatsapp.group(1)
+    assert quote(f"https://sacalacuenta.cl{ruta}") in whatsapp.group(1)
     # El resultado principal ya viene calculado en el HTML (buscadores y sin JavaScript)
     principal = re.search(r'class="resultado-principal" data-r="[a-z_]+">(.*?)</p>', resultado).group(1)
     assert principal and principal != "—", ruta

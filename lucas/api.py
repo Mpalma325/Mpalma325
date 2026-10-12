@@ -195,7 +195,7 @@ def codigo_widget(cfg: dict, indicadores=("uf", "dolar", "utm"), tema: str = "au
     """Código para insertar el widget. ``widget-generador.js`` arma exactamente el mismo texto."""
     url = html.escape(cfg["sitio"]["url"])
     texto = html.escape(f"Indicadores de {cfg['sitio']['nombre']}")
-    return (f'<div class="lucas-claras-widget" data-indicadores="{",".join(indicadores)}" data-tema="{tema}">'
+    return (f'<div class="saca-la-cuenta-widget" data-indicadores="{",".join(indicadores)}" data-tema="{tema}">'
             f'<a href="{url}/" rel="nofollow">{texto}</a></div>\n'
             f'<script async src="{url}/widget.js"></script>')
 

@@ -2,11 +2,13 @@
 
 Uso: python herramientas/generar_imagenes.py
 Requiere Pillow (pip install -r requirements-dev.txt). Las imágenes ya están en
-el repositorio; solo necesitas correr esto si cambias el logo o el nombre.
+el repositorio; solo necesitas correr esto si cambias el logo o el nombre
+(el nombre y el eslogan se leen de config.yaml).
 """
 
 from pathlib import Path
 
+import yaml
 from PIL import Image, ImageDraw, ImageFont
 
 RAIZ = Path(__file__).resolve().parent.parent
@@ -32,22 +34,33 @@ def fuente(tamano: int, peso: str = "ExtraBold") -> ImageFont.FreeTypeFont:
     return ImageFont.load_default()
 
 
-def logo(tamano: int, invertido: bool = False) -> Image.Image:
-    """Dibuja el logo (misma geometría que logo.svg, en una grilla de 64x64).
+def logo(tamano: int, invertido: bool = False, margen: float = 0.0) -> Image.Image:
+    """Dibuja el logo (misma geometría que logo.svg, en una grilla de 64x64): un signo
+    igual, el resultado de "sacar la cuenta", con la barra de abajo en ámbar.
 
-    ``invertido`` usa fondo blanco y la letra verde (para fondos verdes)."""
-    fondo, letra = (BLANCO, VERDE) if invertido else (VERDE, BLANCO)
+    ``invertido`` usa fondo blanco y la barra de arriba verde (para fondos verdes).
+    ``margen`` achica el signo hacia el centro (íconos "maskable" de Android, que el
+    sistema recorta en círculo): con margen, el fondo ocupa todo el cuadrado."""
+    fondo, barra = (BLANCO, VERDE) if invertido else (VERDE, BLANCO)
     escala = 4  # sobremuestreo para bordes suaves
     s = tamano * escala / 64
     img = Image.new("RGBA", (tamano * escala, tamano * escala), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    d.rounded_rectangle([0, 0, 64 * s - 1, 64 * s - 1], radius=15 * s, fill=fondo)
-    ancho = 8 * s
-    puntos = [(21 * s, 15 * s), (21 * s, 44 * s), (43 * s, 44 * s)]
-    d.line(puntos, fill=letra, width=round(ancho), joint="curve")
-    for x, y in (puntos[0], puntos[-1]):
-        d.ellipse([x - ancho / 2, y - ancho / 2, x + ancho / 2, y + ancho / 2], fill=letra)
-    d.ellipse([(43 - 7.5) * s, (22 - 7.5) * s, (43 + 7.5) * s, (22 + 7.5) * s], fill=AMBAR)
+    if margen:
+        d.rectangle([0, 0, 64 * s - 1, 64 * s - 1], fill=fondo)
+    else:
+        d.rounded_rectangle([0, 0, 64 * s - 1, 64 * s - 1], radius=15 * s, fill=fondo)
+    k = 1 - margen  # factor de escala del signo alrededor del centro (32, 32)
+
+    def p(x: float, y: float) -> tuple[float, float]:
+        return ((32 + (x - 32) * k) * s, (32 + (y - 32) * k) * s)
+
+    ancho = 8 * s * k
+    for y, color in ((25, barra), (40, AMBAR)):
+        inicio, fin = p(18, y), p(46, y)
+        d.line([inicio, fin], fill=color, width=round(ancho))
+        for x0, y0 in (inicio, fin):
+            d.ellipse([x0 - ancho / 2, y0 - ancho / 2, x0 + ancho / 2, y0 + ancho / 2], fill=color)
     return img.resize((tamano, tamano), Image.LANCZOS)
 
 
@@ -61,7 +74,10 @@ def imagen_social(nombre: str, eslogan: str) -> Image.Image:
         d.line([(0, y), (ancho, y)], fill=color)
     marca = logo(180, invertido=True)
     img.paste(marca, (90, 120), marca)
-    d.text((310, 120), nombre, font=fuente(104), fill=BLANCO)
+    tamano = 104
+    while d.textlength(nombre, font=fuente(tamano)) > ancho - 310 - 70 and tamano > 60:
+        tamano -= 4  # el nombre debe caber al lado del logo
+    d.text((310, 120 + (104 - tamano) // 2), nombre, font=fuente(tamano), fill=BLANCO)
     letra_eslogan = fuente(40, "Medium")
     palabras, lineas = eslogan.split(), [""]
     for palabra in palabras:  # ajusta el eslogan al ancho disponible
@@ -88,11 +104,15 @@ def imagen_social(nombre: str, eslogan: str) -> Image.Image:
 
 def main() -> None:
     DESTINO.mkdir(parents=True, exist_ok=True)
-    logo(180).save(DESTINO / "apple-touch-icon.png")
+    logo(180, margen=0.12).save(DESTINO / "apple-touch-icon.png")  # iOS redondea las esquinas
     logo(512).save(DESTINO / "logo-512.png")
     logo(256).save(DESTINO / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)])
-    imagen_social("Lucas Claras", "Indicadores y calculadoras para tus finanzas en Chile").save(
-        DESTINO / "og.png", optimize=True)
+    # Íconos de la app instalable (manifest.webmanifest)
+    logo(192).save(DESTINO / "icono-192.png")
+    logo(512).save(DESTINO / "icono-512.png")
+    logo(512, margen=0.2).save(DESTINO / "icono-maskable-512.png")
+    sitio = yaml.safe_load((RAIZ / "config.yaml").read_text(encoding="utf-8"))["sitio"]
+    imagen_social(sitio["nombre"], sitio["eslogan"]).save(DESTINO / "og.png", optimize=True)
     print("Imágenes generadas en", DESTINO)
 
 

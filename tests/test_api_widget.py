@@ -61,9 +61,9 @@ def test_json_existen_compactos_y_en_utf8(sitio):
         assert texto == json.dumps(datos, ensure_ascii=False, separators=(",", ":")), ruta
         assert datos["version"] == VERSION
         assert dt.datetime.fromisoformat(datos["actualizado"]).tzinfo is not None
-        assert datos["documentacion"] == "https://lucasclaras.cl/api/"
-        assert datos["atribucion"] == {"texto": "Lucas Claras", "enlace": "https://lucasclaras.cl/"}
-        assert "https://lucasclaras.cl/" in datos["condiciones"] and "nofollow" in datos["condiciones"]
+        assert datos["documentacion"] == "https://sacalacuenta.cl/api/"
+        assert datos["atribucion"] == {"texto": "Saca la Cuenta", "enlace": "https://sacalacuenta.cl/"}
+        assert "https://sacalacuenta.cl/" in datos["condiciones"] and "nofollow" in datos["condiciones"]
         assert datos["fuente"]
     assert '"nombre":"Dólar observado"' in (sitio / f"{API}/dolar.json").read_text(encoding="utf-8")
     assert not (sitio / f"{API}/feriados/{HOY.year + 2}.json").exists()
@@ -219,9 +219,9 @@ def test_paginas_widget_y_api(sitio):
     # Código para copiar: enlace de atribución visible, con la marca y rel="nofollow".
     codigo = codigo_de_la_pagina(sitio)
     assert codigo == codigo_widget(cargar_config())
-    assert codigo == ('<div class="lucas-claras-widget" data-indicadores="uf,dolar,utm" data-tema="auto">'
-                      '<a href="https://lucasclaras.cl/" rel="nofollow">Indicadores de Lucas Claras</a></div>\n'
-                      '<script async src="https://lucasclaras.cl/widget.js"></script>')
+    assert codigo == ('<div class="saca-la-cuenta-widget" data-indicadores="uf,dolar,utm" data-tema="auto">'
+                      '<a href="https://sacalacuenta.cl/" rel="nofollow">Indicadores de Saca la Cuenta</a></div>\n'
+                      '<script async src="https://sacalacuenta.cl/widget.js"></script>')
     assert '<script async src="/widget.js"></script>' in widget  # vista previa en vivo
     assert re.search(r'src="/estaticos/js/widget-generador\.js\?v=\w+"', widget)
     assert 'value="euro"' in widget  # la demo tiene euro
@@ -238,16 +238,16 @@ def test_paginas_widget_y_api(sitio):
 
 def test_sitio_en_subcarpeta_usa_su_url(tmp_path):
     cfg = copy.deepcopy(cargar_config())
-    cfg["sitio"]["url"] = "https://usuario.github.io/lucas-claras"
-    cfg["sitio"]["ruta_base"] = "/lucas-claras"
+    cfg["sitio"]["url"] = "https://usuario.github.io/saca-la-cuenta"
+    cfg["sitio"]["ruta_base"] = "/saca-la-cuenta"
     construir(salida=tmp_path, demo=True, hoy=HOY, cfg=cfg)
     d = leer_json(tmp_path, f"{API}/indicadores.json")
-    assert d["documentacion"] == "https://usuario.github.io/lucas-claras/api/"
-    assert d["atribucion"]["enlace"] == "https://usuario.github.io/lucas-claras/"
+    assert d["documentacion"] == "https://usuario.github.io/saca-la-cuenta/api/"
+    assert d["atribucion"]["enlace"] == "https://usuario.github.io/saca-la-cuenta/"
     codigo = codigo_de_la_pagina(tmp_path)
     assert codigo == codigo_widget(cfg)
-    assert '<script async src="https://usuario.github.io/lucas-claras/widget.js"></script>' in codigo
-    assert 'src="/lucas-claras/widget.js"' in (tmp_path / "widget" / "index.html").read_text(encoding="utf-8")
+    assert '<script async src="https://usuario.github.io/saca-la-cuenta/widget.js"></script>' in codigo
+    assert 'src="/saca-la-cuenta/widget.js"' in (tmp_path / "widget" / "index.html").read_text(encoding="utf-8")
 
 
 def test_sin_euro(tmp_path):

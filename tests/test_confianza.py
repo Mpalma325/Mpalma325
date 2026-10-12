@@ -37,7 +37,7 @@ CONFIANZA_EJEMPLO = {
         {"nombre": "Persona Tres", "enlace": "http://inseguro.example"},
     ],
     "redes": ["https://www.instagram.com/ejemplo/", "no-es-una-url"],
-    "repositorio": "https://github.com/ejemplo/lucas-claras",
+    "repositorio": "https://github.com/ejemplo/saca-la-cuenta",
 }
 
 
@@ -139,8 +139,8 @@ def test_jsonld_sin_datos_queda_como_antes():
     cfg = cargar_config()
     cfg["sitio"].update(correo_contacto="", equipo=[], redes=[])
     assert seo.jsonld_sitio(cfg)[1] == {
-        "@context": "https://schema.org", "@type": "Organization", "name": "Lucas Claras",
-        "url": "https://lucasclaras.cl/", "logo": "https://lucasclaras.cl/estaticos/img/logo-512.png"}
+        "@context": "https://schema.org", "@type": "Organization", "name": "Saca la Cuenta",
+        "url": "https://sacalacuenta.cl/", "logo": "https://sacalacuenta.cl/estaticos/img/logo-512.png"}
     sin_claves = copy.deepcopy(cfg)
     for clave in ("equipo", "redes", "repositorio"):
         sin_claves["sitio"].pop(clave, None)  # un config.yaml antiguo sin las claves nuevas
@@ -166,7 +166,7 @@ def test_equipo_redes_y_repositorio():
     assert [p["nombre"] for p in equipo] == ["Persona Uno", "Persona Dos", "Persona Tres"]
     assert [p["red"] for p in equipo] == ["LinkedIn", "GitHub", ""]
     assert redes_de(cfg) == ["https://www.instagram.com/ejemplo/"]
-    assert repositorio_de(cfg) == "https://github.com/ejemplo/lucas-claras"
+    assert repositorio_de(cfg) == "https://github.com/ejemplo/saca-la-cuenta"
 
 
 def test_config_yaml_de_confianza_bien_escrito():
@@ -204,7 +204,7 @@ def test_acerca_y_contacto_con_equipo(sitio_con_equipo):
     assert "Quiénes hacemos" in acerca
     assert "Persona Uno" in acerca and "Perfil en LinkedIn" in acerca and "Perfil en GitHub" in acerca
     assert "mailto:contacto@ejemplo.cl" in acerca
-    assert 'href="https://github.com/ejemplo/lucas-claras"' in acerca
+    assert 'href="https://github.com/ejemplo/saca-la-cuenta"' in acerca
     for html in (acerca, _leer(sitio_con_equipo, "/")):
         organizacion = next(b for b in _jsonld(html) if b.get("@type") == "Organization")
         assert organizacion["email"] == "contacto@ejemplo.cl" and len(organizacion["founder"]) == 3
@@ -281,8 +281,8 @@ def test_enlaces_del_pie_y_de_la_calculadora(sitio):
     assert 'href="/indicadores-previsionales/">Indicadores previsionales</a>' in html
     assert 'href="/indicadores-previsionales/"' in _leer(sitio, "/calculadoras/sueldo-liquido/")
     sitemap = (sitio / "sitemap.xml").read_text(encoding="utf-8")
-    assert "https://lucasclaras.cl/metodologia/" in sitemap
-    assert "https://lucasclaras.cl/indicadores-previsionales/" in sitemap
+    assert "https://sacalacuenta.cl/metodologia/" in sitemap
+    assert "https://sacalacuenta.cl/indicadores-previsionales/" in sitemap
 
 
 # --- Indicadores previsionales ---------------------------------------------------
@@ -362,7 +362,7 @@ def test_contacto_sin_correo_ofrece_el_repositorio_y_las_redes(datos_demo, param
     html = crear_entorno(cfg, c, {}).get_template(pagina.plantilla).render(
         pagina=pagina, jsonld=pagina.jsonld, **pagina.contexto)
     assert "mailto:" not in html and "Todavía no publicamos un correo de contacto" in html
-    assert 'href="https://github.com/ejemplo/lucas-claras"' in html
+    assert 'href="https://github.com/ejemplo/saca-la-cuenta"' in html
     assert 'href="https://www.instagram.com/ejemplo/" rel="noopener" target="_blank">Instagram</a>' in html
 
 

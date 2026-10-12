@@ -17,9 +17,9 @@ ZONA_CHILE = ZoneInfo("America/Santiago")
 
 CONFIG_POR_DEFECTO: dict = {
     "sitio": {
-        "nombre": "Lucas Claras",
+        "nombre": "Saca la Cuenta",
         "eslogan": "Indicadores y calculadoras para tus finanzas en Chile",
-        "url": "https://lucasclaras.cl",
+        "url": "https://sacalacuenta.cl",
         "idioma": "es-CL",
         "correo_contacto": "",
         "autores": "",
@@ -65,7 +65,7 @@ def cargar_config(ruta: Path | None = None) -> dict:
     url = os.environ.get("LUCAS_URL") or cfg["sitio"]["url"]
     url = url.rstrip("/")
     cfg["sitio"]["url"] = url
-    # Si el sitio vive en una subcarpeta (p. ej. usuario.github.io/lucas-claras),
+    # Si el sitio vive en una subcarpeta (p. ej. usuario.github.io/saca-la-cuenta),
     # todos los enlaces internos deben llevar ese prefijo.
     cfg["sitio"]["ruta_base"] = urlparse(url).path.rstrip("/")
     return cfg

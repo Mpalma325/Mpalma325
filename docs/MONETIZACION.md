@@ -1,4 +1,4 @@
-# Monetización de Lucas Claras
+# Monetización de Saca la Cuenta
 
 Investigación al **12-10-2026**. Este documento no es asesoría tributaria, legal ni financiera: antes de activar un programa o recibir el primer pago, confirmen las condiciones con cada empresa y con un contador.
 
@@ -155,7 +155,7 @@ Verificado el 12-10-2026 en el centro de ayuda de AdSense.
 
 ### Otras redes de anuncios
 
-| Red | Requisito mínimo actual | ¿Sirve para Lucas Claras? |
+| Red | Requisito mínimo actual | ¿Sirve para Saca la Cuenta? |
 |---|---|---|
 | **AdSense** | 18 años o más y contenido propio que cumpla las políticas | **Sí: es la única viable** |
 | Ezoic | Desde el 19-02-2026, los sitios nuevos necesitan **250.000 usuarios activos al mes**. Hay un programa Incubator para sitios más chicos que acepta 20 editores al mes ([requisitos](https://support.ezoic.com/kb/article/getting-started-ezoics-requirements?id=getting-started-ezoics-requirements&lang=en-US), [Incubator](https://www.ezoic.com/incubator)) | No (Incubator: poco probable) |
@@ -206,7 +206,7 @@ Un ejemplo con el escenario base del plan. El tráfico crece en línea recta has
 - **Nueva declaración jurada N° 1965**, desde la Operación Renta 2027 ([noticia](https://www.sii.cl/noticias/2026/010926noti02pcr.htm)). El título de la noticia dice que la presentarán "personas y empresas que realizan contenido digital con domicilio o residencia en Chile"; el extracto que pudimos leer habla de quienes operan plataformas intermediarias entre suscriptores y creadores. **No queda claro si les aplica: pregúntenlo.**
 - **El SII está fiscalizando este tipo de ingresos.** En la Operación Renta 2025, los impuestos a pagar de los influencers subieron 52% y el número de declarantes se duplicó respecto del año anterior ([noticia](https://www.sii.cl/noticias/2025/290925noti01pcr.htm)).
 
-### Cómo aplica a Lucas Claras (a confirmar con un contador)
+### Cómo aplica a Saca la Cuenta (a confirmar con un contador)
 
 - **AdSense:** paga Google LLC desde EE. UU., así que no hay retención chilena. La regla más cercana del SII es la Resolución 128. Si aplica, el camino sería iniciar actividades en segunda categoría, emitir boletas al RUT genérico por lo recibido y pagar la retención mensual. Hay una duda real: un sitio de calculadoras automatizado puede verse como trabajo personal (segunda categoría) o como un negocio basado en herramientas (primera categoría). Si el contador no está seguro, hagan una consulta formal al SII.
 - **Referidos de empresas chilenas:** Fintual paga **con boleta de honorarios**. Pregunten si la emite Fintual como boleta de terceros (con retención) o si deben emitirla ustedes. Mercado Libre advierte que puede aplicar retenciones de impuestos. Los demás programas no lo dicen: pregúntenles.

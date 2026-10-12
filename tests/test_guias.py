@@ -51,7 +51,7 @@ def texto_guia(cuerpo: str | None = None, **campos) -> str:
     datos = {
         "titulo": "Guía de prueba ({{ hoy.year }})",
         "descripcion": "Descripción de prueba con el largo suficiente para cumplir las reglas del "
-                       "validador de guías de Lucas Claras.",
+                       "validador de guías de Saca la Cuenta.",
         "h1": "Guía de prueba",
         "resumen": "Resumen de la guía de prueba.",
         "publicada": dt.date(2026, 10, 1),
@@ -169,8 +169,8 @@ def test_jsonld_article(sitio):
         assert articulo["dateModified"] == guia.revisada.isoformat()
         assert articulo["inLanguage"] == "es-CL"
         for rol in ("author", "publisher"):
-            assert articulo[rol]["@type"] == "Organization" and articulo[rol]["name"] == "Lucas Claras"
-        canonica = f"https://lucasclaras.cl{guia.ruta}"
+            assert articulo[rol]["@type"] == "Organization" and articulo[rol]["name"] == "Saca la Cuenta"
+        canonica = f"https://sacalacuenta.cl{guia.ruta}"
         assert f'<link rel="canonical" href="{canonica}">' in html
         assert articulo["mainEntityOfPage"] == {"@type": "WebPage", "@id": canonica}
         assert articulo["image"].startswith("https://")
@@ -183,22 +183,22 @@ def test_jsonld_article(sitio):
 def test_guias_en_subcarpeta(tmp_path):
     """ruta() dentro de las guías usa la base del sitio (GitHub Pages sin dominio propio)."""
     cfg = copy.deepcopy(cargar_config())
-    cfg["sitio"]["url"] = "https://usuario.github.io/lucas-claras"
-    cfg["sitio"]["ruta_base"] = "/lucas-claras"
+    cfg["sitio"]["url"] = "https://usuario.github.io/saca-la-cuenta"
+    cfg["sitio"]["ruta_base"] = "/saca-la-cuenta"
     construir(salida=tmp_path, demo=True, hoy=HOY, cfg=cfg)
     paginas = list((tmp_path / "guias").rglob("index.html"))
     assert len(paginas) > 1
     for archivo in paginas:
         internos = re.findall(r'(?:href|src)="(/[^"]*)"', archivo.read_text(encoding="utf-8"))
-        assert internos and all(e.startswith("/lucas-claras/") for e in internos), archivo
+        assert internos and all(e.startswith("/saca-la-cuenta/") for e in internos), archivo
 
 
 def test_sitemap_con_fecha_de_revision(sitio):
     salida, _, lista = sitio
     sitemap = (salida / "sitemap.xml").read_text(encoding="utf-8")
-    assert "<loc>https://lucasclaras.cl/guias/</loc>" in sitemap
+    assert "<loc>https://sacalacuenta.cl/guias/</loc>" in sitemap
     for guia in lista:
-        assert (f"<loc>https://lucasclaras.cl{guia.ruta}</loc><lastmod>{guia.revisada.isoformat()}</lastmod>"
+        assert (f"<loc>https://sacalacuenta.cl{guia.ruta}</loc><lastmod>{guia.revisada.isoformat()}</lastmod>"
                 in sitemap)
 
 

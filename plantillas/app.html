@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<p class="bajada">La UF, el dólar, los feriados y todas las calculadoras, a un toque desde la pantalla de inicio de tu celular. Gratis, sin pasar por una tienda de aplicaciones y sin permisos especiales.</p>
+
+<p><button type="button" class="boton" data-instalar hidden>Instalar {{ sitio.nombre }}</button></p>
+
+<section class="texto">
+  <h2>En Android (Chrome)</h2>
+  <ol>
+    <li>Abre {{ sitio.nombre }} en Chrome.</li>
+    <li>Toca el menú <strong>⋮</strong> (arriba a la derecha).</li>
+    <li>Elige <strong>Instalar aplicación</strong> o <strong>Agregar a la pantalla principal</strong>.</li>
+  </ol>
+  <p>Si ves el botón <strong>Instalar</strong> más arriba en esta página, también puedes usarlo.</p>
+
+  <h2>En iPhone (Safari)</h2>
+  <ol>
+    <li>Abre {{ sitio.nombre }} en Safari.</li>
+    <li>Toca el botón <strong>Compartir</strong> (el cuadrado con una flecha hacia arriba).</li>
+    <li>Elige <strong>Agregar a inicio</strong> y confirma con <strong>Agregar</strong>.</li>
+  </ol>
+
+  <h2>En el computador</h2>
+  <p>En Chrome o Edge, haz clic en el ícono de instalar que aparece a la derecha de la barra de direcciones.</p>
+
+  <h2>Qué obtienes</h2>
+  <ul>
+    <li><strong>Acceso directo:</strong> abre la UF de hoy, el sueldo líquido o los feriados con un toque.</li>
+    <li><strong>Funciona sin conexión</strong> con lo último que viste: las calculadoras calculan en tu propio celular.</li>
+    <li><strong>Siempre al día:</strong> cuando hay internet, la app carga los valores nuevos, igual que el sitio.</li>
+    <li><strong>Liviana y privada:</strong> ocupa muy poco espacio y no pide acceso a tus datos.</li>
+  </ul>
+</section>
+
+{{ m.faq(pagina) }}
+{% endblock %}

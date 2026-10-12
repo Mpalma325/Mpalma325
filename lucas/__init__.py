@@ -1,4 +1,4 @@
-"""Lucas Claras: generador del sitio de indicadores y calculadoras financieras para Chile.
+"""Saca la Cuenta: generador del sitio de indicadores y calculadoras financieras para Chile.
 
 Módulos principales:
 

@@ -56,7 +56,7 @@
     }
 
     function bloque(indicadores, tema, destino, rel) {
-      return '<div class="lucas-claras-widget" data-indicadores="' + indicadores.join(',') +
+      return '<div class="saca-la-cuenta-widget" data-indicadores="' + indicadores.join(',') +
         '" data-tema="' + tema + '"><a href="' + escapar(destino) + '"' + rel + '>' + escapar(texto) + '</a></div>';
     }
 
@@ -69,8 +69,8 @@
       estado.textContent = '';
       // Vista previa: un elemento nuevo, porque el Shadow DOM de un elemento no se puede reemplazar.
       vista.innerHTML = bloque(indicadores, tema, form.getAttribute('data-inicio'), '');
-      if (window.LucasClarasWidget) {
-        window.LucasClarasWidget.iniciar();
+      if (window.SacaLaCuentaWidget) {
+        window.SacaLaCuentaWidget.iniciar();
       }
     }
 

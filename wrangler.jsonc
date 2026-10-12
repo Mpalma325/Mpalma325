@@ -1,9 +1,9 @@
 // Configuración de Cloudflare Workers (solo archivos estáticos, plan gratuito).
 // GitHub Actions publica la carpeta dist/ con "wrangler deploy".
 // El dominio propio se conecta en el panel de Cloudflare:
-// Workers & Pages → lucas-claras → Settings → Domains & Routes → Add → Custom domain.
+// Workers & Pages → saca-la-cuenta → Settings → Domains & Routes → Add → Custom domain.
 {
-  "name": "lucas-claras",
+  "name": "saca-la-cuenta",
   "compatibility_date": "2026-10-01",
   "assets": {
     "directory": "./dist",

@@ -1,5 +1,5 @@
 /*
- * Interactividad de Lucas Claras: conversores, calculadoras, UF del día y
+ * Interactividad de Saca la Cuenta: conversores, calculadoras, UF del día y
  * próximo feriado. Sin dependencias. Las fórmulas viven en calculos.js.
  */
 (function () {
@@ -899,7 +899,55 @@
   // Inicio
   // ---------------------------------------------------------------------------
 
+  // ---------------------------------------------------------------------------
+  // App instalable (PWA)
+  // ---------------------------------------------------------------------------
+
+  /** Registra el service worker y, en /app/, muestra el botón "Instalar" cuando el navegador lo permite. */
+  function iniciarAppInstalable() {
+    var base = document.documentElement.getAttribute('data-base') || '';
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register(base + '/sw.js', { scope: base + '/' }).catch(function () {});
+      });
+    }
+    // Sin conexión, la página viene del caché: se avisa que los valores pueden no ser los de hoy.
+    var franja = $('[data-sin-conexion]');
+    if (franja) {
+      var revisarRed = function () {
+        franja.hidden = navigator.onLine !== false;
+      };
+      window.addEventListener('online', revisarRed);
+      window.addEventListener('offline', revisarRed);
+      revisarRed();
+    }
+    var boton = $('[data-instalar]');
+    if (!boton) {
+      return;  // en las demás páginas el navegador muestra su propio aviso de instalación
+    }
+    var aviso = null;
+    window.addEventListener('beforeinstallprompt', function (evento) {
+      evento.preventDefault();
+      aviso = evento;
+      boton.hidden = false;
+    });
+    boton.addEventListener('click', function () {
+      if (!aviso) {
+        return;
+      }
+      aviso.prompt();
+      aviso.userChoice.then(function () {
+        aviso = null;
+        boton.hidden = true;
+      });
+    });
+    window.addEventListener('appinstalled', function () {
+      boton.hidden = true;
+    });
+  }
+
   function iniciar() {
+    iniciarAppInstalable();
     iniciarConversores();
     actualizarUf();
     actualizarProximoFeriado();

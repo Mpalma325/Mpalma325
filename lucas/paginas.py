@@ -11,6 +11,7 @@ import datetime as dt
 
 from . import calculos, seo
 from .api import paginas_api_widget
+from .app_instalable import paginas_app
 from .calendario import ruta_ics
 from .construir import Contexto, Pagina
 from .datos import (Datos, dias_del_mes, mes_anterior, mes_siguiente, periodo_uf, primer_dia,
@@ -1608,7 +1609,7 @@ def todas_las_paginas(c: Contexto) -> list[Pagina]:
     base = (paginas_inicio(c) + paginas_uf(c) + paginas_uf_proyeccion(c) + paginas_divisas(c)
             + paginas_utm_impuesto_ipc(c)
             + paginas_sueldo(c) + paginas_calculadoras(c) + paginas_calculadoras_extra(c)
-            + paginas_feriados(c) + paginas_api_widget(c)
+            + paginas_feriados(c) + paginas_api_widget(c) + paginas_app(c)
             + paginas_previsionales(c)
             + paginas_institucionales(c))
     # Las guías van al final: su recuadro "Calcúlalo" usa el nombre de las páginas anteriores.

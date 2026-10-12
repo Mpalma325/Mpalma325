@@ -32,7 +32,7 @@ MINDICADOR = "https://mindicador.cl/api"
 FINDIC = "https://findic.cl/api"  # mismo formato que mindicador.cl
 SII = "https://www.sii.cl/valores_y_fechas"
 CMF = "https://api.cmfchile.cl/api-sbifv3/recursos_api"
-USER_AGENT = "LucasClaras/1.0 (sitio de indicadores; contacto en el sitio)"
+USER_AGENT = "SacaLaCuenta/1.0 (sitio de indicadores; contacto en el sitio)"
 
 # Rango de valores plausibles: protege al sitio de publicar datos corruptos.
 RANGOS_VALIDOS = {

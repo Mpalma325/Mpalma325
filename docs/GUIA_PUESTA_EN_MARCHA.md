@@ -23,8 +23,8 @@ Revisen las páginas y los textos. Si algo no les gusta, las plantillas están e
 
 ## Paso 2: Personalizar `config.yaml`
 
-- `sitio.url`: la URL final (por ejemplo, `https://lucasclaras.cl`).
-- `sitio.correo_contacto`: un correo para el sitio. Creen uno nuevo, por ejemplo `contacto.lucasclaras@gmail.com`. Google AdSense valora que exista un contacto.
+- `sitio.url`: la URL final (por ejemplo, `https://sacalacuenta.cl`).
+- `sitio.correo_contacto`: un correo para el sitio. Creen uno nuevo, por ejemplo `contacto.sacalacuenta@gmail.com`. Google AdSense valora que exista un contacto.
 - `sitio.autores`: cómo quieren presentarse en "Quiénes somos" (o déjenlo vacío).
 - `sitio.equipo`: **muy recomendado.** En los sitios de finanzas, Google y AdSense valoran saber quién está detrás. Completen sus datos reales:
 
@@ -47,7 +47,7 @@ Revisen las páginas y los textos. Si algo no les gusta, las plantillas están e
 
 ## Paso 3: Comprar el dominio
 
-1. Elijan un nombre corto y fácil de recordar. Ideas: `lucasclaras.cl`, `cuentasclaras.cl`, `calculalucas.cl`, `indicadoreshoy.cl`. Revisen la disponibilidad en [nic.cl](https://www.nic.cl).
+1. **Ojo: `sacalacuenta.cl` ya está en uso** por otro sitio chileno de calculadoras, así que antes de lanzar hay que elegir otro nombre. Revisen en [nic.cl](https://www.nic.cl) que el dominio nuevo esté libre, cámbienlo en `config.yaml` (`sitio.nombre` y `sitio.url`), regeneren las imágenes con `python herramientas/generar_imagenes.py` (toma el nombre de `config.yaml`) y busquen el nombre antiguo en el repositorio (`grep -rn "sacalacuenta" .`).
 2. Regístrenlo en NIC Chile (necesitan RUT; cuesta unos $10.000 al año). Activen la renovación automática para no perderlo.
 
 ## Paso 4 (recomendado): Clave gratuita de la API de la CMF (5 minutos)
@@ -68,7 +68,7 @@ Como findic.cl no es oficial, conviene agregar el respaldo oficial de la Comisi�
 > ¿Por qué no GitHub Pages? Sus términos dicen que no está pensado para "un negocio en línea". Para un sitio con publicidad, Cloudflare es la opción segura y también es gratis.
 
 1. **Crear la cuenta:** regístrense en [cloudflare.com](https://dash.cloudflare.com/sign-up) (plan Free).
-2. **Agregar el dominio:** *Add a domain* → escriban `lucasclaras.cl` → plan **Free**. Cloudflare les mostrará **dos servidores de nombres** (nameservers).
+2. **Agregar el dominio:** *Add a domain* → escriban `sacalacuenta.cl` → plan **Free**. Cloudflare les mostrará **dos servidores de nombres** (nameservers).
 3. **Apuntar el dominio a Cloudflare:** en NIC Chile, en la administración del dominio, reemplacen los servidores DNS por los dos de Cloudflare. Puede tardar desde minutos hasta unas horas en activarse.
 4. **Crear un token de API:** en Cloudflare, *My Profile → API Tokens → Create Token* → plantilla **Edit Cloudflare Workers** → elijan su cuenta y su zona → *Create Token*. Copien el token (se muestra una sola vez).
 5. **Copiar el Account ID:** aparece en la página de inicio de *Workers & Pages* (columna derecha).
@@ -78,8 +78,8 @@ Como findic.cl no es oficial, conviene agregar el respaldo oficial de la Comisi�
      - `CLOUDFLARE_ACCOUNT_ID` = el Account ID
    - Pestaña **Variables** → *New repository variable*:
      - `DESTINO` = `cloudflare`
-7. **Publicar por primera vez:** pestaña *Actions* → **Actualizar y publicar** → *Run workflow*. La primera vez descarga datos desde 2018 y demora un par de minutos. Debe terminar en verde ✅. Se crea el Worker `lucas-claras` con una dirección `lucas-claras.<algo>.workers.dev`.
-8. **Conectar el dominio:** Cloudflare → *Workers & Pages* → `lucas-claras` → *Settings* → *Domains & Routes* → *Add* → *Custom domain* → `lucasclaras.cl`. **No agreguen `www` como dominio del Worker**: servirían el mismo sitio dos veces. Para `www`, sigan el complemento B más abajo.
+7. **Publicar por primera vez:** pestaña *Actions* → **Actualizar y publicar** → *Run workflow*. La primera vez descarga datos desde 2018 y demora un par de minutos. Debe terminar en verde ✅. Se crea el Worker `saca-la-cuenta` con una dirección `saca-la-cuenta.<algo>.workers.dev`.
+8. **Conectar el dominio:** Cloudflare → *Workers & Pages* → `saca-la-cuenta` → *Settings* → *Domains & Routes* → *Add* → *Custom domain* → `sacalacuenta.cl`. **No agreguen `www` como dominio del Worker**: servirían el mismo sitio dos veces. Para `www`, sigan el complemento B más abajo.
 9. **Analítica gratis y sin cookies:** Cloudflare → *Web Analytics* → agreguen el sitio. Si les entrega un token, cópienlo en `config.yaml` (`analitica.cloudflare_web_analytics_token`). Prefieran esta opción a Google Analytics: las calculadoras guardan los montos en la parte `#` de la dirección para poder compartirlos, y si algún día activan Google Analytics 4 deben desactivar en su "medición mejorada" los cambios de página basados en el historial del navegador, para no enviar esos montos a Google.
 10. **Avisar a Bing y Yandex automáticamente:** Cloudflare → *Caching → Configuration* → activen **Crawler Hints** (usa IndexNow).
 
@@ -88,7 +88,7 @@ Como findic.cl no es oficial, conviene agregar el respaldo oficial de la Comisi�
 
 1. *Settings → Pages → Build and deployment → Source:* **GitHub Actions**.
 2. Variable `DESTINO` = `github-pages`.
-3. En `config.yaml`, `url: https://mpalma325.github.io/lucas-claras` (o su dominio si lo configuran en *Settings → Pages → Custom domain*).
+3. En `config.yaml`, `url: https://mpalma325.github.io/saca-la-cuenta` (o su dominio si lo configuran en *Settings → Pages → Custom domain*).
 4. *Actions → Actualizar y publicar → Run workflow*.
 
 Con el GitHub Student Developer Pack tienen GitHub Pro gratis, que permite Pages en repositorios privados.
@@ -98,27 +98,27 @@ Desde ahora el sitio se actualiza solo dos veces al día. 🎉
 
 ### Complemento A: correo de contacto gratis con Cloudflare Email Routing
 
-Con el dominio ya en Cloudflare pueden tener `contacto@lucasclaras.cl` sin pagar: Cloudflare recibe los correos y los reenvía a su correo personal. **AdSense espera que el sitio tenga un contacto.**
+Con el dominio ya en Cloudflare pueden tener `contacto@sacalacuenta.cl` sin pagar: Cloudflare recibe los correos y los reenvía a su correo personal. **AdSense espera que el sitio tenga un contacto.**
 
 1. En Cloudflare, entren a **Email Routing** dentro del dominio (según el panel aparece como *Email Service → Email Routing* o *Email → Email Routing*).
 2. **Destination addresses → Add:** escriban su correo personal y confírmenlo con el mensaje de verificación que les llega. Sin confirmar, la regla queda desactivada.
-3. Activen Email Routing para `lucasclaras.cl`. Cloudflare agrega solo los registros MX y el TXT de SPF. Si el dominio tenía otro correo, hay que quitar esos MX: no pueden convivir.
+3. Activen Email Routing para `sacalacuenta.cl`. Cloudflare agrega solo los registros MX y el TXT de SPF. Si el dominio tenía otro correo, hay que quitar esos MX: no pueden convivir.
 4. **Routing rules → Create address:** en la dirección escriban `contacto`; en la acción elijan **Send to an email** y su correo verificado.
 5. Prueben escribiendo desde otra cuenta (revisen también la carpeta de spam).
-6. En `config.yaml`, pongan `correo_contacto: "contacto@lucasclaras.cl"` y hagan commit y push. El correo aparece en Contacto, Privacidad, Quiénes somos y en los datos estructurados.
+6. En `config.yaml`, pongan `correo_contacto: "contacto@sacalacuenta.cl"` y hagan commit y push. El correo aparece en Contacto, Privacidad, Quiénes somos y en los datos estructurados.
 
 > Email Routing solo recibe y reenvía: sus respuestas saldrán desde su correo personal.
 
 ### Complemento B: que `www` lleve al dominio sin `www`
 
-1. En **DNS → Records**, creen un registro para `www` con la nube naranja (*Proxied*), por ejemplo un `CNAME` `www` → `lucasclaras.cl`.
+1. En **DNS → Records**, creen un registro para `www` con la nube naranja (*Proxied*), por ejemplo un `CNAME` `www` → `sacalacuenta.cl`.
 2. En **Rules → Redirect Rules → Create rule**, elijan la plantilla **Redirect from WWW to root** (o configúrenla a mano: *Request URL* `https://www.*`, *Target URL* `https://${1}`, código **301**, *Preserve query string* activado).
 3. Activen **SSL/TLS → Edge Certificates → Always Use HTTPS**.
-4. Prueben que `https://www.lucasclaras.cl/uf/?x=1` lleve a `https://lucasclaras.cl/uf/?x=1`.
+4. Prueben que `https://www.sacalacuenta.cl/uf/?x=1` lleve a `https://sacalacuenta.cl/uf/?x=1`.
 
 ### Complemento C: apaguen `workers.dev` cuando el dominio funcione
 
-Cuando `https://lucasclaras.cl` ya muestre el sitio, apaguen la dirección `lucas-claras.<cuenta>.workers.dev` y las URL de vista previa, para que no queden copias del sitio que Google pueda indexar. En `wrangler.jsonc`, agreguen:
+Cuando `https://sacalacuenta.cl` ya muestre el sitio, apaguen la dirección `saca-la-cuenta.<cuenta>.workers.dev` y las URL de vista previa, para que no queden copias del sitio que Google pueda indexar. En `wrangler.jsonc`, agreguen:
 
 ```jsonc
   "workers_dev": false,
@@ -129,8 +129,8 @@ Hagan commit y push: el siguiente despliegue las apaga. **Háganlo solo después
 
 ## Paso 6: Registrar el sitio en Google y Bing
 
-1. **Google Search Console** ([search.google.com/search-console](https://search.google.com/search-console)): *Agregar propiedad* → tipo **Dominio** → `lucasclaras.cl`. Google les pedirá un registro TXT: agréguenlo en Cloudflare → *DNS → Records* → *Add record* (tipo TXT).
-2. En Search Console → *Sitemaps* → envíen `https://lucasclaras.cl/sitemap.xml`.
+1. **Google Search Console** ([search.google.com/search-console](https://search.google.com/search-console)): *Agregar propiedad* → tipo **Dominio** → `sacalacuenta.cl`. Google les pedirá un registro TXT: agréguenlo en Cloudflare → *DNS → Records* → *Add record* (tipo TXT).
+2. En Search Console → *Sitemaps* → envíen `https://sacalacuenta.cl/sitemap.xml`.
 3. Usen *Inspección de URLs* para pedir la indexación de las páginas más importantes: inicio, `/uf/`, `/calculadoras/sueldo-liquido/`, `/feriados/`, `/uf/proyeccion/`.
 4. **Bing Webmaster Tools** ([bing.com/webmasters](https://www.bing.com/webmasters)): *Importar desde Google Search Console*.
 
@@ -180,10 +180,10 @@ Postulen cuando el sitio lleve algunas semanas en línea y ya tenga páginas ind
 
 - [ ] Secreto `CMF_API_KEY` configurado (respaldo oficial del dólar y el euro).
 - [ ] El workflow **Actualizar y publicar** termina en verde.
-- [ ] `https://lucasclaras.cl` muestra el sitio, con el candado HTTPS.
-- [ ] `https://lucasclaras.cl/sitemap.xml` y `/robots.txt` responden.
+- [ ] `https://sacalacuenta.cl` muestra el sitio, con el candado HTTPS.
+- [ ] `https://sacalacuenta.cl/sitemap.xml` y `/robots.txt` responden.
 - [ ] Sitemap enviado a Search Console y a Bing.
-- [ ] Correo de contacto funcionando (`contacto@lucasclaras.cl`) y puesto en `correo_contacto`.
+- [ ] Correo de contacto funcionando (`contacto@sacalacuenta.cl`) y puesto en `correo_contacto`.
 - [ ] `sitio.equipo` completo ("Quiénes somos" con personas reales).
 - [ ] `www` redirige al dominio sin `www`; `workers_dev` y `preview_urls` en `false`.
 - [ ] AdSense postulado (cuando corresponda).

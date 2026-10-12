@@ -1,6 +1,6 @@
 # Plan de lanzamiento: visitas y enlaces en las primeras 8 semanas
 
-Del lunes 12 de octubre al domingo 6 de diciembre de 2026. El objetivo es que personas reales conozcan Lucas Claras, lo usen y lo citen, sin hacer nada que Google considere spam. Para un sitio nuevo, los enlaces desde otros sitios son lo más difícil de conseguir: toma meses y no hay atajos que valgan el riesgo.
+Del lunes 12 de octubre al domingo 6 de diciembre de 2026. El objetivo es que personas reales conozcan Saca la Cuenta, lo usen y lo citen, sin hacer nada que Google considere spam. Para un sitio nuevo, los enlaces desde otros sitios son lo más difícil de conseguir: toma meses y no hay atajos que valgan el riesgo.
 
 Las herramientas para esto ya están construidas:
 
@@ -33,8 +33,8 @@ Sobre los widgets en particular, Google publicó en septiembre de 2016 [«A remi
 El código para insertar es:
 
 ```html
-<div class="lucas-claras-widget" data-indicadores="uf,dolar,utm" data-tema="auto"><a href="https://lucasclaras.cl/" rel="nofollow">Indicadores de Lucas Claras</a></div>
-<script async src="https://lucasclaras.cl/widget.js"></script>
+<div class="saca-la-cuenta-widget" data-indicadores="uf,dolar,utm" data-tema="auto"><a href="https://sacalacuenta.cl/" rel="nofollow">Indicadores de Saca la Cuenta</a></div>
+<script async src="https://sacalacuenta.cl/widget.js"></script>
 ```
 
 - El enlace está en el HTML del sitio que inserta el widget, a la vista de quien copia el código, con la marca como texto, sin palabras clave y hacia la portada. No hay enlaces ocultos ni se agregan enlaces con JavaScript.
@@ -49,7 +49,7 @@ Los enlaces que se publican en LinkedIn, Reddit o GitHub tampoco traspasan relev
 - [ ] El sitio está publicado en el dominio final, verificado en Search Console y Bing Webmaster Tools, con el sitemap enviado ([GUIA_PUESTA_EN_MARCHA.md](GUIA_PUESTA_EN_MARCHA.md), paso 6).
 - [ ] `sitio.correo_contacto` está completo en `config.yaml`: sin un correo, nadie puede responder a una propuesta.
 - [ ] `sitio.autores` está completo: un "Quiénes somos" con personas reales da confianza a lectores, periodistas y buscadores.
-- [ ] La API responde con sus cabeceras: `curl -sI https://lucasclaras.cl/api/v1/indicadores.json` debe mostrar `access-control-allow-origin: *` y `cache-control: public, max-age=1800`.
+- [ ] La API responde con sus cabeceras: `curl -sI https://sacalacuenta.cl/api/v1/indicadores.json` debe mostrar `access-control-allow-origin: *` y `cache-control: public, max-age=1800`.
 - [ ] El widget funciona en una página HTML propia (un archivo en el escritorio con el código de `/widget/` basta).
 - [ ] Si activan protecciones contra bots en Cloudflare, prueben de nuevo con `curl` y con el widget: la API y `/widget.js` deben seguir respondiendo a otros sitios y a programas.
 - [ ] Tienen capturas de pantalla para publicar: el widget claro y oscuro, la calculadora de sueldo líquido y los feriados 2027.
@@ -100,7 +100,7 @@ Adáptenlos: un mensaje personal funciona mejor que uno genérico. Los textos en
 
 ### 5.1 Post de LinkedIn
 
-> Con [Marcelo/Laura] lanzamos **Lucas Claras** (https://lucasclaras.cl), un sitio gratuito con los indicadores económicos de Chile y calculadoras para el día a día: sueldo líquido, finiquito, vacaciones proporcionales, boletas de honorarios, reajuste de arriendo por IPC y crédito hipotecario.
+> Con [Marcelo/Laura] lanzamos **Saca la Cuenta** (https://sacalacuenta.cl), un sitio gratuito con los indicadores económicos de Chile y calculadoras para el día a día: sueldo líquido, finiquito, vacaciones proporcionales, boletas de honorarios, reajuste de arriendo por IPC y crédito hipotecario.
 >
 > [Una o dos frases sobre por qué lo hicieron, en sus palabras.]
 >
@@ -109,7 +109,7 @@ Adáptenlos: un mensaje personal funciona mejor que uno genérico. Los textos en
 > - Los feriados se calculan con las reglas de la ley (traslados, Semana Santa, solsticio), no con una lista copiada.
 > - Todo se actualiza solo, dos veces al día.
 >
-> Además liberamos gratis una API en JSON con la UF, el dólar, el euro, la UTM, el IPC y los feriados (https://lucasclaras.cl/api/) y un widget para mostrar la UF y el dólar en cualquier sitio (https://lucasclaras.cl/widget/).
+> Además liberamos gratis una API en JSON con la UF, el dólar, el euro, la UTM, el IPC y los feriados (https://sacalacuenta.cl/api/) y un widget para mostrar la UF y el dólar en cualquier sitio (https://sacalacuenta.cl/widget/).
 >
 > Si encuentras un error o se te ocurre una calculadora que te serviría, cuéntanos.
 >
@@ -119,14 +119,14 @@ Adáptenlos: un mensaje personal funciona mejor que uno genérico. Los textos en
 
 **Título:** Hicimos una API gratuita (JSON estático) con la UF, el dólar, la UTM y los feriados de Chile
 
-> Hola. Somos dos estudiantes de ingeniería y armamos Lucas Claras, un sitio de indicadores y calculadoras financieras para Chile. Lo comparto por si a alguien le sirven los datos en un proyecto. Aviso: el sitio es nuestro [y se financia con publicidad].
+> Hola. Somos dos estudiantes de ingeniería y armamos Saca la Cuenta, un sitio de indicadores y calculadoras financieras para Chile. Lo comparto por si a alguien le sirven los datos en un proyecto. Aviso: el sitio es nuestro [y se financia con publicidad].
 >
 > Cómo funciona:
 > - Python genera un sitio estático (unas 350 páginas) y archivos JSON; GitHub Actions lo actualiza dos veces al día y Cloudflare lo publica.
 > - La UF de cada período se calcula con la fórmula del Banco Central apenas sale el IPC, y las pruebas la comparan con los valores oficiales.
 > - Los feriados salen de las reglas de la ley (traslados, Semana Santa, solsticio para el Día de los Pueblos Indígenas).
 >
-> La API no pide clave y tiene CORS abierto (https://lucasclaras.cl/api/):
+> La API no pide clave y tiene CORS abierto (https://sacalacuenta.cl/api/):
 > - `/api/v1/indicadores.json`: UF de hoy y de mañana, dólar, euro, UTM e IPC
 > - `/api/v1/uf.json`, `/api/v1/dolar.json` y `/api/v1/feriados/2027.json`
 >
@@ -142,17 +142,17 @@ Quédense a responder los comentarios durante el día. Si alguien encuentra un e
 >
 > Soy [Laura/Marcelo], estudiante de [carrera] en [universidad]. Leo [nombre del sitio, newsletter o centro] y vi que [publican la UF / ayudan a estudiantes con su primer trabajo / ...].
 >
-> Con [compañero/a] creamos Lucas Claras (https://lucasclaras.cl), un sitio gratuito de indicadores y calculadoras para Chile. Te escribo porque quizás te sirvan dos cosas que liberamos sin costo:
+> Con [compañero/a] creamos Saca la Cuenta (https://sacalacuenta.cl), un sitio gratuito de indicadores y calculadoras para Chile. Te escribo porque quizás te sirvan dos cosas que liberamos sin costo:
 >
-> 1. Un **widget** que muestra la UF, el dólar y la UTM del día, se actualiza solo y se pega con dos líneas de código: https://lucasclaras.cl/widget/
-> 2. Una **API en JSON**, sin registro, con la UF, el dólar, el euro, la UTM, el IPC y los feriados: https://lucasclaras.cl/api/
+> 1. Un **widget** que muestra la UF, el dólar y la UTM del día, se actualiza solo y se pega con dos líneas de código: https://sacalacuenta.cl/widget/
+> 2. Una **API en JSON**, sin registro, con la UF, el dólar, el euro, la UTM, el IPC y los feriados: https://sacalacuenta.cl/api/
 >
 > No hay que pagar nada; solo pedimos mantener el enlace de atribución que trae el código. [Para medios: si preparan una nota sobre la UF o el IPC, con gusto les explicamos cómo se calcula.]
 >
 > Si no te interesa, no te vuelvo a escribir.
 >
 > Saludos,
-> [Nombre] · [correo de contacto] · https://lucasclaras.cl
+> [Nombre] · [correo de contacto] · https://sacalacuenta.cl
 
 Variante para un **centro de alumnos**: reemplacen los puntos 1 y 2 por "la calculadora de sueldo líquido y la de boleta de honorarios, para quienes hacen la práctica o una ayudantía; el calendario de feriados para planificar el semestre; y la API, por si algún curso necesita datos reales para un proyecto".
 
@@ -161,15 +161,15 @@ Envíen cada correo uno a uno, con el nombre de la persona. Como máximo, un rec
 ### 5.4 Texto para el README del perfil de GitHub
 
 ```markdown
-### Lucas Claras
+### Saca la Cuenta
 
 Sitio gratuito de indicadores económicos y calculadoras financieras para Chile, hecho con [Laura/Marcelo]:
-**[lucasclaras.cl](https://lucasclaras.cl)**
+**[sacalacuenta.cl](https://sacalacuenta.cl)**
 
 - Python y Jinja2 generan un sitio estático que GitHub Actions actualiza dos veces al día y Cloudflare publica.
 - La UF se calcula con la fórmula oficial del Banco Central y se valida contra los valores publicados.
-- [API JSON gratuita](https://lucasclaras.cl/api/) (UF, dólar, euro, UTM, IPC y feriados) y
-  [widget](https://lucasclaras.cl/widget/) para mostrar los indicadores en cualquier sitio.
+- [API JSON gratuita](https://sacalacuenta.cl/api/) (UF, dólar, euro, UTM, IPC y feriados) y
+  [widget](https://sacalacuenta.cl/widget/) para mostrar los indicadores en cualquier sitio.
 ```
 
 ## 6. Plan semana a semana
@@ -214,7 +214,7 @@ Publiquen o compartan cada contenido una o dos semanas antes de que suba la bús
 
 - **Rendimiento → Resultados de búsqueda.** Comparen los últimos 28 días con los 28 anteriores. Filtros útiles:
   - *Página* que contiene `/widget/` o `/api/`: impresiones y consultas que llegan a esas páginas.
-  - *Consulta* que contiene `lucas claras`: búsquedas de la marca, la mejor señal de que la gente ya conoce el sitio.
+  - *Consulta* que contiene `saca la cuenta`: búsquedas de la marca, la mejor señal de que la gente ya conoce el sitio.
   - Cada página de temporada (por ejemplo, `/feriados/2027/`) antes y después de compartirla.
 - **Enlaces.** El informe de enlaces externos muestra qué sitios enlazan, qué páginas reciben más enlaces y con qué texto. Tarda semanas en actualizarse y no muestra todos los enlaces.
 - **Indexación → Páginas** e **Inspección de URL**: confirmen que `/widget/` y `/api/` estén indexadas y pidan la indexación al publicarlas.
@@ -226,7 +226,7 @@ Bing Webmaster Tools también tiene un informe de enlaces entrantes; revísenlo 
 
 - **Cloudflare Web Analytics**, en las fuentes de referencia (*referrers*): de qué sitios llegan visitas, incluidos los clics en el enlace del widget.
 - **La planilla de seguimiento**: cada publicación, correo y respuesta. Anoten los sitios que usan el widget o la API (los verán en los referrers, en Search Console o porque les escriben).
-- **Alertas de Google** (google.com/alerts) con "Lucas Claras" y "lucasclaras.cl", para enterarse de menciones.
+- **Alertas de Google** (google.com/alerts) con "Saca la Cuenta" y "sacalacuenta.cl", para enterarse de menciones.
 
 ### Metas orientativas para la semana 8
 

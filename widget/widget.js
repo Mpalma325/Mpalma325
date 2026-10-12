@@ -1,5 +1,5 @@
 /*
- * Widget de indicadores de Lucas Claras (https://lucasclaras.cl/widget/). ES5, sin dependencias
+ * Widget de indicadores de Saca la Cuenta (https://sacalacuenta.cl/widget/). ES5, sin dependencias
  * y solo ASCII. Lee api/v1/indicadores.json del mismo origen; si falla, deja el enlace original.
  */
 (function () {
@@ -22,7 +22,7 @@
     '.lcw .lcw-pie{padding-top:8px;font-size:12px}' +
     '.lcw-pie a{color:var(--p)!important}.lcw-pie ::slotted(a){color:var(--p)!important}';
   var script = document.currentScript;
-  var DATOS = (script ? script.src.split('?')[0].replace(/[^\/]*$/, '') : 'https://lucasclaras.cl/') +
+  var DATOS = (script ? script.src.split('?')[0].replace(/[^\/]*$/, '') : 'https://sacalacuenta.cl/') +
     'api/v1/indicadores.json';
   var datos;
   var esperando;
@@ -123,7 +123,7 @@
   }
 
   function iniciar() { // muestra los widgets nuevos; se puede volver a llamar
-    var lista = document.querySelectorAll('.lucas-claras-widget');
+    var lista = document.querySelectorAll('.saca-la-cuenta-widget');
     var nuevos = [];
     for (var i = 0; i < lista.length; i++) {
       if (!lista[i].getAttribute('data-lcw')) {
@@ -144,7 +144,7 @@
     }
   }
 
-  window.LucasClarasWidget = { iniciar: iniciar };
+  window.SacaLaCuentaWidget = { iniciar: iniciar };
   iniciar();
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', iniciar);

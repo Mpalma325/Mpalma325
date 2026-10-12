@@ -112,8 +112,9 @@ def test_seo_basico_en_cada_pagina(sitio):
         assert pagina.titulo.strip(), ruta
         assert len(pagina.titulo) <= 90, (ruta, pagina.titulo)
         assert pagina.descripcion and 50 <= len(pagina.descripcion) <= 230, (ruta, pagina.descripcion)
-        # La 404 no se indexa y no declara canónica (ver tests/test_ux.py)
-        assert ruta == "/404.html" or (pagina.canonica and pagina.canonica.startswith("https://")), ruta
+        # La 404 y la página sin conexión de la app no se indexan ni declaran canónica (ver tests/test_ux.py)
+        no_indexables = ("/404.html", "/sin-conexion/index.html")
+        assert ruta in no_indexables or (pagina.canonica and pagina.canonica.startswith("https://")), ruta
         assert pagina.h1 == 1, ruta
         for bloque in pagina.jsonld:
             json.loads(bloque)
@@ -131,11 +132,11 @@ def test_sitemap_y_robots(sitio):
     salida, resumen, _ = sitio
     sitemap = (salida / "sitemap.xml").read_text(encoding="utf-8")
     urls = re.findall(r"<loc>(.*?)</loc>", sitemap)
-    # todas menos la 404 y /feriados/<año en curso>/, cuya canónica es /feriados/
-    assert len(urls) == resumen["paginas"] - 2
-    assert "https://lucasclaras.cl/uf/" in urls
+    # todas menos la 404, /sin-conexion/ (de la app) y /feriados/<año en curso>/, cuya canónica es /feriados/
+    assert len(urls) == resumen["paginas"] - 3
+    assert "https://sacalacuenta.cl/uf/" in urls
     assert "404" not in sitemap
-    assert "Sitemap: https://lucasclaras.cl/sitemap.xml" in (salida / "robots.txt").read_text()
+    assert "Sitemap: https://sacalacuenta.cl/sitemap.xml" in (salida / "robots.txt").read_text()
 
 
 def test_valores_en_paginas(sitio):
@@ -153,13 +154,13 @@ def test_sitio_en_subcarpeta(tmp_path):
     """GitHub Pages sin dominio propio publica en usuario.github.io/repositorio."""
     cfg = cargar_config()
     cfg = copy.deepcopy(cfg)
-    cfg["sitio"]["url"] = "https://usuario.github.io/lucas-claras"
-    cfg["sitio"]["ruta_base"] = "/lucas-claras"
+    cfg["sitio"]["url"] = "https://usuario.github.io/saca-la-cuenta"
+    cfg["sitio"]["ruta_base"] = "/saca-la-cuenta"
     construir(salida=tmp_path, demo=True, hoy=HOY, cfg=cfg)
     html = (tmp_path / "uf" / "index.html").read_text(encoding="utf-8")
     internos = re.findall(r'(?:href|src)="(/[^"]*)"', html)
-    assert internos and all(e.startswith("/lucas-claras/") for e in internos)
-    assert '<link rel="canonical" href="https://usuario.github.io/lucas-claras/uf/">' in html
+    assert internos and all(e.startswith("/saca-la-cuenta/") for e in internos)
+    assert '<link rel="canonical" href="https://usuario.github.io/saca-la-cuenta/uf/">' in html
 
 
 def test_ads_txt_y_anuncios(tmp_path):
