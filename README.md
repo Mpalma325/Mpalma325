@@ -27,6 +27,7 @@ Valor de la UF, dólar, euro, UTM e IPC del día; páginas como "1.000 UF en pes
 
 - [ ] Mover el código a un repositorio propio (abajo)
 - [ ] Revisar textos y parámetros (`config.yaml`, `parametros/chile.yaml`)
+- [ ] Pedir la clave gratuita de la API de la CMF (dólar al día y euro)
 - [ ] Comprar el dominio y publicar en Cloudflare → [guía paso a paso](docs/GUIA_PUESTA_EN_MARCHA.md)
 - [ ] Registrar el sitio en Google Search Console y Bing Webmaster Tools
 - [ ] Postular a Google AdSense cuando el sitio tenga algunas semanas indexado

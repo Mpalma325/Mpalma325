@@ -33,7 +33,16 @@ Revisen las páginas y los textos. Si algo no les gusta, las plantillas están e
 1. Elijan un nombre corto y fácil de recordar. Ideas: `lucasclaras.cl`, `cuentasclaras.cl`, `calculalucas.cl`, `indicadoreshoy.cl`. Revisen la disponibilidad en [nic.cl](https://www.nic.cl).
 2. Regístrenlo en NIC Chile (necesitan RUT; cuesta unos $10.000 al año). Activen la renovación automática para no perderlo.
 
-## Paso 4: Publicar en Cloudflare (gratis, permite uso comercial)
+## Paso 4: Pedir la clave gratuita de la API de la CMF (5 minutos)
+
+El sitio lee la UF, la UTM y el IPC desde las tablas oficiales del SII, sin clave. Pero el SII publica el **dólar con unos 10 días de atraso** y no publica el **euro**, y mindicador.cl no responde desde los servidores de GitHub. La API de la Comisión para el Mercado Financiero (CMF) resuelve las dos cosas y es gratis:
+
+1. Pidan una clave en [api.cmfchile.cl](https://api.cmfchile.cl) (formulario con su correo; llega al instante).
+2. Guárdenla en GitHub como secreto `CMF_API_KEY` (*Settings → Secrets and variables → Actions → New repository secret*).
+
+Sin esta clave el sitio funciona, pero muestra el último dólar que publicó el SII y omite las páginas del euro. Además, el aviso de mantención les llegará por "dólar atrasado".
+
+## Paso 5: Publicar en Cloudflare (gratis, permite uso comercial)
 
 > ¿Por qué no GitHub Pages? Sus términos dicen que no está pensado para "un negocio en línea". Para un sitio con publicidad, Cloudflare es la opción segura y también es gratis.
 
@@ -48,7 +57,7 @@ Revisen las páginas y los textos. Si algo no les gusta, las plantillas están e
      - `CLOUDFLARE_ACCOUNT_ID` = el Account ID
    - Pestaña **Variables** → *New repository variable*:
      - `DESTINO` = `cloudflare`
-7. **Publicar por primera vez:** pestaña *Actions* → **Actualizar y publicar** → *Run workflow*. La primera vez descarga datos desde 2018 y demora unos minutos. Debe terminar en verde ✅. Se crea el Worker `lucas-claras` con una dirección `lucas-claras.<algo>.workers.dev`.
+7. **Publicar por primera vez:** pestaña *Actions* → **Actualizar y publicar** → *Run workflow*. La primera vez descarga datos desde 2018 y demora un par de minutos. Debe terminar en verde ✅. Se crea el Worker `lucas-claras` con una dirección `lucas-claras.<algo>.workers.dev`.
 8. **Conectar el dominio:** Cloudflare → *Workers & Pages* → `lucas-claras` → *Settings* → *Domains & Routes* → *Add* → *Custom domain* → `lucasclaras.cl`. Repitan con `www.lucasclaras.cl` si quieren que también funcione.
 9. **Analítica gratis y sin cookies:** Cloudflare → *Web Analytics* → agreguen el sitio. Si les entrega un token, cópienlo en `config.yaml` (`analitica.cloudflare_web_analytics_token`).
 10. **Avisar a Bing y Yandex automáticamente:** Cloudflare → *Caching → Configuration* → activen **Crawler Hints** (usa IndexNow).
@@ -66,14 +75,14 @@ Con el GitHub Student Developer Pack tienen GitHub Pro gratis, que permite Pages
 
 Desde ahora el sitio se actualiza solo dos veces al día. 🎉
 
-## Paso 5: Registrar el sitio en Google y Bing
+## Paso 6: Registrar el sitio en Google y Bing
 
 1. **Google Search Console** ([search.google.com/search-console](https://search.google.com/search-console)): *Agregar propiedad* → tipo **Dominio** → `lucasclaras.cl`. Google les pedirá un registro TXT: agréguenlo en Cloudflare → *DNS → Records* → *Add record* (tipo TXT).
 2. En Search Console → *Sitemaps* → envíen `https://lucasclaras.cl/sitemap.xml`.
 3. Usen *Inspección de URLs* para pedir la indexación de las páginas más importantes: inicio, `/uf/`, `/calculadoras/sueldo-liquido/`, `/feriados/`, `/uf/proyeccion/`.
 4. **Bing Webmaster Tools** ([bing.com/webmasters](https://www.bing.com/webmasters)): *Importar desde Google Search Console*.
 
-## Paso 6: Conseguir las primeras visitas y enlaces
+## Paso 7: Conseguir las primeras visitas y enlaces
 
 Google confía más en un sitio nuevo cuando otros sitios lo enlazan. Sin spam:
 
@@ -81,7 +90,7 @@ Google confía más en un sitio nuevo cuando otros sitios lo enlazan. Sin spam:
 - Respondan preguntas reales en comunidades (por ejemplo, foros o subreddits chilenos de finanzas personales) enlazando la calculadora cuando de verdad sirva.
 - Ofrezcan las calculadoras a centros de alumnos, oficinas de práctica o asociaciones que publiquen guías para trabajadores o estudiantes.
 
-## Paso 7: Google AdSense 💰
+## Paso 8: Google AdSense 💰
 
 Postulen cuando el sitio lleve algunas semanas en línea y ya tenga páginas indexadas (lo ven en Search Console).
 
@@ -105,21 +114,15 @@ Postulen cuando el sitio lleve algunas semanas en línea y ya tenga páginas ind
 
 > Si los rechazan por "contenido de poco valor", esperen a tener más páginas indexadas y tráfico, y vuelvan a postular. Es muy común con sitios nuevos.
 
-## Paso 8: Referidos 💰
+## Paso 9: Referidos 💰
 
 1. Inscríbanse en los programas que les parezcan confiables y útiles para sus lectores. Ideas: Fintual (referidos), Racional, Global66 (programa de afiliados), Mercado Libre Afiliados.
 2. **Lean las bases:** algunos programas solo permiten invitar a conocidos y no publicar el enlace en un sitio web.
 3. Agréguenlos en `config.yaml`, en `monetizacion.afiliados`, indicando en qué secciones mostrarlos. Hay un ejemplo comentado en el archivo. El sitio siempre muestra el aviso de que son enlaces de referidos.
 
-## Paso 9 (recomendado): Clave de la API de la CMF
-
-Los datos principales (UF, dólar, UTM e IPC) se leen de las tablas oficiales del SII, sin clave. Pero el **euro** (y un respaldo si el SII cambia su página) requiere la API de la CMF, porque mindicador.cl no responde desde los servidores de GitHub. Sin esta clave, el sitio funciona igual, pero sin las páginas del euro:
-
-1. Pidan una clave gratuita en [api.cmfchile.cl](https://api.cmfchile.cl).
-2. Guárdenla como secreto `CMF_API_KEY` en GitHub (*Settings → Secrets and variables → Actions*).
-
 ## Lista final
 
+- [ ] Secreto `CMF_API_KEY` configurado (dólar al día y euro).
 - [ ] El workflow **Actualizar y publicar** termina en verde.
 - [ ] `https://lucasclaras.cl` muestra el sitio, con el candado HTTPS.
 - [ ] `https://lucasclaras.cl/sitemap.xml` y `/robots.txt` responden.

@@ -288,7 +288,8 @@ def revisar_frescura(datos: Datos, hoy: dt.date) -> tuple[list[str], list[str]]:
         ultima = max(getattr(datos, nombre))
         atraso = (hoy - ultima).days
         if atraso > limite:
-            advertencias.append(f"El último {nombre} es del {ultima} ({atraso} días de atraso)")
+            advertencias.append(f"El último {nombre} es del {ultima} ({atraso} días de atraso). "
+                                "Configura el secreto CMF_API_KEY para tenerlo al día")
     if datos.utm_mes(hoy) is None:
         advertencias.append(f"No se conoce la UTM de {hoy:%m-%Y}")
     ultimo_ipc = max(datos.ipc)
