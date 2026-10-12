@@ -17,6 +17,22 @@ sitio:
   # Quiénes están detrás del sitio, para la página "Quiénes somos". Ej.:
   # "dos estudiantes de ingeniería y del Magíster en Ciencia de Datos"
   autores: ""
+  # Equipo: las personas reales detrás del sitio. Aparecen en "Quiénes somos" y en los
+  # datos estructurados para Google (founder). En un sitio de finanzas, saber quién lo
+  # hace da confianza a lectores, buscadores y AdSense. "enlace" es opcional (LinkedIn o
+  # GitHub, con https://). Ejemplo (borren el "#" de cada línea y usen sus datos):
+  equipo: []
+  # - nombre: Nombre Apellido
+  #   rol: Cofundadora · datos y fórmulas
+  #   descripcion: Estudiante de Ingeniería Civil. Revisa las fórmulas y los parámetros legales.
+  #   enlace: https://www.linkedin.com/in/tu-perfil/
+  # Perfiles públicos del sitio (no los personales): Instagram, LinkedIn, GitHub, etc.
+  # Se muestran en "Quiénes somos" y en Contacto, y van en sameAs del JSON-LD.
+  redes: []
+  # - https://www.instagram.com/lucasclaras.cl/
+  # Repositorio público del código, si deciden publicarlo (p. ej. en GitHub). Aparece en
+  # Contacto como canal para reportar errores. Déjenlo vacío si el repositorio es privado.
+  repositorio: ""
   # Año desde el que se descargan datos la primera vez.
   anio_inicio_datos: 2018
 

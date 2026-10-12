@@ -1,14 +1,37 @@
 {% extends "base.html" %}
 {% block contenido %}
 <h1>{{ pagina.h1 }}</h1>
+<p class="bajada">¿Encontraste un error, tienes una sugerencia o quieres proponer una calculadora nueva? Nos encantaría saberlo.</p>
+{% if sitio.correo_contacto %}
+<p class="destacado-contacto">Escríbenos a <a href="mailto:{{ sitio.correo_contacto }}">{{ sitio.correo_contacto }}</a></p>
+<p>Respondemos en un plazo de pocos días hábiles.</p>
+{% elif repositorio or redes %}
+<p class="aviso">Todavía no publicamos un correo de contacto. Mientras tanto, puedes escribirnos {% if repositorio %}abriendo un reporte (issue) en el <a href="{{ repositorio }}" rel="noopener" target="_blank">repositorio público del sitio</a>, donde también puedes ver cómo calculamos cada valor{% endif %}{% if repositorio and redes %} o {% endif %}{% for nombre, url in redes %}{% if loop.first %}en nuestras redes: {% endif %}<a href="{{ url }}" rel="noopener" target="_blank">{{ nombre }}</a>{% if not loop.last %}, {% endif %}{% endfor %}.</p>
+{% else %}
+<p class="aviso">Todavía no publicamos un correo de contacto: lo agregaremos aquí muy pronto. Mientras tanto, puedes verificar cualquier valor del sitio en su fuente oficial; más abajo te contamos dónde.</p>
+{% endif %}
+
 <section class="texto">
-  <p>¿Encontraste un error, tienes una sugerencia o quieres proponer una calculadora nueva? Nos encantaría saberlo.</p>
-  {% if sitio.correo_contacto %}
-  <p class="destacado-contacto">Escríbenos a <a href="mailto:{{ sitio.correo_contacto }}">{{ sitio.correo_contacto }}</a></p>
-  {% else %}
-  <p class="destacado-contacto">Muy pronto habilitaremos un correo de contacto.</p>
-  {% endif %}
-  <p>Si reportas un error, cuéntanos en qué página lo viste y qué valor esperabas. Respondemos en un plazo de pocos días hábiles.</p>
+  <h2>Cómo reportar un error</h2>
+  <p>Para revisarlo rápido, cuando nos escribas cuéntanos:</p>
+  <ol>
+    <li>En qué página lo viste: copia la dirección que aparece en la barra de tu navegador.</li>
+    <li>Qué valor muestra el sitio y cuál esperabas.</li>
+    <li>De dónde sale el valor correcto: una liquidación, una tabla del SII, el documento de Previred, una ley...</li>
+    <li>Si es una calculadora, los datos que ingresaste. En la mayoría de ellas, el botón «Copiar enlace a este cálculo» te da un enlace que ya los incluye.</li>
+  </ol>
+  <p>Revisamos cada reporte contra la fuente oficial. Si hay un error, lo corregimos y, si pudo afectar un valor o un cálculo, lo anotamos con su fecha en el <a href="{{ ruta('/metodologia/') }}#correcciones">historial de correcciones</a>.</p>
+
+  <h2>Verifica un valor en su fuente oficial</h2>
+  <ul>
+    <li><strong>UF, UTM e IPC:</strong> <a href="{{ oficiales['Servicio de Impuestos Internos'] }}" rel="noopener" target="_blank">Servicio de Impuestos Internos</a> y <a href="{{ oficiales['Banco Central de Chile'] }}" rel="noopener" target="_blank">Banco Central de Chile</a>.</li>
+    <li><strong>Dólar observado y euro:</strong> Banco Central de Chile.</li>
+    <li><strong>Topes imponibles, comisiones de las AFP y tasas previsionales:</strong> <a href="{{ oficiales['Previred'] }}" rel="noopener" target="_blank">Previred</a> y <a href="{{ oficiales['Superintendencia de Pensiones'] }}" rel="noopener" target="_blank">Superintendencia de Pensiones</a>. Los vigentes este mes están resumidos en los <a href="{{ ruta('/indicadores-previsionales/') }}">indicadores previsionales</a>.</li>
+    <li><strong>Finiquitos, vacaciones y derechos laborales:</strong> <a href="{{ oficiales['Dirección del Trabajo'] }}" rel="noopener" target="_blank">Dirección del Trabajo</a>.</li>
+    <li><strong>Leyes:</strong> <a href="{{ oficiales['Biblioteca del Congreso Nacional'] }}" rel="noopener" target="_blank">Biblioteca del Congreso Nacional</a>.</li>
+  </ul>
+  <p>De dónde sale cada dato y cómo lo calculamos, en la <a href="{{ ruta('/metodologia/') }}">metodología</a>. Quiénes hacemos el sitio, en <a href="{{ ruta('/acerca/') }}">quiénes somos</a>.</p>
+
   <p class="nota">No respondemos consultas personales de tipo tributario, legal o de inversión: para eso te recomendamos acudir al SII, a la Dirección del Trabajo o a un asesor certificado.</p>
 </section>
 {% endblock %}

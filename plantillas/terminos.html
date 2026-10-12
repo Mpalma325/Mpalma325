@@ -7,15 +7,24 @@
   <p>La información y los resultados de las calculadoras de {{ sitio.nombre }} son <strong>referenciales</strong> y tienen fines informativos. No constituyen asesoría financiera, tributaria, previsional ni legal. Antes de tomar una decisión, verifica los valores con la fuente oficial o con un profesional.</p>
 
   <h2>Exactitud</h2>
-  <p>Hacemos nuestro mejor esfuerzo para que los datos estén actualizados y los cálculos sean correctos, pero no podemos garantizar que estén libres de errores u omisiones, ni que reflejen cambios normativos recientes. Los valores oficiales son los que publican el Banco Central de Chile, el INE, el SII y los demás organismos competentes.</p>
+  <p>Hacemos nuestro mejor esfuerzo para que los datos estén actualizados y los cálculos sean correctos, pero no podemos garantizar que estén libres de errores u omisiones, ni que reflejen cambios normativos recientes. Los valores oficiales son los que publican el Banco Central de Chile, el INE, el SII y los demás organismos competentes. En la <a href="{{ ruta('/metodologia/') }}">metodología</a> explicamos de dónde sale cada dato y cómo lo verificamos.</p>
 
   <h2>Proyecciones</h2>
   <p>Las proyecciones (por ejemplo, de la UF o de un ahorro) son estimaciones basadas en supuestos explícitos y no garantizan resultados futuros.</p>
 
+  <h2>Correcciones</h2>
+  <p>Si detectas un error, puedes <a href="{{ ruta('/contacto/') }}">reportarlo</a>. Corregimos los errores confirmados y dejamos registro de los que pudieron afectar un valor o un cálculo en el <a href="{{ ruta('/metodologia/') }}#correcciones">historial de correcciones</a>.</p>
+
   <h2>Publicidad y referidos</h2>
-  <p>El sitio puede incluir publicidad y enlaces de referidos. No somos responsables de los productos, servicios ni contenidos de sitios de terceros.</p>
+  <p>El sitio puede incluir publicidad y enlaces de referidos, que siempre identificamos como tales. No somos responsables de los productos, servicios ni contenidos de sitios de terceros.</p>
+
+  <h2>API y widget gratuitos</h2>
+  <p>Puedes usar sin costo nuestra <a href="{{ ruta('/api/') }}">API de indicadores</a> y el <a href="{{ ruta('/widget/') }}">widget para tu sitio</a>, también con fines comerciales, siempre que muestres un enlace visible a {{ sitio.nombre }}, no alteres los datos ni los presentes como propios y hagas un uso razonable. Los valores se entregan tal cual, sin garantía de exactitud ni de disponibilidad, y el servicio puede cambiar o suspenderse. El detalle está en las <a href="{{ ruta('/api/') }}#condiciones">condiciones de uso de la API y el widget</a>, que forman parte de estos términos.</p>
 
   <h2>Propiedad intelectual</h2>
   <p>Los textos, el diseño y el código de {{ sitio.nombre }} son de sus autores. Los datos públicos pertenecen a sus respectivas fuentes. Puedes citar nuestros contenidos enlazando a la página original.</p>
+
+  <h2>Privacidad</h2>
+  <p>Cómo tratamos los datos de quienes visitan el sitio, en la <a href="{{ ruta('/privacidad/') }}">política de privacidad</a>.</p>
 </section>
 {% endblock %}

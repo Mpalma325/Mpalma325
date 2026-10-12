@@ -99,6 +99,7 @@
     <li><strong>Seguro de cesantía:</strong> 0,6% si tu contrato es indefinido, con un tope de {{ parametros.tope_cesantia_uf|numero(1) }} UF ({{ tope_afc_pesos|pesos }}). Con contrato a plazo fijo lo paga solo el empleador.</li>
     <li><strong>Impuesto único:</strong> se calcula sobre el sueldo menos las cotizaciones anteriores, según la <a href="{{ ruta('/impuesto-unico/') }}">tabla del mes</a>.</li>
   </ul>
+  <p>Todos los topes, tasas y comisiones del mes están reunidos en los <a href="{{ ruta('/indicadores-previsionales/') }}">indicadores previsionales de {{ hoy|mes_anio }}</a>.</p>
 </section>
 
 <section>

@@ -22,6 +22,8 @@ from .formato import (capitalizar, dia_mes, fecha_con_dia, fecha_larga, mes_anio
 from .graficos import grafico_barras, grafico_linea
 from .guias import guias_destacadas, paginas_guias
 from .paginas_calculadoras_extra import paginas_calculadoras_extra
+from .paginas_confianza import contexto_institucional, pagina_metodologia
+from .paginas_previsionales import paginas_previsionales
 
 # Montos con página propia ("1000 UF en pesos", "100 dólares en pesos"). Son búsquedas
 # frecuentes en Google, pero cada página debe aportar algo propio: por eso son pocos y cada
@@ -1519,19 +1521,27 @@ def _pagina_feriados(c: Contexto, anio: int, anios: list[int], principal: bool) 
 def paginas_institucionales(c: Contexto) -> list[Pagina]:
     nombre = c.cfg["sitio"]["nombre"]
     comunes = {"frecuencia": "yearly", "prioridad": 0.3, "modificada": dt.date(2026, 10, 12)}
+    # Equipo, redes y repositorio de config.yaml, más las URL oficiales (lucas/paginas_confianza.py).
+    confianza = contexto_institucional(c)
     return [
         Pagina(ruta="/acerca/", plantilla="acerca.html", titulo=f"Quiénes somos | {nombre}",
-               descripcion=f"Qué es {nombre}, de dónde salen nuestros datos y cómo hacemos los cálculos.",
-               h1=f"Acerca de {nombre}", migas=[INICIO, ("Acerca de", "/acerca/")], **comunes),
+               descripcion=(f"Qué es {nombre} y quiénes lo hacen, de dónde salen nuestros datos, cómo "
+                            "verificamos los cálculos, cómo corregimos errores y cómo se financia el sitio."),
+               h1=f"Acerca de {nombre}", migas=[INICIO, ("Acerca de", "/acerca/")], contexto=confianza,
+               jsonld=[seo.jsonld_organizacion(c.cfg)], **comunes),
         Pagina(ruta="/contacto/", plantilla="contacto.html", titulo=f"Contacto | {nombre}",
-               descripcion=f"Escríbenos para reportar un error o sugerir una calculadora para {nombre}.",
-               h1="Contacto", migas=[INICIO, ("Contacto", "/contacto/")], **comunes),
+               descripcion=(f"Cómo reportar un error o sugerir una calculadora a {nombre}, y dónde "
+                            "verificar cada valor en su fuente oficial."),
+               h1="Contacto", migas=[INICIO, ("Contacto", "/contacto/")], contexto=confianza, **comunes),
         Pagina(ruta="/privacidad/", plantilla="privacidad.html", titulo=f"Política de privacidad | {nombre}",
-               descripcion=f"Cómo {nombre} trata los datos de sus visitantes, cookies y publicidad.",
+               descripcion=(f"Cómo {nombre} trata los datos de sus visitantes, cookies y publicidad, y "
+                            "qué cambia con la Ley 21.719 de protección de datos personales."),
                h1="Política de privacidad", migas=[INICIO, ("Privacidad", "/privacidad/")], **comunes),
         Pagina(ruta="/terminos/", plantilla="terminos.html", titulo=f"Términos de uso | {nombre}",
-               descripcion=f"Condiciones de uso de {nombre} y alcance de la información publicada.",
+               descripcion=(f"Condiciones de uso de {nombre}, alcance de la información publicada y "
+                            "condiciones de la API y el widget gratuitos."),
                h1="Términos de uso", migas=[INICIO, ("Términos de uso", "/terminos/")], **comunes),
+        pagina_metodologia(c),
         Pagina(ruta="/404.html", plantilla="404.html", titulo=f"Página no encontrada | {nombre}",
                descripcion=(f"La página que buscas no existe o cambió de dirección. Revisa los "
                             f"indicadores y calculadoras de {nombre}."), h1="Página no encontrada",
@@ -1544,6 +1554,7 @@ def todas_las_paginas(c: Contexto) -> list[Pagina]:
             + paginas_utm_impuesto_ipc(c)
             + paginas_sueldo(c) + paginas_calculadoras(c) + paginas_calculadoras_extra(c)
             + paginas_feriados(c) + paginas_api_widget(c)
+            + paginas_previsionales(c)
             + paginas_institucionales(c))
     # Las guías van al final: su recuadro "Calcúlalo" usa el nombre de las páginas anteriores.
     return base + paginas_guias(c, base)

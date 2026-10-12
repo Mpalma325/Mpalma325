@@ -1,29 +1,69 @@
 {% extends "base.html" %}
 {% block contenido %}
 <h1>{{ pagina.h1 }}</h1>
+<p class="bajada"><strong>{{ sitio.nombre }}</strong> es un proyecto independiente hecho en Chile{% if sitio.autores %} por {{ sitio.autores }}{% endif %}. Nuestro objetivo es simple: que cualquier persona encuentre en segundos los indicadores económicos del día y pueda resolver sus dudas de plata —sueldo, boletas, arriendo, créditos— con cálculos claros y correctos.</p>
+
+{% if equipo %}
+<section aria-labelledby="equipo-titulo">
+  <h2 id="equipo-titulo">Quiénes hacemos {{ sitio.nombre }}</h2>
+  <div class="tarjetas">
+    {% for persona in equipo %}
+    <div class="tarjeta">
+      <span class="tarjeta-valor tarjeta-valor-texto">{{ persona.nombre }}</span>
+      {% if persona.rol %}<span class="tarjeta-titulo">{{ persona.rol }}</span>{% endif %}
+      {% if persona.descripcion %}<span>{{ persona.descripcion }}</span>{% endif %}
+      {% if persona.enlace %}<a href="{{ persona.enlace }}" rel="noopener" target="_blank">Perfil en {{ persona.red }}</a>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
 <section class="texto">
-  <p><strong>{{ sitio.nombre }}</strong> es un proyecto independiente hecho en Chile{% if sitio.autores %} por {{ sitio.autores }}{% endif %}. Nuestro objetivo es simple: que cualquier persona encuentre en segundos los indicadores económicos del día y pueda resolver sus dudas de plata —sueldo, boletas, arriendo, créditos— con cálculos claros y correctos.</p>
+  <h2>Nuestra misión</h2>
+  <p>Las finanzas personales en Chile están llenas de unidades y reglas que cambian: la UF cambia todos los días, los topes imponibles cambian cada año y las comisiones de las AFP, cuando cada administradora lo decide. Queremos que esas cifras sean fáciles de encontrar y de entender:</p>
+  <ul>
+    <li><strong>Datos oficiales al día</strong>, con su fuente y su fecha a la vista.</li>
+    <li><strong>Cálculos explicados</strong>: cada calculadora muestra el detalle y la regla que aplica.</li>
+    <li><strong>Gratis y sin registro</strong>: las calculadoras funcionan en tu navegador y lo que escribes no se envía a nuestros servidores.</li>
+  </ul>
 
   <h2>De dónde salen los datos</h2>
   <ul>
-    <li><strong>UF, dólar observado y UTM:</strong> Banco Central de Chile y Servicio de Impuestos Internos, desde las tablas oficiales que publica el SII. El dólar del día, el euro y otros indicadores se obtienen de la API de la CMF o de servicios públicos de datos como findic.cl.</li>
-    <li><strong>IPC:</strong> Instituto Nacional de Estadísticas (INE).</li>
-    <li><strong>Parámetros previsionales y tributarios</strong> (comisiones de AFP, topes imponibles, tabla de impuesto único, retención de honorarios, ingreso mínimo): Superintendencia de Pensiones, SII, Dirección del Trabajo y leyes publicadas en el Diario Oficial.</li>
+    <li><strong>UF, UTM e IPC:</strong> los descargamos de las tablas oficiales del <a href="{{ oficiales['Servicio de Impuestos Internos'] }}" rel="noopener" target="_blank">Servicio de Impuestos Internos</a>. La UF la fija el <a href="{{ oficiales['Banco Central de Chile'] }}" rel="noopener" target="_blank">Banco Central de Chile</a> según el IPC que publica el <a href="{{ oficiales['Instituto Nacional de Estadísticas'] }}" rel="noopener" target="_blank">Instituto Nacional de Estadísticas</a>.</li>
+    <li><strong>Dólar observado y euro:</strong> los publica el Banco Central; los obtenemos de la API de la <a href="{{ oficiales['Comisión para el Mercado Financiero'] }}" rel="noopener" target="_blank">Comisión para el Mercado Financiero</a> o de servicios gratuitos no oficiales como findic.cl.</li>
+    <li><strong>Parámetros previsionales, laborales y tributarios</strong> (comisiones de AFP, topes imponibles, tabla del impuesto único, ingreso mínimo, retenciones): <a href="{{ oficiales['Superintendencia de Pensiones'] }}" rel="noopener" target="_blank">Superintendencia de Pensiones</a>, SII, <a href="{{ oficiales['Dirección del Trabajo'] }}" rel="noopener" target="_blank">Dirección del Trabajo</a> y las leyes publicadas en la <a href="{{ oficiales['Biblioteca del Congreso Nacional'] }}" rel="noopener" target="_blank">Biblioteca del Congreso Nacional</a>. Los vigentes este mes están reunidos en los <a href="{{ ruta('/indicadores-previsionales/') }}">indicadores previsionales</a>.</li>
     <li><strong>Feriados:</strong> calculados según la legislación vigente, incluidos los traslados que establece la ley.</li>
   </ul>
+  <p>El detalle por indicador, el orden de las fuentes y qué valores son calculados está en <a href="{{ ruta('/metodologia/') }}">cómo calculamos y de dónde salen los datos</a>.</p>
 
-  <h2>Cómo trabajamos</h2>
+  <h2>Cómo verificamos</h2>
   <ul>
-    <li>Los indicadores se actualizan automáticamente todos los días.</li>
-    <li>Las fórmulas de cada calculadora están probadas con casos de prueba automáticos antes de cada publicación.</li>
-    <li>Revisamos los parámetros legales cada vez que cambia una ley o una tasa, y en cada página indicamos la fuente y la fecha de actualización.</li>
-    <li>Cuando un valor es calculado o proyectado (por ejemplo, la UF futura), lo indicamos explícitamente.</li>
+    <li><strong>Pruebas automáticas contra valores oficiales:</strong> antes de cada publicación, el sistema recalcula la UF y la UTM con sus fórmulas oficiales y las compara con los valores publicados, y contrasta la tabla del impuesto único y los feriados con los valores oficiales. Si una prueba falla, el sitio no se actualiza hasta revisarlo.</li>
+    <li><strong>El mismo resultado en Python y en JavaScript:</strong> las calculadoras corren en tu navegador con una copia de las fórmulas del servidor, y las pruebas comprueban que ambas den lo mismo.</li>
+    <li><strong>Parámetros con fecha de vigencia y fuente:</strong> cada tasa, tope o monto legal se guarda con la fecha desde la que rige, el enlace a su fuente oficial y una fecha de revisión. Cuando llega esa fecha, el sistema nos avisa.</li>
+    <li><strong>Lo calculado, marcado:</strong> cuando un valor es calculado o proyectado (por ejemplo, la UF futura), lo indicamos explícitamente.</li>
   </ul>
 
-  <h2>¿Encontraste un error?</h2>
-  <p>Nos importa mucho la exactitud. Si ves un valor o un cálculo que no cuadra, <a href="{{ ruta('/contacto/') }}">escríbenos</a> y lo revisamos a la brevedad.</p>
+  <h2>Política de correcciones</h2>
+  <p>Nos importa mucho la exactitud. Si ves un valor o un cálculo que no cuadra, <a href="{{ ruta('/contacto/') }}">avísanos</a>. Revisamos cada reporte contra la fuente oficial; si hay un error, lo corregimos y, si pudo afectar un valor o un cálculo, lo anotamos con su fecha en el <a href="{{ ruta('/metodologia/') }}#correcciones">historial de correcciones</a>. No borramos correcciones.</p>
 
   <h2>Cómo se financia este sitio</h2>
-  <p>{{ sitio.nombre }} es gratuito. Se financia con publicidad y, en algunos casos, con enlaces de referidos a productos financieros, que siempre identificamos como tales. Esto nunca cambia los resultados de las calculadoras.</p>
+  <p>{{ sitio.nombre }} es gratuito. Se financia con publicidad y, en algunos casos, con enlaces de referidos a productos financieros, que siempre identificamos como tales. Nada de esto cambia los resultados de las calculadoras ni el contenido de las guías. También ofrecemos gratis una <a href="{{ ruta('/api/') }}">API de indicadores</a> y un <a href="{{ ruta('/widget/') }}">widget para otros sitios</a>.</p>
+
+  {% if redes or repositorio %}
+  <h2>Dónde encontrarnos</h2>
+  <ul>
+    {% for nombre, url in redes %}
+    <li><a href="{{ url }}" rel="noopener" target="_blank">{{ sitio.nombre }} en {{ nombre }}</a></li>
+    {% endfor %}
+    {% if repositorio %}
+    <li><a href="{{ repositorio }}" rel="noopener" target="_blank">Código fuente del sitio</a></li>
+    {% endif %}
+  </ul>
+  {% endif %}
+
+  <h2>Contacto</h2>
+  <p>{% if sitio.correo_contacto %}Escríbenos a <a href="mailto:{{ sitio.correo_contacto }}">{{ sitio.correo_contacto }}</a>. {% endif %}En la página de <a href="{{ ruta('/contacto/') }}">contacto</a> te contamos cómo reportar un error y dónde verificar cada valor en su fuente oficial.</p>
 </section>
 {% endblock %}

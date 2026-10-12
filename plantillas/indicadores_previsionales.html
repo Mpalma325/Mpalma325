@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block contenido %}
+{# Vigencia y fuente de cada bloque (lucas/confianza.py: vigencia). "Al menos desde": el valor
+   no cambia desde el inicio de nuestro registro, así que puede regir desde antes. #}
+{% macro vigente(v, fuente, detalle="") %}
+<p class="nota">{% if v.exacta %}Vigente desde el {{ v.desde|fecha_larga }}{% else %}Vigente al menos desde el {{ v.desde|fecha_larga }}{% endif %}{{ detalle }}{% if fuente.url %} · Fuente: <a href="{{ fuente.url }}" rel="noopener" target="_blank">{{ fuente.nombre }}</a>{% endif %}</p>
+{% endmacro %}
+<h1>{{ pagina.h1 }}</h1>
+<p class="bajada">Los valores para calcular las cotizaciones de las remuneraciones de {{ hoy|mes_de_anio }}: UF y UTM, topes imponibles, sueldo mínimo, AFP, seguro de cesantía, aportes del empleador y la tabla del impuesto único, en UF y en pesos.</p>
+
+<div class="tarjetas">
+  <div class="tarjeta destacada"><span class="tarjeta-titulo">UF al {{ fecha_uf|dia_mes }}</span><span class="tarjeta-valor">{{ uf|pesos(2) }}</span><span class="tarjeta-pie">{% if fecha_uf == fin_de_mes %}Último día del mes: con ella se calculan los topes{% else %}La del {{ fin_de_mes|dia_mes }} aún no se publica{% endif %}</span></div>
+  <div class="tarjeta"><span class="tarjeta-titulo">UTM {{ hoy|mes_anio }}</span><span class="tarjeta-valor">{{ utm|pesos }}</span><span class="tarjeta-pie">UTA: {{ uta|pesos }}</span></div>
+  <div class="tarjeta"><span class="tarjeta-titulo">Tope imponible AFP y salud</span><span class="tarjeta-valor">{{ topes[0].pesos|pesos }}</span><span class="tarjeta-pie">{{ uf_texto(topes[0].uf) }} UF</span></div>
+  <div class="tarjeta"><span class="tarjeta-titulo">Sueldo mínimo</span><span class="tarjeta-valor">{{ minimos[0][1]|pesos }}</span><span class="tarjeta-pie">Desde el {{ imm.desde|fecha_larga }}</span></div>
+</div>
+
+<p class="aviso">Esta página es una <strong>referencia</strong>: reúne los parámetros que usan nuestras calculadoras. Para declarar y pagar cotizaciones, el documento oficial es el de <a href="{{ oficiales['Previred'] }}" rel="noopener" target="_blank">Previred</a>, con los valores que publica la <a href="{{ oficiales['Superintendencia de Pensiones'] }}" rel="noopener" target="_blank">Superintendencia de Pensiones</a>. Si ves una diferencia, vale el documento oficial: <a href="{{ ruta('/contacto/') }}">avísanos</a> para corregirla.</p>
+
+{{ m.anuncio("previsionales_superior") }}
+
+<section>
+  <h2>UF, UTM y UTA</h2>
+  <table class="tabla tabla-detalle">
+    <tbody>
+      <tr><th scope="row">UF del {{ fecha_uf|fecha_larga }}</th><td class="num">{{ uf|pesos(2) }}</td></tr>
+      <tr><th scope="row">UTM de {{ hoy|mes_de_anio }}</th><td class="num">{{ utm|pesos }}</td></tr>
+      <tr><th scope="row">UTA de {{ hoy|mes_de_anio }} (12 UTM)</th><td class="num">{{ uta|pesos }}</td></tr>
+    </tbody>
+  </table>
+  <p class="nota">{% if uf_calculada %}UF calculada con la fórmula oficial del Banco Central a partir del IPC ya publicado{% else %}Valores oficiales{% endif %} · Fuente: <a href="{{ oficiales['Banco Central de Chile'] }}" rel="noopener" target="_blank">Banco Central de Chile</a> (UF) y <a href="{{ url_utm }}" rel="noopener" target="_blank">Servicio de Impuestos Internos</a> (UTM). Más detalle en <a href="{{ ruta('/uf/') }}">UF hoy</a> y <a href="{{ ruta('/utm/') }}">UTM y UTA</a>.</p>
+</section>
+
+<section>
+  <h2>Topes imponibles</h2>
+  <table class="tabla">
+    <thead><tr><th>Para</th><th class="num">En UF</th><th class="num">En pesos</th></tr></thead>
+    <tbody>
+    {% for tope in topes %}
+      <tr><td>{{ tope.nombre }}</td><td class="num">{{ uf_texto(tope.uf) }} UF</td><td class="num">{{ tope.pesos|pesos }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p>Lo que se gane por sobre el tope no paga esas cotizaciones, aunque sí paga impuesto. Los montos en pesos usan la UF del {{ fecha_uf|fecha_larga }}.</p>
+  {{ vigente(vigencia_topes, fuente_topes) }}
+</section>
+
+<section>
+  <h2>Ingreso mínimo (rentas mínimas imponibles)</h2>
+  <table class="tabla">
+    <thead><tr><th>Para</th><th class="num">Monto mensual</th></tr></thead>
+    <tbody>
+    {% for nombre, monto in minimos %}
+      <tr><td>{{ nombre }}</td><td class="num">{{ monto|pesos }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p>{% if imm.get('ley') %}Fijado por la {{ imm.ley }}. {% endif %}<a href="{{ ruta('/sueldo-minimo/') }}">Sueldo mínimo líquido e historial</a>.</p>
+  {{ vigente(vigencia_imm, fuente_imm) }}
+</section>
+
+<section>
+  <h2>Tope de la gratificación legal</h2>
+  <table class="tabla tabla-detalle">
+    <tbody>
+      <tr><th scope="row">Tope anual ({{ gratificacion_tope_imm|numero(2) }} ingresos mínimos)</th><td class="num">{{ gratificacion_anual|pesos }}</td></tr>
+      <tr><th scope="row">Tope mensual (un doceavo)</th><td class="num">{{ gratificacion_mensual|pesos }}</td></tr>
+    </tbody>
+  </table>
+  <p>Con el sistema del artículo 50 del Código del Trabajo, la gratificación es el {{ pct(gratificacion_tasa) }} de las remuneraciones del año, con ese tope.</p>
+  {{ vigente(vigencia_imm, fuente_gratificacion, " (cambia con el ingreso mínimo)") }}
+</section>
+
+<section>
+  <h2>Cotizaciones del trabajador: AFP y salud</h2>
+  <p>Cada trabajador cotiza {{ pct(tasa_afp) }} de su remuneración imponible para su cuenta individual, más la comisión de su AFP.</p>
+  <div class="tabla-desplazable">
+  <table class="tabla">
+    <thead><tr><th>AFP</th><th class="num">Comisión</th><th class="num">Total trabajador</th></tr></thead>
+    <tbody>
+    {% for afp in afps %}
+      <tr><td>{{ afp.nombre }}</td><td class="num">{{ pct(afp.comision) }}</td><td class="num">{{ pct(afp.total) }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {{ vigente(vigencia_afp, fuente_afp) }}
+  <p><strong>Salud:</strong> {{ pct(salud) }} para Fonasa o la isapre (o el precio del plan, si es mayor), con el mismo tope de {{ uf_texto(topes[0].uf) }} UF.</p>
+  {{ vigente(vigencia_salud, fuente_salud) }}
+</section>
+
+<section>
+  <h2>Cotizaciones de cargo del empleador</h2>
+  <table class="tabla tabla-detalle">
+    <tbody>
+      <tr><th scope="row">Aporte de la reforma de pensiones (Ley 21.735){% if sis == 0 %}, incluye el SIS{% endif %}</th><td class="num">{{ pct(aporte) }}</td></tr>
+      {% if sis > 0 %}
+      <tr><th scope="row">Seguro de Invalidez y Sobrevivencia (SIS)</th><td class="num">{{ pct(sis) }}</td></tr>
+      {% endif %}
+      <tr><th scope="row">Mutual, tasa básica (Ley 16.744)</th><td class="num">{{ pct(mutual) }}</td></tr>
+    </tbody>
+  </table>
+  {% if sis == 0 %}
+  <p>El Seguro de Invalidez y Sobrevivencia (SIS) ya no se paga aparte: una parte del aporte va a la cuenta individual del trabajador y el resto a un fondo que financia el SIS, la compensación por expectativa de vida y la rentabilidad protegida (<a href="https://www.spensiones.cl/portal/institucional/594/w3-propertyvalue-10906.html" rel="noopener" target="_blank">detalle en la Superintendencia de Pensiones</a>).</p>
+  {% endif %}
+  {% if proximos_aportes %}
+  <p>La ley fija aumentos graduales del aporte. Los próximos son: {% for e in proximos_aportes %}{{ pct(e.aporte_reforma_pensiones) }} desde el {{ e.desde|fecha_larga }}{% if not loop.last %}; {% endif %}{% endfor %}.</p>
+  {% endif %}
+  <p>La tasa básica de la mutual incluye la cotización de la Ley SANNA. Cada empresa paga además una cotización adicional según su riesgo, que no se incluye aquí. El empleador también paga su parte del seguro de cesantía (tabla siguiente).</p>
+  {{ vigente(vigencia_aporte, fuente_empleador, " (aporte y SIS)") }}
+  {{ vigente(vigencia_mutual, fuente_empleador, " (mutual)") }}
+</section>
+
+<section>
+  <h2>Seguro de cesantía (AFC)</h2>
+  <div class="tabla-desplazable">
+  <table class="tabla">
+    <thead><tr><th>Contrato</th><th class="num">Trabajador</th><th class="num">Empleador</th><th class="num">Total</th></tr></thead>
+    <tbody>
+    {% for fila in cesantia %}
+      <tr><td>{{ fila.contrato }}</td><td class="num">{{ pct(fila.trabajador) }}</td><td class="num">{{ pct(fila.empleador) }}</td><td class="num">{{ pct(fila.total) }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p>Se calcula sobre la remuneración imponible con un tope de {{ uf_texto(topes[1].uf) }} UF ({{ topes[1].pesos|pesos }}).</p>
+  {{ vigente(vigencia_cesantia, fuente_cesantia) }}
+</section>
+
+<section>
+  <h2>Ahorro previsional voluntario (APV)</h2>
+  <table class="tabla tabla-detalle">
+    <tbody>
+      <tr><th scope="row">Tope mensual de la rebaja de impuesto (régimen B)</th><td class="num">{{ uf_texto(apv_mensual_uf) }} UF · {{ (apv_mensual_uf * uf)|pesos }}</td></tr>
+      <tr><th scope="row">Tope anual (régimen B)</th><td class="num">{{ uf_texto(apv_anual_uf) }} UF</td></tr>
+      <tr><th scope="row">Bonificación fiscal del régimen A</th><td class="num">{{ pct(apv_bonificacion) }} de lo ahorrado, hasta {{ apv_bonificacion_utm|numero }} UTM al año</td></tr>
+    </tbody>
+  </table>
+  {{ vigente(vigencia_apv, fuente_apv) }}
+</section>
+
+<section>
+  <h2>Retención de boletas de honorarios</h2>
+  <p>La retención vigente es de <strong>{{ pct(honorarios) }}</strong> del monto bruto de la boleta.{% if proximos_honorarios %} Próximos cambios ya fijados por la ley: {% for e in proximos_honorarios %}{{ pct(e.tasa) }} desde el {{ e.desde|fecha_larga }}{% if not loop.last %}; {% endif %}{% endfor %}.{% endif %}</p>
+  {{ vigente(vigencia_honorarios, fuente_honorarios) }}
+</section>
+
+<section>
+  <h2>Impuesto único de segunda categoría de {{ hoy|mes_de_anio }}</h2>
+  <div class="tabla-desplazable">
+  <table class="tabla">
+    <thead><tr><th>Renta desde</th><th>Hasta</th><th class="num">Factor</th><th class="num">Cantidad a rebajar</th></tr></thead>
+    <tbody>
+    {% for fila in tabla_impuesto %}
+      <tr><td>{{ fila.desde|pesos(2) }}</td><td>{% if fila.hasta is none %}y más{% else %}{{ fila.hasta|pesos(2) }}{% endif %}</td><td class="num">{% if fila.factor == 0 %}Exento{% else %}{{ fila.factor|porcentaje(1) }}{% endif %}</td><td class="num">{{ fila.rebaja|pesos(2) }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p>Tramos en UTM convertidos con la UTM de {{ hoy|mes_de_anio }} ({{ utm|pesos }}). Cómo usarla y la tabla del mes siguiente, en <a href="{{ ruta('/impuesto-unico/') }}">impuesto único</a>.</p>
+  {{ vigente(vigencia_impuesto, fuente_impuesto, " (tramos en UTM)") }}
+</section>
+
+<section class="texto">
+  <h2>Qué no incluye esta página</h2>
+  <p>Solo mostramos los valores que usan nuestras calculadoras. La asignación familiar, la cotización por trabajos pesados, el tope imponible del IPS (ex INP), los depósitos convenidos y las tasas de los trabajadores independientes están en el documento de <a href="{{ oficiales['Previred'] }}" rel="noopener" target="_blank">Previred</a>. Cómo mantenemos estos valores al día, en la <a href="{{ ruta('/metodologia/') }}">metodología</a>.</p>
+</section>
+
+{{ m.enlaces("Calcula con estos valores", [("Sueldo líquido", "/calculadoras/sueldo-liquido/"), ("Finiquito", "/calculadoras/finiquito/"), ("Boleta de honorarios", "/calculadoras/boleta-honorarios/"), ("Horas extra", "/calculadoras/horas-extra/"), ("Sueldo mínimo", "/sueldo-minimo/"), ("Impuesto único", "/impuesto-unico/")]) }}
+
+{{ m.afiliados("sueldo") }}
+{{ m.faq(pagina) }}
+{{ m.fuente("Superintendencia de Pensiones, Previred, SII, Dirección del Trabajo y Biblioteca del Congreso Nacional (parámetros); Banco Central de Chile (UF)") }}
+{% endblock %}

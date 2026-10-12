@@ -15,6 +15,7 @@ from markupsafe import Markup
 
 from . import __version__, formato, seo
 from .calculos import contexto_parametros
+from .confianza import enlazar_fuentes
 from .config import RAIZ, Parametros, ahora_chile, cargar_config, cargar_parametros, hoy_chile
 from .datos import Datos, cargar_datos, mes_siguiente, primer_dia, revisar_frescura
 
@@ -140,6 +141,7 @@ def crear_entorno(cfg: dict, c: Contexto, hashes: dict[str, str]) -> Environment
     entorno.filters["json_seguro"] = lambda valor: Markup(
         json.dumps(valor, ensure_ascii=False, separators=(",", ":"))
         .replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026"))
+    entorno.globals["enlazar_fuentes"] = enlazar_fuentes  # macro m.fuente (lucas/confianza.py)
 
     actualizado = c.datos.meta.get("actualizado")
     entorno.globals.update(

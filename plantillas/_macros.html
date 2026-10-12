@@ -95,7 +95,8 @@
 {% endmacro %}
 
 {% macro fuente(texto) %}
-<p class="fuente">Fuente: {{ texto }}. Actualizado el {{ actualizado|fecha_larga }}.</p>
+{# Los organismos conocidos se enlazan a su sitio oficial (lucas/confianza.py: FUENTES_OFICIALES). #}
+<p class="fuente">Fuente: {{ enlazar_fuentes(texto) }}. Actualizado el {{ actualizado|fecha_larga }}.{% if pagina is not defined or pagina.ruta != '/metodologia/' %} <a href="{{ ruta('/metodologia/') }}">Cómo calculamos</a>.{% endif %}</p>
 {% endmacro %}
 
 {% macro guias_destacadas(guias, titulo="Guías para entender tus números") %}

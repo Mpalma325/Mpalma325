@@ -1,0 +1,43 @@
+# =============================================================================
+# Historial público de correcciones de Lucas Claras
+# =============================================================================
+# Se publica en /metodologia/#correcciones (lucas/confianza.py: cargar_correcciones).
+# Mostrar los errores corregidos, con fecha, da confianza a los lectores y a Google.
+#
+# Cuando corrijan un error que pudo afectar a alguien (un valor, una fórmula o un texto
+# legal), agreguen una entrada AL PRINCIPIO de la lista. No borren entradas antiguas.
+#   fecha:   día en que se publicó la corrección (AAAA-MM-DD, sin comillas)
+#   titulo:  qué se corrigió, en una línea
+#   detalle: qué estaba mal, qué cambió y a quién afectaba (2 a 4 líneas)
+#   paginas: rutas internas afectadas (opcional), p. ej. [/calculadoras/finiquito/]
+
+correcciones:
+  - fecha: 2026-10-12
+    titulo: "Finiquito: indemnización por término de obra o faena"
+    detalle: >-
+      La calculadora trataba el término de un contrato por obra o faena igual que el
+      vencimiento de un plazo fijo, sin indemnización. Desde la Ley 21.122, si el contrato
+      termina porque concluyó la obra (artículo 159 N° 5 del Código del Trabajo) y duró al
+      menos un mes, corresponden 2,5 días de remuneración por cada mes trabajado y fracción
+      superior a 15 días, con el tope de 90 UF. Ahora son dos causales separadas.
+    paginas: [/calculadoras/finiquito/]
+
+  - fecha: 2026-10-12
+    titulo: "Sueldo mínimo desde enero de 2025: $510.500"
+    detalle: >-
+      El historial del sueldo mínimo mostraba $510.000 desde el 1 de enero de 2025. El monto
+      correcto es $510.500: los $500.000 reajustados por el IPC de julio a diciembre de 2024,
+      como dispuso la Ley 21.578. Solo afectaba al historial; las calculadoras usan el
+      monto vigente.
+    paginas: [/sueldo-minimo/]
+
+  - fecha: 2026-10-12
+    titulo: "Topes imponibles con la UF del último día del mes"
+    detalle: >-
+      Los topes de 90 UF (AFP y salud) y de 135,2 UF (seguro de cesantía) se convertían a
+      pesos con la UF del día. Ahora se usa la UF del último día del mes de la remuneración,
+      como lo hace Previred (artículo 16 del DL 3.500), y el tope de 90 UF de las
+      indemnizaciones usa la UF del último día del mes anterior al pago (artículo 172 del
+      Código del Trabajo). Afectaba a los sueldos sobre el tope, a los planes de isapre en UF
+      y al tope del APV; la diferencia era pequeña, porque la UF cambia poco dentro de un mes.
+    paginas: [/calculadoras/sueldo-liquido/, /calculadoras/finiquito/]

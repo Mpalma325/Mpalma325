@@ -5,6 +5,8 @@ from __future__ import annotations
 import datetime as dt
 from xml.sax.saxutils import escape
 
+from .confianza import equipo_de, redes_de
+
 
 def url_absoluta(cfg: dict, ruta: str) -> str:
     return cfg["sitio"]["url"] + ruta
@@ -20,6 +22,35 @@ def _organizacion(cfg: dict) -> dict:
     }
 
 
+def _persona(persona: dict) -> dict:
+    """Person de schema.org para una entrada de ``sitio.equipo`` (ya limpia: confianza.equipo_de)."""
+    datos = {"@type": "Person", "name": persona["nombre"]}
+    if persona["rol"]:
+        datos["jobTitle"] = persona["rol"]
+    if persona["descripcion"]:
+        datos["description"] = persona["descripcion"]
+    if persona["enlace"]:
+        datos["sameAs"] = [persona["enlace"]]
+    return datos
+
+
+def jsonld_organizacion(cfg: dict) -> dict:
+    """Organization del sitio con lo que haya en config.yaml para generar confianza: correo de
+    contacto (``email``), equipo (``founder``) y perfiles públicos (``sameAs``). Sin esos datos
+    queda igual que la organización básica."""
+    organizacion = {"@context": "https://schema.org", **_organizacion(cfg)}
+    correo = (cfg["sitio"].get("correo_contacto") or "").strip()
+    if correo:
+        organizacion["email"] = correo
+    equipo = equipo_de(cfg)
+    if equipo:
+        organizacion["founder"] = [_persona(persona) for persona in equipo]
+    redes = redes_de(cfg)
+    if redes:
+        organizacion["sameAs"] = redes
+    return organizacion
+
+
 def jsonld_sitio(cfg: dict) -> list[dict]:
     sitio = cfg["sitio"]
     return [
@@ -31,7 +62,7 @@ def jsonld_sitio(cfg: dict) -> list[dict]:
             "inLanguage": sitio["idioma"],
             "description": sitio["eslogan"],
         },
-        {"@context": "https://schema.org", **_organizacion(cfg)},
+        jsonld_organizacion(cfg),
     ]
 
 

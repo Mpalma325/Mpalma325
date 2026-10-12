@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<p class="bajada">De dónde viene cada dato que publica {{ sitio.nombre }}, cada cuánto se actualiza, qué valores son oficiales y cuáles calculados, cómo verificamos los cálculos y qué hemos corregido.</p>
+
+<nav aria-label="En esta página">
+  <ul class="enlaces">
+    <li><a href="#fuentes">Fuentes</a></li>
+    <li><a href="#actualizacion">Actualización</a></li>
+    <li><a href="#oficiales">Oficiales y calculados</a></li>
+    <li><a href="#verificacion">Cómo verificamos</a></li>
+    <li><a href="#parametros">Parámetros legales</a></li>
+    <li><a href="#correcciones">Correcciones</a></li>
+  </ul>
+</nav>
+
+<section id="fuentes">
+  <h2>De dónde sale cada indicador</h2>
+  <p>Descargamos cada indicador desde la primera fuente de esta lista que responda. Las demás son respaldos: si la fuente principal se cae, el sitio sigue al día.</p>
+  <div class="tabla-desplazable">
+  <table class="tabla">
+    <thead><tr><th>Indicador</th><th>Quién lo publica</th><th>De dónde lo descargamos</th></tr></thead>
+    <tbody>
+    {% for fila in fuentes %}
+      <tr>
+        <td>{{ fila.indicador }}</td>
+        <td>{{ fila.publica }}</td>
+        <td>{% for d in fila.descargas %}{% if d.url %}<a href="{{ d.url }}" rel="noopener" target="_blank">{{ d.texto }}</a>{% else %}{{ d.texto }}{% endif %}{% if not d.oficial %}*{% endif %}{% if not loop.last %} → {% endif %}{% endfor %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="nota">* Fuente no oficial. Del SII usamos sus tablas de “Valores y fechas”. La API de la CMF es oficial y se usa cuando está configurada su clave gratuita. findic.cl y mindicador.cl son servicios gratuitos no oficiales: los usamos como respaldo y para el dólar y el euro del día cuando la API de la CMF no está disponible (el SII publica el dólar con unos días de atraso y no publica el euro). Todos los valores descargados pasan por un control de rangos que descarta cifras imposibles antes de publicarlas.{% if fuentes_usadas %} En la última descarga respondieron: {{ fuentes_usadas|join(", ") }}.{% endif %}</p>
+  <p>Los parámetros de las calculadoras (comisiones de las AFP, topes imponibles, tabla del impuesto único, sueldo mínimo, retenciones y otros) vienen de la <a href="{{ oficiales['Superintendencia de Pensiones'] }}" rel="noopener" target="_blank">Superintendencia de Pensiones</a>, el <a href="{{ oficiales['Servicio de Impuestos Internos'] }}" rel="noopener" target="_blank">SII</a>, la <a href="{{ oficiales['Dirección del Trabajo'] }}" rel="noopener" target="_blank">Dirección del Trabajo</a> y las leyes publicadas en la <a href="{{ oficiales['Biblioteca del Congreso Nacional'] }}" rel="noopener" target="_blank">Biblioteca del Congreso Nacional</a>, y los contrastamos con el documento mensual de <a href="{{ oficiales['Previred'] }}" rel="noopener" target="_blank">Previred</a>. La fuente de cada uno está en la <a href="#parametros">tabla de parámetros</a> y los vigentes este mes, en los <a href="{{ ruta('/indicadores-previsionales/') }}">indicadores previsionales</a>. Los feriados se calculan con las reglas de la ley, incluidos los traslados.</p>
+</section>
+
+<section id="actualizacion" class="texto">
+  <h2>Cada cuánto se actualiza</h2>
+  <ul>
+    <li><strong>Todos los indicadores:</strong> un proceso automático los descarga dos veces al día, temprano en la mañana y en la tarde (hora de Chile), y vuelve a publicar el sitio. Última actualización: {{ actualizado|fecha_larga }}.</li>
+    <li><strong>UF:</strong> el Banco Central la fija día a día entre el 10 de un mes y el 9 del siguiente, según el IPC del mes anterior. Apenas el INE publica el IPC (cerca del día 8), se conocen todos los valores hasta el día 9 del mes siguiente.</li>
+    <li><strong>UTM e IPC:</strong> cambian una vez al mes. La UTM de cada mes es la del mes anterior reajustada por el IPC de dos meses antes.</li>
+    <li><strong>Dólar observado y euro:</strong> el Banco Central los publica cada día hábil; el dólar observado se calcula con las operaciones del día hábil anterior. En fines de semana y feriados se mantiene el último valor publicado.</li>
+    <li><strong>Parámetros legales:</strong> los revisamos cuando cambia una ley o una tasa y en las fechas de revisión de cada uno (<a href="#parametros">ver tabla</a>).</li>
+  </ul>
+</section>
+
+<section id="oficiales" class="texto">
+  <h2>Qué valores son oficiales y cuáles calculados</h2>
+  <ul>
+    <li><strong>Oficiales:</strong> la UF, la UTM, el IPC, el dólar observado y el euro que publican los organismos. Hoy tenemos la UF oficial hasta el {{ uf_oficial_hasta|fecha_larga }}.</li>
+    <li><strong>Calculados con la fórmula oficial:</strong> los días de UF que aún no aparecen en la fuente se calculan con la fórmula del Banco Central{% if uf_calculada_hasta %} (hoy, hasta el {{ uf_calculada_hasta|fecha_larga }}){% endif %}: la UF del día 9 multiplicada por (1 + IPC del mes anterior) elevado a los días transcurridos desde el 9 divididos por los días del mes en que empieza el período, redondeada a dos decimales. Lo mismo hacemos con la UTM del mes siguiente cuando ya se conoce el IPC, y la marcamos como calculada.</li>
+    <li><strong>Proyectados:</strong> la <a href="{{ ruta('/uf/proyeccion/') }}">UF proyectada</a> usa tres escenarios de inflación: el central repite la inflación de los últimos 12 meses y los otros dos le suman o le restan un punto porcentual. Es una estimación, no un pronóstico oficial.</li>
+    <li><strong>Calculadoras:</strong> son estimaciones con los parámetros legales vigentes. Redondeamos los montos en pesos con la regla de "mitad hacia arriba", la habitual en liquidaciones y en el SII.</li>
+  </ul>
+</section>
+
+<section id="verificacion" class="texto">
+  <h2>Cómo verificamos</h2>
+  <p>Antes de cada publicación corre una batería de pruebas automáticas. Si alguna falla, el sitio no se actualiza hasta que lo revisemos.</p>
+  <ul>
+    {% if verificacion_uf %}
+    <li><strong>La fórmula de la UF contra los valores oficiales:</strong> recalculamos con la fórmula del Banco Central las UF oficiales que tenemos desde el {{ verificacion_uf.desde|fecha_larga }}. En la última actualización, {{ verificacion_uf.coinciden|numero }} de los {{ verificacion_uf.comparadas|numero }} valores comparados coincidieron al centavo.</li>
+    {% endif %}
+    {% if verificacion_utm %}
+    <li><strong>La UTM, también con IPC negativo:</strong> recalculamos {{ verificacion_utm.comparadas|numero }} meses de UTM y {{ verificacion_utm.coinciden|numero }} coincidieron con los oficiales{% if verificacion_utm.negativos %}, incluidos {{ verificacion_utm.negativos|numero }} meses en que el IPC usado fue negativo{% endif %}. Cuando eso pasa, la UTM {% if verificacion_utm.mantener %}se mantiene{% else %}baja en la misma proporción{% endif %}{% if verificacion_utm.ejemplo %}: la de {{ verificacion_utm.ejemplo.mes|mes_de_anio }} pasó de {{ verificacion_utm.ejemplo.anterior|pesos }} a {{ verificacion_utm.ejemplo.valor|pesos }} por el IPC de {{ verificacion_utm.ejemplo.mes_ipc|mes_de_anio }} ({{ verificacion_utm.ejemplo.ipc|porcentaje(1, true) }}){% endif %}.</li>
+    {% endif %}
+    <li><strong>Casos oficiales:</strong> la tabla del impuesto único se compara con la que publica el SII, los feriados con los calendarios oficiales y las calculadoras con casos resueltos a mano.</li>
+    <li><strong>El mismo cálculo en tu navegador:</strong> las calculadoras funcionan en tu navegador con una copia en JavaScript de las fórmulas en Python. Las pruebas comparan ambas versiones con decenas de casos (sueldos, finiquitos, créditos, días hábiles) y deben dar el mismo resultado.</li>
+    <li><strong>Parámetros con fecha y fuente:</strong> cada tasa, tope o monto legal se guarda con la fecha desde la que rige y el enlace a su fuente oficial. Los cambios ya publicados se cargan por adelantado y el sitio los aplica solo desde su fecha. Cada grupo tiene además una fecha de revisión: cuando llega, el sistema nos avisa.</li>
+    <li><strong>El sitio completo:</strong> las pruebas también revisan que no haya enlaces internos rotos y que cada página tenga su título, su descripción y sus datos estructurados.</li>
+  </ul>
+</section>
+
+<section id="parametros">
+  <h2>Parámetros legales que usamos</h2>
+  <p>Vigencia, fuente y próxima revisión de cada grupo de parámetros de las calculadoras.</p>
+  <div class="tabla-desplazable">
+  <table class="tabla">
+    <thead><tr><th>Parámetro y fuente</th><th class="num">Vigente desde</th></tr></thead>
+    <tbody>
+    {% for fila in parametros %}
+      <tr>
+        <td>{{ fila.nombre }}<br><span class="nota">{% if fila.fuente %}Fuente: <a href="{{ fila.fuente }}" rel="noopener" target="_blank">{{ fila.nombre_fuente }}</a>{% endif %}{% if fila.fuente and (fila.vencida or fila.revisar) %} · {% endif %}{% if fila.vencida %}en revisión{% elif fila.revisar %}próxima revisión: {{ fila.revisar|fecha_larga }}{% endif %}</span></td>
+        <td class="num">{% if fila.vigencia %}{{ fila.vigencia.desde|fecha_corta }}{% if not fila.vigencia.exacta %}*{% endif %}{% else %}—{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="nota">* El valor no cambia desde la primera fecha que registramos, así que puede regir desde antes.</p>
+</section>
+
+<section id="correcciones" class="texto">
+  <h2>Historial de correcciones</h2>
+  <p>Cuando corregimos un error que pudo afectar un valor o un cálculo, lo anotamos aquí con su fecha. No borramos correcciones.</p>
+  {% if correcciones %}
+  <ul>
+    {% for correccion in correcciones %}
+    <li><strong>{{ correccion.fecha|fecha_larga }}: {{ correccion.titulo }}.</strong> {{ correccion.detalle }}{% if correccion.paginas %} Páginas afectadas: {% for destino in correccion.paginas %}<a href="{{ ruta(destino) }}">{{ destino }}</a>{% if not loop.last %}, {% endif %}{% endfor %}.{% endif %}</li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>Todavía no hay correcciones registradas.</p>
+  {% endif %}
+  <p>¿Encontraste un error? <a href="{{ ruta('/contacto/') }}">Cuéntanos cómo reportarlo</a>. Quiénes somos y cómo se financia el sitio, en <a href="{{ ruta('/acerca/') }}">Acerca de {{ sitio.nombre }}</a>.</p>
+</section>
+
+{{ m.faq(pagina) }}
+{{ m.fuente("Banco Central de Chile, Servicio de Impuestos Internos, Instituto Nacional de Estadísticas, Superintendencia de Pensiones y Dirección del Trabajo") }}
+{% endblock %}

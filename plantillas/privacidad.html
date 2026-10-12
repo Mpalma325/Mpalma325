@@ -3,13 +3,22 @@
 <h1>{{ pagina.h1 }}</h1>
 <section class="texto">
   <p>Última actualización: 12 de octubre de 2026.</p>
-  <p>En {{ sitio.nombre }} ({{ sitio.url }}) respetamos tu privacidad. Esta política explica qué información se recopila cuando visitas el sitio y cómo se usa, conforme a la Ley N° 19.628 sobre protección de la vida privada y sus modificaciones.</p>
+  <p>En {{ sitio.nombre }} ({{ sitio.url }}) respetamos tu privacidad. Esta política explica qué información se recopila cuando visitas el sitio y cómo se usa, conforme a la <a href="https://www.bcn.cl/leychile/navegar?idNorma=141599" rel="noopener" target="_blank">Ley N° 19.628</a> sobre protección de la vida privada y sus modificaciones.</p>
+
+  <h2>En resumen</h2>
+  <ul>
+    <li>No tenemos registro de usuarios, formularios de datos personales ni comentarios.</li>
+    <li>Lo que escribes en las calculadoras se calcula en tu navegador y no se envía a nuestros servidores.</li>
+    <li>Las cookies que puede haber en el sitio son de servicios de terceros: publicidad, analítica y la seguridad del proveedor que aloja el sitio.</li>
+    <li>Si nos escribes, usamos tus datos solo para responderte.</li>
+  </ul>
 
   <h2>Datos que ingresas en las calculadoras</h2>
-  <p>Los cálculos se hacen <strong>en tu propio navegador</strong>. Los montos que escribes (sueldo, arriendo, etc.) no se envían ni se guardan en nuestros servidores.</p>
+  <p>Los cálculos se hacen <strong>en tu propio navegador</strong>. Los montos que escribes (sueldo, arriendo, etc.) no se envían ni se guardan en nuestros servidores. Para que puedas compartir un cálculo, la calculadora los anota en la dirección de la página, después del signo #: esa parte de la dirección no viaja en las solicitudes al servidor, pero queda en el historial de tu navegador y en los enlaces que compartas.</p>
 
   <h2>Datos de navegación y analítica</h2>
   <p>Podemos usar herramientas de analítica para conocer de forma agregada cuántas personas visitan el sitio y qué páginas consultan (por ejemplo, Cloudflare Web Analytics, que no usa cookies, o Google Analytics). Estos servicios pueden registrar datos técnicos como el tipo de navegador, el dispositivo, la página de origen y una dirección IP abreviada o anonimizada.</p>
+  <p>El sitio se sirve a través de Cloudflare, que procesa datos técnicos de cada visita, como la dirección IP, para entregar las páginas y protegerlas de ataques, y puede usar cookies técnicas de seguridad para filtrar el tráfico automatizado.</p>
 
   <h2>Publicidad y cookies</h2>
   <p>Este sitio puede mostrar anuncios de Google AdSense. Al respecto:</p>
@@ -19,13 +28,20 @@
     <li>Puedes inhabilitar la publicidad personalizada en la <a href="https://adssettings.google.com" rel="noopener" target="_blank">Configuración de anuncios de Google</a>. También puedes inhabilitar las cookies de otros proveedores en <a href="https://www.aboutads.info/choices/" rel="noopener" target="_blank">www.aboutads.info</a>.</li>
     <li>Más información sobre cómo usa Google los datos: <a href="https://policies.google.com/technologies/partner-sites" rel="noopener" target="_blank">cómo usa Google la información de los sitios que usan sus servicios</a>.</li>
   </ul>
-  <p>Para visitantes del Espacio Económico Europeo, Reino Unido y Suiza, se solicita el consentimiento antes de usar cookies de publicidad personalizada.</p>
+  <p>Para visitantes del Espacio Económico Europeo, Reino Unido y Suiza, se solicita el consentimiento antes de usar cookies de publicidad personalizada. También puedes bloquear o borrar las cookies desde la configuración de tu navegador; el sitio sigue funcionando sin ellas.</p>
 
   <h2>Enlaces de referidos</h2>
   <p>Algunas páginas incluyen enlaces a productos financieros con los que tenemos acuerdos de referidos. Si te registras a través de ellos, el proveedor sabrá que llegaste desde {{ sitio.nombre }}. Esos sitios tienen sus propias políticas de privacidad.</p>
 
+  <h2>Si nos escribes</h2>
+  <p>Si nos contactas{% if sitio.correo_contacto %} a <a href="mailto:{{ sitio.correo_contacto }}">{{ sitio.correo_contacto }}</a>{% endif %}, usamos tu nombre, tu dirección de correo y lo que nos cuentes solo para responderte y, si reportas un error, para corregirlo. No los compartimos con terceros ni los usamos para publicidad, y los borramos cuando ya no son necesarios o cuando nos lo pidas.</p>
+
   <h2>Tus derechos</h2>
-  <p>Puedes solicitar información, rectificación o eliminación de tus datos personales que pudiéramos tener (por ejemplo, si nos escribiste un correo){% if sitio.correo_contacto %} escribiendo a <a href="mailto:{{ sitio.correo_contacto }}">{{ sitio.correo_contacto }}</a>{% else %} a través de la página de <a href="{{ ruta('/contacto/') }}">contacto</a>{% endif %}.</p>
+  <p>Puedes pedirnos acceso a los datos personales tuyos que pudiéramos tener (por ejemplo, si nos escribiste), y su rectificación o eliminación, {% if sitio.correo_contacto %}escribiendo a <a href="mailto:{{ sitio.correo_contacto }}">{{ sitio.correo_contacto }}</a>{% else %}a través de la página de <a href="{{ ruta('/contacto/') }}">contacto</a>{% endif %}. Para los datos que tratan Google, Cloudflare u otros servicios, puedes ejercer tus derechos directamente ante ellos.</p>
+
+  <h2>La nueva ley de datos personales</h2>
+  <p>La <a href="https://www.bcn.cl/leychile/navegar?idNorma=1209272" rel="noopener" target="_blank">Ley N° 21.719</a>, publicada en el Diario Oficial el 13 de diciembre de 2024, modifica la Ley N° 19.628 y crea la Agencia de Protección de Datos Personales. Entre otros cambios, reconoce los derechos de acceso, rectificación, supresión, oposición, portabilidad y bloqueo de tus datos, y permite reclamar ante la Agencia si quien trata tus datos rechaza tu solicitud o no responde a tiempo.</p>
+  <p>Según su texto, entra en vigencia el 1 de diciembre de 2026. Al momento de esta actualización, un proyecto de ley en trámite en el Congreso (boletín N° 18.623-07) propone postergarla hasta el 1 de diciembre de 2027. Cuando la nueva ley rija, ajustaremos esta política y atenderemos esos derechos en los términos que ella establezca.</p>
 
   <h2>Cambios a esta política</h2>
   <p>Podemos actualizar esta política para reflejar cambios legales o en los servicios que usamos. Publicaremos aquí la versión vigente con su fecha.</p>
