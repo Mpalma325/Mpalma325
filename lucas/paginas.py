@@ -799,6 +799,10 @@ def paginas_calculadoras(c: Contexto) -> list[Pagina]:
          f"Retención {porcentaje(p['retencion_honorarios'], 2)} de {hoy.year}: bruto y líquido."),
         ("Reajuste de arriendo por IPC", "/calculadoras/reajuste-arriendo-ipc/",
          "Cuánto sube tu arriendo según la variación del IPC."),
+        ("Finiquito", "/calculadoras/finiquito/",
+         "Indemnización por años de servicio, aviso previo y vacaciones."),
+        ("Vacaciones proporcionales", "/calculadoras/vacaciones-proporcionales/",
+         "Días de feriado proporcional y cuánto te deben pagar."),
         ("Crédito hipotecario", "/calculadoras/credito-hipotecario/",
          "Dividendo en UF y en pesos, renta mínima e intereses."),
         ("Interés compuesto y ahorro", "/calculadoras/interes-compuesto/",
@@ -810,9 +814,9 @@ def paginas_calculadoras(c: Contexto) -> list[Pagina]:
         ruta="/calculadoras/",
         plantilla="calculadoras.html",
         titulo="Calculadoras financieras y laborales para Chile (gratis)",
-        descripcion=("Calculadoras gratuitas para Chile: sueldo líquido, boletas de honorarios, "
-                     "reajuste de arriendo por IPC, crédito hipotecario, interés compuesto y días "
-                     "hábiles. Actualizadas con los parámetros legales vigentes."),
+        descripcion=("Calculadoras gratuitas para Chile: sueldo líquido, finiquito, vacaciones, "
+                     "boletas de honorarios, arriendo por IPC, crédito hipotecario, interés "
+                     "compuesto y días hábiles, con los parámetros legales vigentes."),
         h1="Calculadoras para tus finanzas en Chile",
         migas=[INICIO, ("Calculadoras", "/calculadoras/")],
         prioridad=0.9,
@@ -896,6 +900,91 @@ def paginas_calculadoras(c: Contexto) -> list[Pagina]:
              "un cálculo oficial con el índice exacto, usa la calculadora del IPC del INE."),
         ],
         contexto={"periodos": periodos, "meses": list(reversed(meses_ipc)), "ultimo": ultimo},
+    ))
+
+    anios_feriados = [hoy.year - 3, hoy.year - 2, hoy.year - 1, hoy.year, hoy.year + 1]
+    feriados_set = {f.fecha for anio in anios_feriados for f in feriados_nacionales(anio, c.feriados_extra)}
+    datos_finiquito = {"parametros": p, "feriados": sorted(f.isoformat() for f in feriados_set),
+                       "rango": [f"{anios_feriados[0]}-01-01", f"{anios_feriados[-1]}-11-30"]}
+    inicio_ejemplo = calculos.sumar_meses(hoy, -43)
+    ejemplo_finiquito = calculos.finiquito(inicio_ejemplo, hoy, 1_200_000, "necesidades_empresa", p,
+                                           feriados_set, aviso_dado=False)
+    ejemplo_vacaciones = calculos.finiquito(calculos.sumar_meses(hoy, -8), hoy, 1_000_000, "renuncia", p,
+                                            feriados_set)
+    tope_indemnizacion = p["tope_indemnizacion_uf"] * p["uf"]
+    descripcion = ("Calcula tu finiquito: indemnización por años de servicio, aviso previo, "
+                   "vacaciones pendientes y proporcionales en días corridos, según la causal de término.")
+    paginas.append(Pagina(
+        ruta="/calculadoras/finiquito/",
+        plantilla="calc_finiquito.html",
+        titulo=f"Calculadora de finiquito {hoy.year}: indemnización y vacaciones",
+        descripcion=descripcion,
+        h1="Calculadora de finiquito",
+        migas=[INICIO, ("Calculadoras", "/calculadoras/"), ("Finiquito", "/calculadoras/finiquito/")],
+        clave="finiquito",
+        calculadora=True,
+        prioridad=0.9,
+        frecuencia="weekly",
+        jsonld=_app(c, "Calculadora de finiquito", descripcion, "/calculadoras/finiquito/"),
+        datos_js=datos_finiquito,
+        faq=[
+            ("¿Qué incluye un finiquito?",
+             "Las remuneraciones pendientes, las vacaciones (feriado) pendientes y proporcionales y, "
+             "según la causal de término, la indemnización por años de servicio y la indemnización "
+             "sustitutiva del aviso previo."),
+            ("¿Cuándo corresponde la indemnización por años de servicio?",
+             "Cuando el empleador pone término al contrato por necesidades de la empresa o por "
+             "desahucio (artículo 161) y el contrato duró al menos un año. Son 30 días de la última "
+             "remuneración por cada año y fracción superior a seis meses, con un máximo de 11 años "
+             f"y una remuneración tope de {numero(p['tope_indemnizacion_uf'])} UF "
+             f"(unos {pesos(tope_indemnizacion)} hoy)."),
+            ("Si renuncio, ¿me pagan indemnización?",
+             "No corresponde indemnización por años de servicio (salvo que tu contrato la pacte), "
+             "pero sí te deben pagar las vacaciones pendientes y proporcionales y los días trabajados."),
+            ("¿Cuál es el plazo para pagar el finiquito?",
+             "El empleador debe pagarlo dentro de 10 días hábiles contados desde la separación del "
+             "trabajador (artículo 177 del Código del Trabajo)."),
+            ("¿Y si el despido fue injustificado?",
+             "Si un tribunal declara injustificado o improcedente el despido, la indemnización por "
+             "años de servicio aumenta entre 30% y 100% según la causal invocada (artículo 168)."),
+        ],
+        contexto={"ejemplo": ejemplo_finiquito, "inicio_ejemplo": inicio_ejemplo,
+                  "tope_indemnizacion": tope_indemnizacion,
+                  "parametros_tope_uf": numero(p["tope_indemnizacion_uf"])},
+    ))
+    descripcion = ("Calcula tus vacaciones proporcionales: días hábiles de feriado ganados, su "
+                   "conversión a días corridos con los feriados reales de Chile y el monto a pagar.")
+    paginas.append(Pagina(
+        ruta="/calculadoras/vacaciones-proporcionales/",
+        plantilla="calc_vacaciones.html",
+        titulo=f"Calculadora de vacaciones proporcionales {hoy.year} (feriado proporcional)",
+        descripcion=descripcion,
+        h1="Calculadora de vacaciones proporcionales",
+        migas=[INICIO, ("Calculadoras", "/calculadoras/"),
+               ("Vacaciones proporcionales", "/calculadoras/vacaciones-proporcionales/")],
+        clave="finiquito",
+        calculadora=True,
+        prioridad=0.8,
+        frecuencia="weekly",
+        jsonld=_app(c, "Calculadora de vacaciones proporcionales", descripcion,
+                    "/calculadoras/vacaciones-proporcionales/"),
+        datos_js=datos_finiquito,
+        faq=[
+            ("¿Cuántos días de vacaciones proporcionales me corresponden?",
+             f"Por cada mes trabajado desde tu último aniversario ganas "
+             f"{numero(p['feriado_anual_habiles'] / 12, 2)} días hábiles de feriado "
+             f"({numero(p['feriado_anual_habiles'])} al año), y la parte proporcional por cada día."),
+            ("¿Por qué me pagan más días de los que gané?",
+             "Porque los días hábiles se convierten a días corridos: desde el día siguiente al término "
+             "del contrato se cuentan los días hábiles y se suman los sábados, domingos y feriados "
+             "que quedan entre medio (artículo 73). Para el feriado, el sábado siempre es inhábil."),
+            ("¿Cómo se calcula el valor de cada día?",
+             "Se divide la remuneración mensual por 30 y se multiplica por los días corridos."),
+            ("¿Qué pasa con las vacaciones que no tomé de años anteriores?",
+             "También se pagan al terminar el contrato. Ingrésalas en el campo de días pendientes."),
+        ],
+        contexto={"ejemplo": ejemplo_vacaciones,
+                  "ejemplo_inicio": calculos.sumar_meses(hoy, -8).isoformat()},
     ))
 
     tasa = p["tasa_hipotecaria_referencia"]

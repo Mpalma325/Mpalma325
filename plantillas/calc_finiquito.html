@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<p class="bajada">Estima los montos de tu finiquito según la causal de término: indemnización por años de servicio, aviso previo, vacaciones pendientes y proporcionales (convertidas a días corridos con los feriados reales de Chile) y días trabajados.</p>
+
+<div class="calculadora-layout">
+<form id="calc-finiquito" class="calculadora" data-calculadora="finiquito" onsubmit="return false">
+  <div class="campo">
+    <label for="f-inicio">Fecha de inicio del contrato</label>
+    <input id="f-inicio" name="inicio" type="date" value="{{ inicio_ejemplo.isoformat() }}">
+  </div>
+  <div class="campo">
+    <label for="f-termino">Fecha de término (último día trabajado)</label>
+    <input id="f-termino" name="termino" type="date" value="{{ hoy.isoformat() }}">
+  </div>
+  <div class="campo">
+    <label for="f-remuneracion">Última remuneración mensual</label>
+    <input id="f-remuneracion" name="remuneracion" inputmode="numeric" autocomplete="off" value="1.200.000" data-dinero>
+  </div>
+  <div class="campo">
+    <label for="f-causal">Causal de término</label>
+    <select id="f-causal" name="causal">
+      <option value="necesidades_empresa" selected>Despido por necesidades de la empresa (art. 161)</option>
+      <option value="desahucio">Desahucio, cargo de exclusiva confianza (art. 161)</option>
+      <option value="renuncia">Renuncia voluntaria</option>
+      <option value="mutuo_acuerdo">Mutuo acuerdo</option>
+      <option value="vencimiento">Vencimiento del plazo o término de la obra</option>
+      <option value="disciplinario">Despido disciplinario (art. 160)</option>
+    </select>
+  </div>
+  <label class="campo-check" data-solo-indemnizacion><input type="checkbox" name="aviso"> Me avisaron con 30 días de anticipación</label>
+  <details class="opciones">
+    <summary>Más opciones</summary>
+    <div class="campo">
+      <label for="f-pendientes">Días hábiles de vacaciones pendientes de años anteriores</label>
+      <input id="f-pendientes" name="pendientes" inputmode="decimal" autocomplete="off" value="0">
+    </div>
+    <div class="campo">
+      <label for="f-dias">Días trabajados del último mes aún no pagados</label>
+      <input id="f-dias" name="dias" inputmode="numeric" autocomplete="off" value="0">
+    </div>
+  </details>
+</form>
+
+<div class="resultado" id="resultado-finiquito" aria-live="polite">
+  <p class="resultado-etiqueta">Total estimado del finiquito</p>
+  <p class="resultado-principal" data-r="principal">{{ ejemplo.total|pesos }}</p>
+  <table class="tabla tabla-detalle">
+    <tbody>
+      <tr><th scope="row">Tiempo trabajado</th><td class="num" data-r="tiempo">{{ ejemplo.tiempo.anios }} años, {{ ejemplo.tiempo.meses }} meses y {{ ejemplo.tiempo.dias }} días</td></tr>
+      <tr data-fila="indemnizacion"><th scope="row">Indemnización por años de servicio <span data-r="anios">({{ ejemplo.anios_indemnizacion }} años)</span></th><td class="num" data-r="indemnizacion">{{ ejemplo.indemnizacion_anios|pesos }}</td></tr>
+      <tr data-fila="aviso"><th scope="row">Indemnización sustitutiva del aviso previo</th><td class="num" data-r="aviso">{{ ejemplo.aviso_previo|pesos }}</td></tr>
+      <tr><th scope="row">Vacaciones <span data-r="feriado_detalle">({{ ejemplo.feriado_habiles|numero(2) }} días hábiles = {{ ejemplo.feriado_corridos|numero(2) }} días corridos)</span></th><td class="num" data-r="feriado">{{ ejemplo.feriado|pesos }}</td></tr>
+      <tr data-fila="pendiente" hidden><th scope="row">Días trabajados no pagados</th><td class="num" data-r="pendiente">$0</td></tr>
+      <tr class="total"><th scope="row">Total</th><td class="num" data-r="total">{{ ejemplo.total|pesos }}</td></tr>
+    </tbody>
+  </table>
+  <p class="nota" data-r="nota">Para las indemnizaciones, la remuneración se considera con un tope de {{ parametros_tope_uf }} UF ({{ tope_indemnizacion|pesos }}).</p>
+  <button type="button" class="boton-secundario" data-compartir>Copiar enlace a este cálculo</button>
+</div>
+</div>
+
+{{ m.anuncio("finiquito_superior") }}
+
+<section class="texto">
+  <h2>¿Qué te corresponde según la causal?</h2>
+  <div class="tabla-desplazable">
+  <table class="tabla">
+    <thead><tr><th>Causal</th><th>Años de servicio</th><th>Aviso previo</th><th>Vacaciones</th></tr></thead>
+    <tbody>
+      <tr><td>Necesidades de la empresa o desahucio (art. 161)</td><td>Sí, con 1 año o más</td><td>Sí, si no avisaron con 30 días</td><td>Sí</td></tr>
+      <tr><td>Renuncia voluntaria</td><td>No (salvo pacto)</td><td>No</td><td>Sí</td></tr>
+      <tr><td>Mutuo acuerdo</td><td>Solo si se pacta</td><td>No</td><td>Sí</td></tr>
+      <tr><td>Vencimiento del plazo o término de la obra</td><td>No</td><td>No</td><td>Sí</td></tr>
+      <tr><td>Despido disciplinario (art. 160)</td><td>No (salvo que un tribunal lo declare injustificado)</td><td>No</td><td>Sí</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <h2>Cómo se calcula</h2>
+  <ul>
+    <li><strong>Años de servicio:</strong> 30 días de la última remuneración mensual por cada año trabajado y fracción superior a seis meses, con un máximo de 11 años. La remuneración se considera con un tope de 90 UF.</li>
+    <li><strong>Aviso previo:</strong> si el empleador no avisó con 30 días de anticipación, debe pagar una remuneración mensual adicional (también con tope de 90 UF).</li>
+    <li><strong>Vacaciones:</strong> 1,25 días hábiles por cada mes trabajado desde el último aniversario del contrato, más los días pendientes. Se pagan en días corridos: se cuentan los días hábiles desde el día siguiente al término y se suman los sábados, domingos y feriados que quedan entre medio. Cada día vale la remuneración mensual dividida por 30.</li>
+  </ul>
+  <p class="aviso">Resultado referencial y en montos brutos. No considera bonos, horas extra, gratificaciones pendientes, indemnizaciones pactadas ni descuentos (por ejemplo, el aporte del empleador al seguro de cesantía que puede descontarse de la indemnización por necesidades de la empresa). Para un cálculo oficial, acude a la Dirección del Trabajo.</p>
+</section>
+
+{{ m.afiliados("finiquito") }}
+{{ m.faq(pagina) }}
+<p><a href="{{ ruta('/calculadoras/vacaciones-proporcionales/') }}">Calcular solo las vacaciones proporcionales →</a></p>
+{{ m.fuente("Código del Trabajo (artículos 73, 161, 162, 163, 168, 172 y 177); feriados según la ley") }}
+{% endblock %}

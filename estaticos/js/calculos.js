@@ -152,6 +152,115 @@
   }
 
   // -------------------------------------------------------------------------
+  // Finiquito y vacaciones proporcionales (fechas como texto AAAA-MM-DD)
+  // -------------------------------------------------------------------------
+
+  var CAUSALES_CON_INDEMNIZACION = ['necesidades_empresa', 'desahucio'];
+
+  function iso(anio, mes, dia) {
+    return anio + '-' + ('0' + mes).slice(-2) + '-' + ('0' + dia).slice(-2);
+  }
+
+  function diasDelMes(anio, mes) {
+    return new Date(Date.UTC(anio, mes, 0)).getUTCDate();
+  }
+
+  function sumarMeses(fecha, meses) {
+    var p = fecha.split('-');
+    var total = +p[1] - 1 + meses;
+    var anio = +p[0] + Math.floor(total / 12);
+    var mes = ((total % 12) + 12) % 12 + 1;
+    return iso(anio, mes, Math.min(+p[2], diasDelMes(anio, mes)));
+  }
+
+  function sumarDias(fecha, dias) {
+    var d = aFecha(fecha);
+    d.setUTCDate(d.getUTCDate() + dias);
+    return aTexto(d);
+  }
+
+  function tiempoTrabajado(inicio, termino) {
+    var hasta = sumarDias(termino, 1);
+    var meses = 0;
+    while (sumarMeses(inicio, meses + 1) <= hasta) {
+      meses += 1;
+    }
+    var dias = Math.round((aFecha(hasta) - aFecha(sumarMeses(inicio, meses))) / 86400000);
+    return { anios: Math.floor(meses / 12), meses: meses % 12, dias: dias, meses_totales: meses };
+  }
+
+  function aniosDeServicio(inicio, termino, p) {
+    var t = tiempoTrabajado(inicio, termino);
+    if (t.anios < 1) {
+      return 0;
+    }
+    var extra = (t.meses > 6 || (t.meses === 6 && t.dias > 0)) ? 1 : 0;
+    return Math.min(t.anios + extra, p.tope_anios_indemnizacion);
+  }
+
+  function feriadoProporcional(inicio, termino, p) {
+    var anios = tiempoTrabajado(inicio, termino).anios;
+    var aniversario = sumarMeses(inicio, 12 * anios);
+    var t = tiempoTrabajado(aniversario, termino);
+    var porMes = p.feriado_anual_habiles / 12;
+    return {
+      desde: aniversario,
+      meses: t.meses,
+      dias: t.dias,
+      dias_habiles: porMes * t.meses + porMes / 30 * t.dias
+    };
+  }
+
+  function diasCorridosDeFeriado(diasHabiles, termino, feriados) {
+    var enteros = Math.floor(diasHabiles);
+    var fraccion = diasHabiles - enteros;
+    var dia = aFecha(termino);
+    var corridos = 0;
+    var contados = 0;
+    while (contados < enteros) {
+      dia.setUTCDate(dia.getUTCDate() + 1);
+      corridos += 1;
+      var semana = dia.getUTCDay();
+      if (semana !== 0 && semana !== 6 && feriados.indexOf(aTexto(dia)) === -1) {
+        contados += 1;
+      }
+    }
+    return { dias_corridos: corridos + fraccion, inhabiles: corridos - enteros, hasta: aTexto(dia) };
+  }
+
+  function finiquito(inicio, termino, remuneracion, causal, p, feriados, avisoDado, diasPendientes, diasPorPagar) {
+    avisoDado = avisoDado === undefined ? true : avisoDado;
+    diasPendientes = diasPendientes || 0;
+    diasPorPagar = diasPorPagar || 0;
+    var tope = p.tope_indemnizacion_uf * p.uf;
+    var base = Math.min(remuneracion, tope);
+    var conIndemnizacion = CAUSALES_CON_INDEMNIZACION.indexOf(causal) !== -1;
+    var anios = conIndemnizacion ? aniosDeServicio(inicio, termino, p) : 0;
+    var indemnizacion = redondear(base * anios);
+    var aviso = conIndemnizacion && !avisoDado ? redondear(base) : 0;
+    var proporcional = feriadoProporcional(inicio, termino, p);
+    var habiles = proporcional.dias_habiles + diasPendientes;
+    var conversion = diasCorridosDeFeriado(habiles, termino, feriados);
+    var valorDia = remuneracion / 30;
+    var feriado = redondear(conversion.dias_corridos * valorDia);
+    var remuneracionPendiente = redondear(diasPorPagar * valorDia);
+    return {
+      tiempo: tiempoTrabajado(inicio, termino),
+      anios_indemnizacion: anios,
+      tope_aplicado: conIndemnizacion && remuneracion > tope,
+      indemnizacion_anios: indemnizacion,
+      aviso_previo: aviso,
+      feriado_proporcional_habiles: proporcional.dias_habiles,
+      feriado_habiles: habiles,
+      feriado_corridos: conversion.dias_corridos,
+      feriado_inhabiles: conversion.inhabiles,
+      feriado: feriado,
+      remuneracion_pendiente: remuneracionPendiente,
+      total: indemnizacion + aviso + feriado + remuneracionPendiente
+    };
+  }
+
+  // -------------------------------------------------------------------------
   // Boleta de honorarios
   // -------------------------------------------------------------------------
 
@@ -330,6 +439,12 @@
     sueldoLiquido: sueldoLiquido,
     brutoParaLiquido: brutoParaLiquido,
     costoEmpleador: costoEmpleador,
+    sumarMeses: sumarMeses,
+    tiempoTrabajado: tiempoTrabajado,
+    aniosDeServicio: aniosDeServicio,
+    feriadoProporcional: feriadoProporcional,
+    diasCorridosDeFeriado: diasCorridosDeFeriado,
+    finiquito: finiquito,
     honorariosDesdeBruto: honorariosDesdeBruto,
     honorariosDesdeLiquido: honorariosDesdeLiquido,
     dividendo: dividendo,

@@ -11,6 +11,7 @@ Si cambias una fórmula aquí, cámbiala también en calculos.js.
 
 from __future__ import annotations
 
+import calendar
 import datetime as dt
 
 from .config import Parametros
@@ -33,6 +34,7 @@ def contexto_parametros(fecha: dt.date, uf: float, utm: float, params: Parametro
     gratificacion = params.vigente("gratificacion", fecha)
     empleador = params.vigente("cotizaciones_empleador", fecha)
     hipotecario = params.vigente("credito_hipotecario", fecha)
+    indemnizaciones = params.vigente("indemnizaciones", fecha)
     administradoras = afp["administradoras"]
     return {
         "fecha": fecha.isoformat(),
@@ -59,6 +61,9 @@ def contexto_parametros(fecha: dt.date, uf: float, utm: float, params: Parametro
         "sis": float(empleador["sis"]),
         "mutual_basica": float(empleador["mutual_basica"]),
         "aporte_empleador_reforma": float(empleador["aporte_reforma_pensiones"]),
+        "tope_indemnizacion_uf": float(indemnizaciones["tope_remuneracion_uf"]),
+        "tope_anios_indemnizacion": int(indemnizaciones["tope_anios"]),
+        "feriado_anual_habiles": float(indemnizaciones["feriado_dias_habiles_anuales"]),
         "tasa_hipotecaria_referencia": float(hipotecario["tasa_referencia"]),
         "carga_financiera_maxima": float(hipotecario["carga_financiera_maxima"]),
     }
@@ -178,6 +183,115 @@ def costo_empleador(bruto: float, p: dict, contrato: str = "indefinido", no_impo
         "reforma": reforma,
         "total_cotizaciones": total,
         "costo_total": bruto + no_imponible + total,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Finiquito y vacaciones proporcionales
+# ---------------------------------------------------------------------------
+
+CAUSALES_CON_INDEMNIZACION = ("necesidades_empresa", "desahucio")
+UN_DIA = dt.timedelta(days=1)
+
+
+def sumar_meses(fecha: dt.date, meses: int) -> dt.date:
+    """Suma meses a una fecha; si el día no existe (31 de febrero) usa el último día del mes."""
+    total = fecha.month - 1 + meses
+    anio = fecha.year + total // 12
+    mes = total % 12 + 1
+    return dt.date(anio, mes, min(fecha.day, calendar.monthrange(anio, mes)[1]))
+
+
+def tiempo_trabajado(inicio: dt.date, termino: dt.date) -> dict:
+    """Años, meses y días entre ``inicio`` y ``termino``, ambos incluidos."""
+    hasta = termino + UN_DIA
+    meses = 0
+    while sumar_meses(inicio, meses + 1) <= hasta:
+        meses += 1
+    dias = (hasta - sumar_meses(inicio, meses)).days
+    return {"anios": meses // 12, "meses": meses % 12, "dias": dias, "meses_totales": meses}
+
+
+def anios_de_servicio(inicio: dt.date, termino: dt.date, p: dict) -> int:
+    """Años para la indemnización: cada año y fracción superior a seis meses (art. 163), con tope."""
+    t = tiempo_trabajado(inicio, termino)
+    if t["anios"] < 1:
+        return 0
+    extra = 1 if t["meses"] > 6 or (t["meses"] == 6 and t["dias"] > 0) else 0
+    return min(t["anios"] + extra, p["tope_anios_indemnizacion"])
+
+
+def feriado_proporcional(inicio: dt.date, termino: dt.date, p: dict) -> dict:
+    """Días hábiles de feriado ganados desde el último aniversario del contrato (art. 73)."""
+    anios = tiempo_trabajado(inicio, termino)["anios"]
+    aniversario = sumar_meses(inicio, 12 * anios)
+    t = tiempo_trabajado(aniversario, termino)
+    por_mes = p["feriado_anual_habiles"] / 12
+    return {
+        "desde": aniversario,
+        "meses": t["meses"],
+        "dias": t["dias"],
+        "dias_habiles": por_mes * t["meses"] + por_mes / 30 * t["dias"],
+    }
+
+
+def dias_corridos_de_feriado(dias_habiles: float, termino: dt.date, feriados: set[dt.date]) -> dict:
+    """Convierte días hábiles de feriado en días corridos a pagar.
+
+    Desde el día siguiente al término se cuentan los días hábiles (lunes a viernes
+    que no sean feriado: el sábado es inhábil para el feriado, art. 69) y se suman
+    los sábados, domingos y feriados que queden entre medio. La fracción de día
+    se agrega al final.
+    """
+    enteros = int(dias_habiles)
+    fraccion = dias_habiles - enteros
+    dia = termino
+    corridos = 0
+    contados = 0
+    while contados < enteros:
+        dia += UN_DIA
+        corridos += 1
+        if dia.weekday() < 5 and dia not in feriados:
+            contados += 1
+    return {"dias_corridos": corridos + fraccion, "inhabiles": corridos - enteros, "hasta": dia}
+
+
+def finiquito(inicio: dt.date, termino: dt.date, remuneracion: float, causal: str, p: dict,
+              feriados: set[dt.date], aviso_dado: bool = True, dias_pendientes: float = 0.0,
+              dias_por_pagar: float = 0.0) -> dict:
+    """Montos brutos referenciales de un finiquito.
+
+    - Indemnización por años de servicio y sustitutiva del aviso previo: solo por
+      necesidades de la empresa o desahucio (art. 161), con la remuneración topada
+      en 90 UF (art. 172).
+    - Feriado: días pendientes más el proporcional, pagados en días corridos.
+    - Remuneración de los días trabajados del último mes que aún no se pagan.
+    """
+    tope = p["tope_indemnizacion_uf"] * p["uf"]
+    base = min(remuneracion, tope)
+    con_indemnizacion = causal in CAUSALES_CON_INDEMNIZACION
+    anios = anios_de_servicio(inicio, termino, p) if con_indemnizacion else 0
+    indemnizacion = redondear(base * anios)
+    aviso = redondear(base) if con_indemnizacion and not aviso_dado else 0.0
+    proporcional = feriado_proporcional(inicio, termino, p)
+    habiles = proporcional["dias_habiles"] + dias_pendientes
+    conversion = dias_corridos_de_feriado(habiles, termino, feriados)
+    valor_dia = remuneracion / 30
+    feriado = redondear(conversion["dias_corridos"] * valor_dia)
+    remuneracion_pendiente = redondear(dias_por_pagar * valor_dia)
+    return {
+        "tiempo": tiempo_trabajado(inicio, termino),
+        "anios_indemnizacion": anios,
+        "tope_aplicado": con_indemnizacion and remuneracion > tope,
+        "indemnizacion_anios": indemnizacion,
+        "aviso_previo": aviso,
+        "feriado_proporcional_habiles": proporcional["dias_habiles"],
+        "feriado_habiles": habiles,
+        "feriado_corridos": conversion["dias_corridos"],
+        "feriado_inhabiles": conversion["inhabiles"],
+        "feriado": feriado,
+        "remuneracion_pendiente": remuneracion_pendiente,
+        "total": indemnizacion + aviso + feriado + remuneracion_pendiente,
     }
 
 

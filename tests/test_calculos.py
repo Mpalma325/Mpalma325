@@ -176,3 +176,71 @@ def test_ahorro():
     con_interes = c.proyectar_ahorro(0, 100_000, 0.05, 20)
     assert con_interes["saldo"] > con_interes["aportado"] == pytest.approx(24_000_000)
     assert len(con_interes["serie"]) == 21
+
+
+# --- Finiquito y vacaciones ------------------------------------------------------
+
+def _feriados():
+    import datetime as dt
+    from lucas.config import cargar_parametros
+    from lucas.feriados import feriados_nacionales
+    extras = cargar_parametros().feriados_extra()
+    return {f.fecha for anio in (2025, 2026, 2027) for f in feriados_nacionales(anio, extras)}
+
+
+def test_tiempo_trabajado_y_anios_de_servicio(p):
+    import datetime as dt
+    D = dt.date
+    assert c.tiempo_trabajado(D(2023, 3, 15), D(2026, 10, 12)) == {
+        "anios": 3, "meses": 6, "dias": 28, "meses_totales": 42}
+    assert c.anios_de_servicio(D(2023, 3, 15), D(2026, 10, 12), p) == 4   # fracción > 6 meses
+    assert c.anios_de_servicio(D(2023, 3, 15), D(2026, 9, 14), p) == 3    # justo 3 años y 6 meses
+    assert c.anios_de_servicio(D(2026, 1, 1), D(2026, 10, 12), p) == 0    # menos de un año
+    assert c.anios_de_servicio(D(2000, 1, 1), D(2026, 10, 12), p) == 11   # tope de 11 años
+    assert c.sumar_meses(D(2026, 1, 31), 1) == D(2026, 2, 28)
+
+
+def test_feriado_proporcional_en_dias_corridos(p):
+    import datetime as dt
+    D = dt.date
+    proporcional = c.feriado_proporcional(D(2023, 3, 15), D(2026, 10, 12), p)
+    assert proporcional["desde"] == D(2026, 3, 15)
+    assert (proporcional["meses"], proporcional["dias"]) == (6, 28)
+    assert proporcional["dias_habiles"] == pytest.approx(1.25 * 6 + 1.25 / 30 * 28)
+    # 13 días hábiles desde el martes 13 de octubre de 2026: terminan el jueves 29,
+    # con dos fines de semana entre medio (4 días inhábiles).
+    conversion = c.dias_corridos_de_feriado(13.6667, D(2026, 10, 12), _feriados())
+    assert conversion["hasta"] == D(2026, 10, 29)
+    assert conversion["inhabiles"] == 4
+    assert conversion["dias_corridos"] == pytest.approx(17.6667)
+
+
+def test_feriado_cruza_un_feriado_legal(p):
+    import datetime as dt
+    # Desde el viernes 9 de octubre de 2026: el lunes 12 es feriado y se suma como inhábil.
+    conversion = c.dias_corridos_de_feriado(2, dt.date(2026, 10, 9), _feriados())
+    assert conversion["hasta"] == dt.date(2026, 10, 14)
+    assert conversion["inhabiles"] == 3  # sábado, domingo y el feriado del lunes
+
+
+def test_finiquito_por_necesidades_de_la_empresa(p):
+    import datetime as dt
+    r = c.finiquito(dt.date(2023, 3, 15), dt.date(2026, 10, 12), 1_200_000, "necesidades_empresa", p,
+                    _feriados(), aviso_dado=False, dias_pendientes=5, dias_por_pagar=12)
+    assert r["indemnizacion_anios"] == 4_800_000
+    assert r["aviso_previo"] == 1_200_000
+    assert r["feriado"] == round((17 + 1.25 * 6 + 1.25 / 30 * 28 + 5 - 13) * 40_000)
+    assert r["remuneracion_pendiente"] == 480_000
+    assert r["total"] == r["indemnizacion_anios"] + r["aviso_previo"] + r["feriado"] + 480_000
+
+
+def test_finiquito_renuncia_y_tope(p):
+    import datetime as dt
+    renuncia = c.finiquito(dt.date(2020, 1, 1), dt.date(2026, 10, 12), 1_000_000, "renuncia", p, _feriados())
+    assert renuncia["indemnizacion_anios"] == 0 and renuncia["aviso_previo"] == 0
+    alto = c.finiquito(dt.date(2020, 1, 1), dt.date(2026, 10, 12), 6_000_000, "necesidades_empresa", p,
+                       _feriados(), aviso_dado=True)
+    tope = 90 * UF_12_OCTUBRE_2026
+    assert alto["tope_aplicado"]
+    assert alto["indemnizacion_anios"] == round(tope * 7)  # 6 años y 9 meses -> 7 años
+    assert alto["feriado"] > 0

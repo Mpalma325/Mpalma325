@@ -144,6 +144,18 @@ cotizaciones_empleador:
     - {desde: 2028-08-01, sis: 0.0,    aporte_reforma_pensiones: 0.050, mutual_basica: 0.0093}
     - {desde: 2029-08-01, sis: 0.0,    aporte_reforma_pensiones: 0.057, mutual_basica: 0.0093}
 
+indemnizaciones:
+  # Código del Trabajo: indemnización por años de servicio (art. 163, tope de 11
+  # años para contratos desde el 14-ago-1981), tope de 90 UF de la remuneración
+  # para indemnizaciones (art. 172) y feriado anual de 15 días hábiles (art. 67).
+  revisar_antes_de: 2027-06-01
+  fuente: https://www.dt.gob.cl/
+  vigencias:
+    - desde: 1990-01-01
+      tope_remuneracion_uf: 90
+      tope_anios: 11
+      feriado_dias_habiles_anuales: 15
+
 credito_hipotecario:
   # Tasa anual de referencia para los ejemplos de dividendo (no es una oferta).
   # Revísala cada trimestre en https://www.cmfchile.cl o en los simuladores de los bancos.

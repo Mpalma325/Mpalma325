@@ -544,6 +544,83 @@
     }
   }
 
+  /** Lee y valida las fechas de los formularios de finiquito y vacaciones. */
+  function fechasContrato(d, res, datos) {
+    var rango = datos.rango || ['1900-01-01', '2999-12-31'];
+    if (!d.inicio || !d.termino || d.inicio > d.termino) {
+      poner(res, 'principal', '—');
+      return false;
+    }
+    if (d.termino < rango[0] || d.termino > rango[1]) {
+      poner(res, 'principal', '—');
+      return false;
+    }
+    return true;
+  }
+
+  function textoTiempo(t) {
+    var partes = [];
+    if (t.anios) {
+      partes.push(t.anios + (t.anios === 1 ? ' año' : ' años'));
+    }
+    partes.push(t.meses + (t.meses === 1 ? ' mes' : ' meses'));
+    partes.push(t.dias + (t.dias === 1 ? ' día' : ' días'));
+    return partes.join(', ');
+  }
+
+  function calcFiniquito(form, res) {
+    var datos = datosPagina();
+    var d = leerFormulario(form);
+    var conIndemnizacion = d.causal === 'necesidades_empresa' || d.causal === 'desahucio';
+    alternar(form, '[data-solo-indemnizacion]', conIndemnizacion);
+    var remuneracion = leerNumero(d.remuneracion);
+    if (!fechasContrato(d, res, datos) || isNaN(remuneracion) || remuneracion <= 0) {
+      return;
+    }
+    var r = L.finiquito(d.inicio, d.termino, remuneracion, d.causal, datos.parametros, datos.feriados,
+      !!d.aviso, leerNumero(d.pendientes) || 0, leerNumero(d.dias) || 0);
+    poner(res, 'principal', pesos(r.total));
+    poner(res, 'tiempo', textoTiempo(r.tiempo));
+    poner(res, 'anios', '(' + r.anios_indemnizacion + (r.anios_indemnizacion === 1 ? ' año)' : ' años)'));
+    poner(res, 'indemnizacion', pesos(r.indemnizacion_anios));
+    mostrarFila(res, 'indemnizacion', conIndemnizacion);
+    poner(res, 'aviso', pesos(r.aviso_previo));
+    mostrarFila(res, 'aviso', conIndemnizacion);
+    poner(res, 'feriado_detalle', '(' + numero(r.feriado_habiles, 2) + ' días hábiles = ' +
+      numero(r.feriado_corridos, 2) + ' días corridos)');
+    poner(res, 'feriado', pesos(r.feriado));
+    poner(res, 'pendiente', pesos(r.remuneracion_pendiente));
+    mostrarFila(res, 'pendiente', r.remuneracion_pendiente > 0);
+    poner(res, 'total', pesos(r.total));
+    var nota = 'Para las indemnizaciones, la remuneración se considera con un tope de ' +
+      numero(datos.parametros.tope_indemnizacion_uf) + ' UF (' +
+      pesos(datos.parametros.tope_indemnizacion_uf * datos.parametros.uf) + ').';
+    if (conIndemnizacion && r.anios_indemnizacion === 0) {
+      nota = 'La indemnización por años de servicio exige al menos un año de contrato.';
+    } else if (r.tope_aplicado) {
+      nota += ' Se aplicó el tope.';
+    }
+    poner(res, 'nota', nota);
+  }
+
+  function calcVacaciones(form, res) {
+    var datos = datosPagina();
+    var d = leerFormulario(form);
+    var remuneracion = leerNumero(d.remuneracion);
+    if (!fechasContrato(d, res, datos) || isNaN(remuneracion) || remuneracion <= 0) {
+      return;
+    }
+    var proporcional = L.feriadoProporcional(d.inicio, d.termino, datos.parametros);
+    var r = L.finiquito(d.inicio, d.termino, remuneracion, 'renuncia', datos.parametros, datos.feriados,
+      true, leerNumero(d.pendientes) || 0, 0);
+    poner(res, 'principal', pesos(r.feriado));
+    poner(res, 'periodo', textoTiempo({ anios: 0, meses: proporcional.meses, dias: proporcional.dias }));
+    poner(res, 'proporcionales', numero(r.feriado_proporcional_habiles, 2));
+    poner(res, 'habiles', numero(r.feriado_habiles, 2));
+    poner(res, 'inhabiles', String(r.feriado_inhabiles));
+    poner(res, 'corridos', numero(r.feriado_corridos, 2));
+  }
+
   // ---------------------------------------------------------------------------
   // Próximo feriado y proyección de UF
   // ---------------------------------------------------------------------------
@@ -603,7 +680,9 @@
       arriendo: [calcArriendo, 'resultado-arriendo'],
       hipotecario: [calcHipotecario, 'resultado-hipotecario'],
       ahorro: [calcAhorro, 'resultado-ahorro'],
-      dias: [calcDias, 'resultado-dias']
+      dias: [calcDias, 'resultado-dias'],
+      finiquito: [calcFiniquito, 'resultado-finiquito'],
+      vacaciones: [calcVacaciones, 'resultado-vacaciones']
     };
     $$('form[data-calculadora]').forEach(function (form) {
       var definicion = calculadoras[form.getAttribute('data-calculadora')];

@@ -2,7 +2,7 @@
 
 **Sitio web de indicadores económicos y calculadoras financieras para Chile que se actualiza solo y se monetiza con publicidad y enlaces de referidos.**
 
-Valor de la UF, dólar, euro, UTM e IPC del día; páginas como "1.000 UF en pesos" o "sueldo líquido de $1.000.000"; archivo mensual de la UF y el dólar; **UF proyectada**; calculadoras de sueldo líquido, boletas de honorarios, reajuste de arriendo por IPC, crédito hipotecario, interés compuesto y días hábiles; y el calendario de feriados. En total, unas 350 páginas que se regeneran solas todos los días.
+Valor de la UF, dólar, euro, UTM e IPC del día; páginas como "1.000 UF en pesos" o "sueldo líquido de $1.000.000"; archivo mensual de la UF y el dólar; **UF proyectada**; calculadoras de sueldo líquido, finiquito, vacaciones proporcionales, boletas de honorarios, reajuste de arriendo por IPC, crédito hipotecario, interés compuesto y días hábiles; y el calendario de feriados. En total, unas 350 páginas que se regeneran solas todos los días.
 
 > ⚠️ **Esta rama vive temporalmente en el repositorio de perfil `Mpalma325/Mpalma325`.** La sesión de Claude no tenía permiso para crear repositorios nuevos. **No la fusiones con `main` de ese repositorio** (reemplazaría el README del perfil). Muévela a su propio repositorio con los pasos de la sección [Mover a un repositorio propio](#mover-a-un-repositorio-propio).
 

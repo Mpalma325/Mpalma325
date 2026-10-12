@@ -122,3 +122,37 @@ def test_dias_habiles_identicos():
         assert js["dias"] == esperado, (a, b)
     suma = ejecutar_js([{"fn": "sumarDiasHabiles", "args": ["2026-10-09", 1, feriados, False]}])[0]
     assert suma["fecha"] == "2026-10-13"  # el lunes 12 es feriado
+
+
+def _a_json(valor):
+    """Convierte fechas a texto para comparar con JavaScript."""
+    if isinstance(valor, dict):
+        return {k: _a_json(v) for k, v in valor.items()}
+    if isinstance(valor, list):
+        return [_a_json(v) for v in valor]
+    if isinstance(valor, dt.date):
+        return valor.isoformat()
+    return valor
+
+
+def test_finiquito_identico(p):
+    extras = cargar_parametros().feriados_extra()
+    feriados = {f.fecha for anio in (2024, 2025, 2026, 2027) for f in feriados_nacionales(anio, extras)}
+    lista = sorted(f.isoformat() for f in feriados)
+    casos, esperados = [], []
+    escenarios = [
+        ("2023-03-15", "2026-10-12", 1_200_000, "necesidades_empresa", False, 5, 12),
+        ("2019-01-31", "2026-02-27", 6_500_000, "desahucio", True, 0, 0),
+        ("2026-02-01", "2026-10-09", 850_000, "renuncia", True, 2.5, 3),
+        ("2024-12-31", "2026-12-24", 1_000_000, "vencimiento", True, 0, 0),
+        ("2010-05-20", "2026-09-17", 3_000_000, "necesidades_empresa", False, 10, 0),
+    ]
+    for inicio, termino, remuneracion, causal, aviso, pendientes, dias in escenarios:
+        casos.append({"fn": "finiquito", "args": [inicio, termino, remuneracion, causal, p, lista, aviso,
+                                                    pendientes, dias]})
+        esperados.append(c.finiquito(dt.date.fromisoformat(inicio), dt.date.fromisoformat(termino),
+                                     remuneracion, causal, p, feriados, aviso, pendientes, dias))
+        casos.append({"fn": "feriadoProporcional", "args": [inicio, termino, p]})
+        esperados.append(c.feriado_proporcional(dt.date.fromisoformat(inicio), dt.date.fromisoformat(termino), p))
+    errores = [e for py, js in zip(esperados, ejecutar_js(casos)) for e in iguales(_a_json(py), js)]
+    assert errores == []

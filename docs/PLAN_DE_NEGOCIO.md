@@ -47,8 +47,8 @@ La demanda existe y está validada por sitios independientes:
 1. ✅ **UF proyectada:** no encontramos competidores. Ya está construida (`/uf/proyeccion/`).
 2. **Permiso de circulación por modelo y año** (temporada febrero–marzo): no hay calculadora privada.
 3. **Licencia médica** ("¿cuánto me pagan?"): solo está el simulador de SUSESO.
-4. **Vacaciones proporcionales con el calendario real de feriados:** los competidores usan la aproximación 7/5.
-5. **Finiquito por causal**, con recargos y modelo de carta.
+4. ✅ **Vacaciones proporcionales con el calendario real de feriados:** los competidores usan la aproximación 7/5. Ya está construida (`/calculadoras/vacaciones-proporcionales/`).
+5. ✅ **Finiquito por causal:** ya está construido (`/calculadoras/finiquito/`). Pendiente: modelo de carta y recargos por despido injustificado.
 
 **Amenaza principal:** los resúmenes con IA de Google (AI Overviews) reducen los clics en búsquedas de "dato del día". Según Pew Research (jul-2025), con resumen de IA se hace clic en un 8% de las búsquedas, contra un 15% sin resumen. Por eso **priorizamos calculadoras interactivas**, que la IA no reemplaza, y usamos las páginas de datos como puerta de entrada y para enlaces internos.
 
@@ -119,7 +119,7 @@ Cada pieza se publica entre 4 y 8 semanas antes de su temporada alta.
 | Cuándo | Qué | Por qué |
 |---|---|---|
 | Oct–nov 2026 | **Lanzamiento**: dominio, Cloudflare, Search Console. Feriados 2027 y días hábiles (ya incluidos) | Las búsquedas de "feriados 2027" suben desde octubre |
-| Nov–dic 2026 | **Finiquito por causal + vacaciones proporcionales** con calendario real | Enero es el mes de los finiquitos; poca competencia de calidad |
+| Nov–dic 2026 | ✅ Finiquito y vacaciones proporcionales (ya construidos). Agregar modelo de carta de finiquito y páginas por causal | Enero es el mes de los finiquitos; poca competencia de calidad |
 | Dic 2026 | Postular a AdSense; activar referidos | El sitio ya tendrá páginas indexadas |
 | Ene 2027 | **Permiso de circulación 2027** por tasación del SII (páginas por marca, modelo y año) | Se paga en febrero–marzo; no hay calculadora privada. Gran oportunidad de páginas en serie con valor real |
 | Feb 2027 | **Simulador Operación Renta** para honorarios | Abril: ¿me devuelven o pago cotizaciones? |

@@ -79,7 +79,7 @@ En `lucas/paginas.py`, editen las listas `MONTOS_UF`, `MONTOS_DOLAR`, `MONTOS_EU
 
 ### Ideas priorizadas
 
-Ver la hoja de ruta en [PLAN_DE_NEGOCIO.md](PLAN_DE_NEGOCIO.md#6-hoja-de-ruta): finiquito y vacaciones proporcionales, permiso de circulación 2027, simulador de Operación Renta, licencia médica, horas extra y APV.
+Ver la hoja de ruta en [PLAN_DE_NEGOCIO.md](PLAN_DE_NEGOCIO.md#6-hoja-de-ruta): permiso de circulación 2027, simulador de Operación Renta, licencia médica, horas extra y APV.
 
 ## Si algo falla
 
