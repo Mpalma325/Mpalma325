@@ -1,0 +1,19 @@
+/* Páginas /api/ y /widget/: bloques de código, generador y vista previa del widget.
+   Usa las variables de estilos.css (tema claro y oscuro). */
+
+pre {
+  background: var(--superficie-2); border: 1px solid var(--borde); border-radius: var(--radio);
+  padding: .85rem 1rem; overflow-x: auto; font-size: .86rem; line-height: 1.5; margin: .75rem 0 1rem;
+}
+pre code { background: none; padding: 0; border-radius: 0; font-size: inherit; }
+/* Las URL largas se cortan después de cada "/" (<wbr>) y, si no basta, donde sea. */
+p code, li code { overflow-wrap: break-word; }
+.tabla-opciones td:first-child code { white-space: nowrap; }
+.codigo {
+  /* Alto según el contenido; contain evita que el ancho del código ensanche la columna en móvil. */
+  display: block; width: 100%; resize: vertical; field-sizing: content; contain: inline-size; min-height: 6rem;
+  font: .84rem/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: var(--texto); background: var(--fondo); border: 1px solid var(--borde); border-radius: 10px; padding: .6rem .75rem;
+}
+.codigo:focus { outline: 3px solid color-mix(in srgb, var(--primario) 35%, transparent); border-color: var(--primario); }
+.widget-vista { background: var(--superficie-2); border-radius: var(--radio); padding: 1rem; margin: .5rem 0 1rem; }

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block contenido %}
+<link rel="stylesheet" href="{{ estatico('css/api-widget.css') }}">
+<h1>{{ pagina.h1 }}</h1>
+<p class="bajada">Muestra la UF, el dólar observado{% if hay_euro %}, el euro{% endif %} y la UTM del día en tu blog, en el sitio de tu pyme o en la intranet de tu oficina. Es gratis, no requiere registro y los valores se actualizan solos.</p>
+
+<div class="calculadora-layout">
+<form id="generador-widget" class="calculadora" data-url="{{ sitio.url }}" data-texto="{{ texto_enlace }}" data-inicio="{{ ruta('/') }}" onsubmit="return false">
+  <fieldset class="modo">
+    <legend>Indicadores</legend>
+    {% for clave, nombre, marcado in opciones %}
+    <label><input type="checkbox" name="indicador" value="{{ clave }}"{% if marcado %} checked{% endif %}> {{ nombre }}</label>
+    {% endfor %}
+  </fieldset>
+  <fieldset class="modo">
+    <legend>Tema</legend>
+    <label><input type="radio" name="tema" value="auto" checked> Automático (claro u oscuro según el dispositivo)</label>
+    <label><input type="radio" name="tema" value="claro"> Claro</label>
+    <label><input type="radio" name="tema" value="oscuro"> Oscuro</label>
+  </fieldset>
+</form>
+<div class="resultado">
+  <p class="resultado-etiqueta">Vista previa en vivo</p>
+  <div class="widget-vista" id="vista-previa-widget">
+    <div class="lucas-claras-widget" data-indicadores="uf,dolar,utm" data-tema="auto"><a href="{{ ruta('/') }}">{{ texto_enlace }}</a></div>
+  </div>
+  <div class="campo">
+    <label for="codigo-widget">Código para insertar</label>
+    <textarea id="codigo-widget" class="codigo" rows="8" readonly spellcheck="false">{{ codigo }}</textarea>
+  </div>
+  <button type="button" class="boton" id="copiar-widget">Copiar código</button>
+  <p class="nota" id="copiar-estado" aria-live="polite"></p>
+</div>
+</div>
+
+<section class="texto">
+  <h2>Cómo agregarlo a tu sitio</h2>
+  <ol>
+    <li>Elige los indicadores y el tema: la vista previa muestra cómo se verá.</li>
+    <li>Copia el código y pégalo donde quieras mostrar el widget, en una sección que acepte HTML (por ejemplo, un bloque de HTML personalizado en WordPress).</li>
+    <li>Listo. Cada vez que alguien abra tu página verá los valores vigentes, sin que tengas que actualizar nada.</li>
+  </ol>
+  <p>Para mostrar varios widgets en una misma página, repite el bloque <code>&lt;div&gt;</code> con las opciones que quieras: basta con incluir el <code>&lt;script&gt;</code> una vez. El widget se adapta al ancho de la columna donde lo pongas, hasta 380 píxeles.</p>
+</section>
+
+<section class="texto">
+  <h2>Opciones</h2>
+  <div class="tabla-desplazable">
+  <table class="tabla tabla-opciones">
+    <thead><tr><th>Atributo</th><th>Valores</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-indicadores</code></td><td><code>uf</code>, <code>dolar</code>, <code>euro</code> y <code>utm</code>, separados por comas y en el orden en que quieres verlos. Sin este atributo se muestran la UF, el dólar y la UTM.</td></tr>
+      <tr><td><code>data-tema</code></td><td><code>auto</code> (sigue el modo claro u oscuro del dispositivo), <code>claro</code> u <code>oscuro</code>.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Los montos se muestran en formato chileno (por ejemplo, {{ cabecera.uf|pesos(2) }}), con la fecha de cada valor: la UF del día, el último dólar observado y euro publicados por el Banco Central y la UTM del mes. Pasada la medianoche, el widget muestra la UF del nuevo día aunque nuestros datos se hayan actualizado la tarde anterior.</p>
+</section>
+
+<section class="texto">
+  <h2>Sin cookies y sin frenar tu página</h2>
+  <p>El widget es un script pequeño, sin dependencias, que se carga de forma asíncrona: no retrasa la carga de tu sitio. Sus estilos quedan aislados de los tuyos, así que no cambia el diseño de tu página. Si por cualquier motivo no logra leer los datos, deja visible el enlace original.</p>
+</section>
+
+{% include "_condiciones_api.html" %}
+
+<section class="texto">
+  <h2>¿Eres desarrollador?</h2>
+  <p>Los mismos datos están disponibles en formato JSON en nuestra <a href="{{ ruta('/api/') }}">API gratuita de indicadores económicos</a>, con ejemplos en JavaScript, curl y Python.</p>
+</section>
+
+{{ m.faq(pagina) }}
+{{ m.fuente("Banco Central de Chile, Servicio de Impuestos Internos e Instituto Nacional de Estadísticas") }}
+<script async src="{{ ruta('/widget.js') }}"></script>
+<script src="{{ estatico('js/widget-generador.js') }}" defer></script>
+{% endblock %}

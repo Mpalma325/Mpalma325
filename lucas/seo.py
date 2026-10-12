@@ -116,4 +116,12 @@ def cabeceras_cloudflare() -> str:
         "  X-Frame-Options: SAMEORIGIN\n"
         "/estaticos/*\n"
         "  Cache-Control: public, max-age=31536000, immutable\n"
+        # API abierta (lucas/api.py): cualquier sitio puede leerla y guardarla 30 minutos.
+        "/api/*\n"
+        "  Access-Control-Allow-Origin: *\n"
+        "  Cache-Control: public, max-age=1800\n"
+        # Widget que insertan otros sitios: caché corta para poder corregirlo. Ninguna otra
+        # regla puede fijar Cache-Control para estas rutas (Cloudflare uniría los valores).
+        "/widget.js\n"
+        "  Cache-Control: public, max-age=3600\n"
     )

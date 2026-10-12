@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block contenido %}
+{# URL que se pueden cortar después de cada "/" en pantallas angostas. #}
+{% macro cortable(texto) %}{% for parte in texto.split('/') %}{{ parte }}{% if not loop.last %}/<wbr>{% endif %}{% endfor %}{% endmacro %}
+<link rel="stylesheet" href="{{ estatico('css/api-widget.css') }}">
+<h1>{{ pagina.h1 }}</h1>
+<p class="bajada">La UF, el dólar observado, el euro, la UTM, el IPC y los feriados de Chile en archivos JSON abiertos y gratuitos. Sin registro ni clave, con CORS habilitado y actualizados dos veces al día.</p>
+
+<section>
+  <h2>Endpoints</h2>
+  <div class="tabla-desplazable">
+  <table class="tabla">
+    <thead><tr><th>URL</th><th>Contenido</th></tr></thead>
+    <tbody>
+    {% for destino, descripcion in endpoints %}
+      <tr><td><a href="{{ ruta(destino) }}"><code>{{ cortable(destino) }}</code></a></td><td>{{ descripcion }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="nota">URL base: <code>{{ cortable(url_api) }}</code>. Todas las respuestas son JSON en UTF-8, con fechas ISO 8601 (<code>AAAA-MM-DD</code>; los valores mensuales usan <code>AAAA-MM</code>) y montos en pesos chilenos como números, sin formato.</p>
+</section>
+
+<section class="texto">
+  <h2>Indicadores del día</h2>
+  <p><code>GET {{ cortable(url_api ~ 'indicadores.json') }}</code></p>
+  <pre><code>{{ ejemplo_indicadores }}</code></pre>
+  <ul>
+    <li><code>uf</code>: UF de hoy y, en <code>manana</code>, la de mañana (o <code>null</code> si aún no se conoce). La UF se conoce por adelantado hasta el día 9 del mes siguiente.</li>
+    <li><code>dolar</code> y <code>euro</code>: último valor publicado por el Banco Central, con su fecha. Se publican solo en días hábiles. <code>euro</code> es <code>null</code> si no hay un dato reciente.</li>
+    <li><code>utm</code>: UTM del mes indicado en <code>mes</code>.</li>
+    <li><code>ipc</code>: último IPC publicado por el INE: <code>variacion_porcentual</code> es la variación mensual en porcentaje (0.4 significa 0,4%).</li>
+    <li><code>actualizado</code>: fecha y hora (de Chile) de nuestra última actualización de los datos.</li>
+  </ul>
+</section>
+
+<section class="texto">
+  <h2>UF diaria</h2>
+  <p><code>GET {{ cortable(url_api ~ 'uf.json') }}</code></p>
+  <pre><code>{{ ejemplo_uf }}</code></pre>
+  <p>Ejemplo recortado: hoy, <code>serie</code> trae los {{ uf_dias }} días desde el {{ uf_desde|fecha_larga }} hasta el {{ uf_hasta|fecha_larga }}, ordenados del más antiguo al más reciente. Los días desde <code>calculada_desde</code> se calculan con la fórmula oficial del Banco Central a partir del IPC ya publicado (es <code>null</code> si todos los valores vienen de la fuente).</p>
+</section>
+
+<section class="texto">
+  <h2>Dólar observado</h2>
+  <p><code>GET {{ cortable(url_api ~ 'dolar.json') }}</code> trae los mismos campos generales y, en <code>serie</code>, los últimos 30 valores, del más antiguo al más reciente. Por ejemplo, los dos más recientes:</p>
+  <pre><code>{{ ejemplo_dolar }}</code></pre>
+</section>
+
+<section class="texto">
+  <h2>Feriados</h2>
+  <p><code>GET {{ cortable(url_api ~ 'feriados/' ~ hoy.year ~ '.json') }}</code> (disponible para {% for anio in anios_feriados %}{{ anio }}{% if not loop.last %}{{ ' y ' if loop.revindex == 2 else ', ' }}{% endif %}{% endfor %}). En <code>feriados</code> vienen los feriados nacionales, incluidos los trasladados y los especiales (como los días de elecciones), y en <code>regionales</code> los que rigen solo en una región o comuna. Cada feriado se ve así:</p>
+  <pre><code>{{ ejemplo_feriado }}</code></pre>
+  <p><code>tipo</code> es <code>Civil</code> o <code>Religioso</code>; <code>irrenunciable</code> indica si los trabajadores del comercio tienen derecho a no trabajar ese día; <code>nota</code> explica traslados y casos especiales. Revisa también el <a href="{{ ruta('/feriados/') }}">calendario de feriados</a>.</p>
+</section>
+
+<section class="texto">
+  <h2>Ejemplos de uso</h2>
+  <h3>JavaScript (navegador o Node.js)</h3>
+  <pre><code>fetch("{{ url_api }}indicadores.json")
+  .then(function (respuesta) { return respuesta.json(); })
+  .then(function (datos) {
+    console.log("UF de hoy:", datos.uf.valor);
+    console.log("Dólar observado del " + datos.dolar.fecha + ":", datos.dolar.valor);
+  });</code></pre>
+  <h3>curl</h3>
+  <pre><code>curl -s {{ url_api }}indicadores.json
+curl -s {{ url_api }}feriados/{{ hoy.year }}.json</code></pre>
+  <h3>Python</h3>
+  <pre><code>import json
+from urllib.request import Request, urlopen
+
+URL = "{{ url_api }}uf.json"
+pedido = Request(URL, headers={"User-Agent": "mi-aplicacion/1.0"})
+with urlopen(pedido, timeout=10) as respuesta:
+    uf = json.load(respuesta)
+
+for punto in uf["serie"][-3:]:
+    print(punto["fecha"], punto["valor"])</code></pre>
+  <p class="nota">Identifica tu aplicación con un <code>User-Agent</code> propio: algunos filtros de seguridad bloquean los clientes que no lo envían.</p>
+</section>
+
+<section class="texto">
+  <h2>Frecuencia de actualización</h2>
+  <p>Los archivos se regeneran dos veces al día, en la mañana y en la tarde (hora de Chile), con los datos del Banco Central de Chile, el SII y el INE. Las respuestas se pueden guardar en caché por 30 minutos (<code>Cache-Control: public, max-age=1800</code>). El dólar observado y el euro cambian solo en días hábiles; la UTM, una vez al mes, y el IPC, cuando el INE lo publica (cerca del día 8 de cada mes).</p>
+</section>
+
+<section class="texto">
+  <h2>Atribución requerida</h2>
+  <p>Puedes usar los datos gratis, también en proyectos comerciales, siempre que muestres junto a ellos un enlace visible a {{ sitio.nombre }}. Por ejemplo:</p>
+  <pre><code>&lt;p&gt;Fuente: &lt;a href="{{ sitio.url }}/"&gt;{{ sitio.nombre }}&lt;/a&gt;&lt;/p&gt;</code></pre>
+  <p>Si tu sitio lo prefiere, el enlace puede llevar <code>rel="nofollow"</code>.</p>
+  <p class="aviso"><strong>Valores referenciales.</strong> Los datos provienen de fuentes oficiales, pero pueden tener errores o atrasos. Antes de usarlos en un pago, contrato o declaración, verifícalos en el Banco Central de Chile, el SII o el INE.</p>
+</section>
+
+{% include "_condiciones_api.html" %}
+
+<section class="texto">
+  <h2>¿Prefieres algo listo para pegar?</h2>
+  <p>Con el <a href="{{ ruta('/widget/') }}">widget gratis de indicadores</a> puedes mostrar la UF, el dólar y la UTM en tu sitio copiando dos líneas de código, sin programar.</p>
+</section>
+
+{{ m.faq(pagina) }}
+{{ m.fuente("Banco Central de Chile, Servicio de Impuestos Internos e Instituto Nacional de Estadísticas") }}
+{% endblock %}
