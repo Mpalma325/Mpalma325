@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ pagina.h1 }}</h1>
+<p class="bajada">Explicaciones paso a paso sobre sueldo, impuestos, vivienda, ahorro e indicadores en Chile. Los ejemplos se calculan con los valores vigentes y cada guía cita sus fuentes oficiales y te lleva a la calculadora que corresponde.</p>
+
+{% if categorias|length > 1 %}
+<nav aria-label="Categorías de guías">
+  <ul class="enlaces">
+    {% for categoria in categorias %}
+    <li><a href="#{{ categoria.clave }}">{{ categoria.nombre }}</a></li>
+    {% endfor %}
+  </ul>
+</nav>
+{% endif %}
+
+{% for categoria in categorias %}
+<section class="guias-categoria" id="{{ categoria.clave }}">
+  <h2>{{ categoria.nombre }}</h2>
+  <div class="tarjetas tarjetas-guias">
+    {% for guia in categoria.guias %}
+    <a class="tarjeta" href="{{ ruta(guia.ruta) }}">
+      <span class="tarjeta-titulo">{{ guia.h1 }}</span>
+      <span>{{ guia.resumen }}</span>
+      <span class="tarjeta-pie">Actualizada el {{ guia.revisada|fecha_larga }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% else %}
+<p>Pronto publicaremos nuestras primeras guías. Mientras tanto, revisa las <a href="{{ ruta('/calculadoras/') }}">calculadoras</a>.</p>
+{% endfor %}
+
+{{ m.anuncio("guias") }}
+
+<section class="texto">
+  <h2>Cómo hacemos las guías</h2>
+  <p>Cada guía se basa en la ley y en las publicaciones de los organismos oficiales (Banco Central, INE, SII, Superintendencia de Pensiones, Dirección del Trabajo), que citamos al final de cada artículo. Las cifras que cambian con el tiempo —UF, UTM, topes imponibles, tasas y tablas de impuesto— se actualizan solas con los mismos parámetros que usan nuestras <a href="{{ ruta('/calculadoras/') }}">calculadoras</a>.</p>
+  <p>Las guías son informativas y no reemplazan una asesoría profesional. Si ves un error, <a href="{{ ruta('/contacto/') }}">escríbenos</a>.</p>
+</section>
+{% endblock %}

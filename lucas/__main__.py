@@ -6,6 +6,7 @@
     python -m lucas servir          # vista previa en http://localhost:8000
     python -m lucas verificar       # revisa datos y parámetros por actualizar
     python -m lucas diagnosticar    # prueba las fuentes de datos
+    python -m lucas guias           # valida las guías de contenido/guias/
 """
 
 from __future__ import annotations
@@ -181,6 +182,40 @@ def comando_diagnosticar(args) -> int:
     return 0
 
 
+def comando_guias(args) -> int:
+    """Valida las guías igual que la construcción del sitio y muestra un resumen por archivo.
+    Falla (código 1) si alguna tiene errores."""
+    from .construir import ErrorConstruccion
+    from .guias import archivos_de_guias, contexto_de_revision, revisar_todas
+    from .paginas import todas_las_paginas
+
+    hoy = dt.date.fromisoformat(args.hoy) if args.hoy else None
+    try:
+        c, entorno = contexto_de_revision(demo=args.demo, hoy=hoy)
+    except ErrorConstruccion as error:
+        print(f"::error::{error}\nPrueba con datos de demostración: python -m lucas guias --demo")
+        return 1
+    archivos = [Path(a) for a in args.archivos] or archivos_de_guias()
+    if not archivos:
+        print("No hay guías que validar.")
+        return 1
+    # Rutas del sitio para avisar de enlaces a calculadoras que no existen.
+    rutas = {p.ruta for p in todas_las_paginas(c)} | {f"/guias/{a.stem}/" for a in archivos_de_guias()}
+    print(f"Datos {'de demostración' if c.datos.demo else 'reales'} al {c.hoy:%d-%m-%Y}.\n")
+    total_errores = 0
+    for r in revisar_todas(archivos, c, entorno, rutas):
+        print(f"[{'ERROR' if r.errores else 'OK'}] {r.archivo.name}: {r.palabras or '?'} palabras")
+        for error in r.errores:
+            print(f"    error: {error}")
+        for aviso in r.avisos:
+            print(f"    aviso: {aviso}")
+        if args.html and r.html:
+            print(r.html)
+        total_errores += len(r.errores)
+    print(f"\n{len(archivos)} guías, {total_errores} errores.")
+    return 1 if total_errores else 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m lucas", description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -207,6 +242,13 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("diagnosticar", help="prueba las fuentes de datos (mindicador, SII, CMF)")
     p.add_argument("--detalle", action="store_true", help="muestra las tablas que encuentra en el SII")
     p.set_defaults(funcion=comando_diagnosticar)
+
+    p = sub.add_parser("guias", help="valida las guías de contenido/guias/ (ver contenido/LEEME.md)")
+    p.add_argument("archivos", nargs="*", help="guías a revisar (por defecto, todas)")
+    p.add_argument("--html", action="store_true", help="muestra además el HTML generado")
+    p.add_argument("--demo", action="store_true", help="usa los datos de demostración aunque haya datos reales")
+    p.add_argument("--hoy", help="fecha AAAA-MM-DD (por defecto, hoy en Chile o la de los datos de demostración)")
+    p.set_defaults(funcion=comando_guias)
 
     args = parser.parse_args(argv)
     return args.funcion(args)

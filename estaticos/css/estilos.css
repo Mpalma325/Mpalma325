@@ -84,9 +84,11 @@ code { background: var(--superficie-2); padding: .1em .35em; border-radius: 6px;
 .cinta a { color: #fff; text-decoration: none; white-space: nowrap; opacity: .92; }
 .cinta a:hover { opacity: 1; text-decoration: underline; }
 
-@media (max-width: 720px) {
+/* En pantallas angostas el menú baja bajo el logo y sus enlaces pasan a dos líneas (todos visibles). */
+@media (max-width: 820px) {
   .cabecera-fila { flex-wrap: wrap; gap: 0; padding-top: .5rem; }
   .menu { margin-left: -.7rem; width: calc(100% + 1.4rem); padding-bottom: .25rem; }
+  .menu ul { flex-wrap: wrap; }
 }
 
 .aviso-demo { background: #fde68a; color: #422006; text-align: center; padding: .5rem 1rem; font-size: .95rem; }
@@ -258,4 +260,87 @@ input[type="radio"], input[type="checkbox"] { width: auto; accent-color: var(--p
 @media print {
   .cabecera, .pie, .anuncio, .afiliados, .boton-secundario { display: none; }
   .resultado { position: static; }
+}
+
+/* Guías (plantillas guia.html y guias.html) -------------------------------- */
+
+.guia-cabecera { max-width: 46rem; }
+.guia-categoria { margin: 1.25rem 0 0; font-size: .8rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+.guia-categoria a { text-decoration: none; }
+.guia-cabecera h1 { margin-top: .15em; }
+.guia-fecha { margin: 0 0 1.5rem; color: var(--texto-suave); font-size: .92rem; }
+
+/* Cuerpo con ancho de lectura cómodo (unos 70 caracteres por línea). */
+.guia-cuerpo { max-width: 46rem; font-size: 1.075rem; line-height: 1.75; overflow-wrap: break-word; }
+.guia-cuerpo > :first-child { margin-top: 0; }
+.guia-cuerpo h2 { font-size: 1.45rem; margin: 2.4rem 0 .7rem; }
+.guia-cuerpo h3 { font-size: 1.17rem; margin: 1.8rem 0 .5rem; }
+.guia-cuerpo h2, .guia-cuerpo h3 { scroll-margin-top: 1rem; }
+.guia-cuerpo p, .guia-cuerpo ul, .guia-cuerpo ol, .guia-cuerpo blockquote, .guia-cuerpo pre { margin: 0 0 1.15rem; }
+.guia-cuerpo ul, .guia-cuerpo ol { padding-left: 1.35rem; }
+.guia-cuerpo li { margin: .35rem 0; }
+.guia-cuerpo li > p { margin: 0 0 .5rem; }
+.guia-cuerpo li::marker { color: var(--primario); }
+.guia-cuerpo a { font-weight: 600; }
+.guia-cuerpo hr { border: 0; border-top: 1px solid var(--borde); margin: 2.25rem 0; }
+.guia-cuerpo img { max-width: 100%; height: auto; border-radius: var(--radio); }
+.guia-cuerpo pre { overflow-x: auto; background: var(--superficie-2); padding: .85rem 1rem; border-radius: var(--radio); font-size: .92rem; line-height: 1.5; }
+.guia-cuerpo pre code { background: none; padding: 0; }
+
+/* Tablas de Markdown: si no caben (móvil) se desplazan dentro de su propia caja. */
+.guia-cuerpo table { display: block; width: max-content; max-width: 100%; overflow-x: auto; border-collapse: collapse; margin: 1.25rem 0 1.5rem; background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); font-size: .95rem; line-height: 1.45; }
+.guia-cuerpo th, .guia-cuerpo td { padding: .55rem .8rem; text-align: left; vertical-align: top; border-bottom: 1px solid var(--borde); }
+.guia-cuerpo thead th { background: var(--superficie-2); color: var(--texto-suave); font-size: .86rem; font-weight: 700; }
+.guia-cuerpo tbody tr:last-child td { border-bottom: 0; }
+.guia-cuerpo tbody tr:nth-child(even) { background: color-mix(in srgb, var(--superficie-2) 40%, transparent); }
+.guia-cuerpo td[style*="right"] { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* Recuadros: las citas de Markdown (">") se usan para notas y advertencias. */
+.guia-cuerpo blockquote { padding: .85rem 1.1rem; background: var(--primario-suave); border-left: 4px solid var(--primario); border-radius: 0 var(--radio) var(--radio) 0; }
+.guia-cuerpo blockquote > :last-child { margin-bottom: 0; }
+
+/* Índice (plegado en el celular, abierto al costado en pantallas anchas) y recuadro "Calcúlalo". */
+.guia-indice, .guia-indice-movil, .calculalo { max-width: 46rem; background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); padding: .9rem 1.1rem; font-size: .95rem; line-height: 1.5; }
+.guia-indice { display: none; }
+.guia-indice-movil { margin: 0 0 1.5rem; padding-top: .7rem; padding-bottom: .7rem; }
+.guia-indice-movil summary { cursor: pointer; font-weight: 700; }
+.guia-indice-movil[open] summary { margin-bottom: .5rem; }
+.guia-recuadro-titulo { margin: 0 0 .5rem; color: var(--texto-suave); font-size: .8rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+.guia-indice ol, .guia-indice-movil ol { margin: 0; padding-left: 1.25rem; }
+.guia-indice ol ol, .guia-indice-movil ol ol { padding-left: .9rem; list-style: none; font-size: .93em; }
+.guia-indice li, .guia-indice-movil li { margin: .25rem 0; }
+.guia-indice li::marker, .guia-indice-movil li::marker { color: var(--texto-suave); }
+.guia-indice a, .guia-indice-movil a { color: var(--texto); text-decoration: none; }
+.guia-indice a:hover, .guia-indice-movil a:hover { color: var(--primario); text-decoration: underline; }
+.calculalo { margin: 2rem 0 0; border-color: var(--primario); background: var(--primario-suave); }
+.calculalo-bajada { margin: 0 0 .6rem; color: var(--texto-suave); }
+.calculalo ul { display: grid; gap: .5rem; list-style: none; margin: 0; padding: 0; }
+.calculalo a { display: flex; justify-content: space-between; gap: .75rem; padding: .6rem .85rem; border: 1px solid var(--borde); border-radius: 10px; background: var(--superficie); color: var(--primario); font-weight: 700; text-decoration: none; }
+.calculalo a::after { content: "→"; }
+.calculalo a:hover { border-color: var(--primario); color: var(--primario-fuerte); }
+
+/* Escritorio: cuerpo a la izquierda; índice y "Calcúlalo" (que acompaña al bajar) a la derecha. */
+@media (min-width: 64rem) {
+  .guia-disposicion { display: grid; grid-template-columns: minmax(0, 46rem) minmax(13rem, 1fr); grid-template-rows: auto 1fr; column-gap: 3rem; align-items: start; }
+  .guia-cuerpo { grid-column: 1; grid-row: 1 / span 2; }
+  .guia-indice { display: block; grid-column: 2; grid-row: 1; margin: 0; font-size: .9rem; }
+  .guia-indice-movil { display: none; }
+  .calculalo { grid-column: 2; grid-row: 2; margin: 1rem 0 0; position: sticky; top: 1rem; }
+}
+
+/* Celular: tablas más compactas para que quepan sin desplazarse. */
+@media (max-width: 40rem) {
+  .guia-cuerpo table { font-size: .86rem; }
+  .guia-cuerpo th, .guia-cuerpo td { padding: .45rem .45rem; }
+}
+
+.guia-fuentes, .guia-relacionadas, .guia .faq { max-width: 46rem; }
+.guia-fuentes ul { padding-left: 1.2rem; }
+.guia-fuentes li { margin: .3rem 0; }
+.tarjetas-guias { grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); }
+.tarjetas-guias .tarjeta-titulo { color: var(--primario); font-size: 1.05rem; }
+.guias-categoria { scroll-margin-top: 1rem; }
+
+@media print {
+  .guia-indice, .guia-indice-movil, .calculalo { display: none; }
 }

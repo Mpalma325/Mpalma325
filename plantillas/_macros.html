@@ -97,3 +97,18 @@
 {% macro fuente(texto) %}
 <p class="fuente">Fuente: {{ texto }}. Actualizado el {{ actualizado|fecha_larga }}.</p>
 {% endmacro %}
+
+{% macro guias_destacadas(guias, titulo="Guías para entender tus números") %}
+{# Bloque de guías (lucas/guias.py: guias_destacadas). Sin guías no muestra nada. #}
+{% if guias %}
+<section class="guias-destacadas" aria-labelledby="guias-destacadas-titulo">
+  <h2 id="guias-destacadas-titulo">{{ titulo }}</h2>
+  <div class="tarjetas tarjetas-guias">
+    {% for guia in guias %}
+    <a class="tarjeta" href="{{ ruta(guia.ruta) }}"><span class="tarjeta-titulo">{{ guia.h1 }}</span><span>{{ guia.resumen }}</span></a>
+    {% endfor %}
+  </div>
+  <p><a href="{{ ruta('/guias/') }}">Ver todas las guías →</a></p>
+</section>
+{% endif %}
+{% endmacro %}

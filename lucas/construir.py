@@ -67,6 +67,7 @@ class Contexto:
     ipc: tuple[dt.date, float]
     feriados_extra: list[dict]
     advertencias: list[str] = field(default_factory=list)
+    guias: list = field(default_factory=list)  # guías ya renderizadas (lucas/guias.py)
 
 
 def crear_contexto(cfg: dict, params: Parametros, datos: Datos, hoy: dt.date,
@@ -174,8 +175,9 @@ def crear_entorno(cfg: dict, c: Contexto, hashes: dict[str, str]) -> Environment
 def construir(salida: Path | None = None, demo: bool = False, hoy: dt.date | None = None,
               cfg: dict | None = None, directorio_datos: Path | None = None) -> dict:
     """Genera el sitio completo. Devuelve un resumen con la cantidad de páginas y advertencias."""
-    from .paginas import todas_las_paginas  # import diferido: paginas importa este módulo
-    from .api import escribir_api
+    from .api import escribir_api  # imports diferidos: guias y paginas importan este módulo
+    from .guias import cargar_guias
+    from .paginas import todas_las_paginas
 
     salida = Path(salida or RAIZ / "dist")
     cfg = cfg or cargar_config()
@@ -196,6 +198,7 @@ def construir(salida: Path | None = None, demo: bool = False, hoy: dt.date | Non
     hashes = {str(r.relative_to(estaticos)).replace("\\", "/"): _hash_archivo(r)
               for r in estaticos.rglob("*") if r.is_file()}
     entorno = crear_entorno(cfg, c, hashes)
+    c.guias = cargar_guias(c, entorno)  # se detiene aquí si alguna guía tiene errores
 
     paginas = todas_las_paginas(c)
     rutas = [p.ruta for p in paginas]

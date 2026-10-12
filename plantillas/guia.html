@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block contenido %}
+{% macro lista_indice(indice) %}
+<ol>
+  {% for seccion in indice %}
+  <li><a href="#{{ seccion.id }}">{{ seccion.nombre }}</a>
+    {% if seccion.hijos %}
+    <ol>
+      {% for sub in seccion.hijos %}
+      <li><a href="#{{ sub.id }}">{{ sub.nombre }}</a></li>
+      {% endfor %}
+    </ol>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ol>
+{% endmacro %}
+<article class="guia">
+  <header class="guia-cabecera">
+    <p class="guia-categoria"><a href="{{ ruta('/guias/') }}#{{ guia.categoria }}">{{ guia.nombre_categoria }}</a></p>
+    <h1>{{ pagina.h1 }}</h1>
+    <p class="guia-fecha">Actualizado el <time datetime="{{ guia.revisada.isoformat() }}">{{ guia.revisada|fecha_larga }}</time> · {{ guia.minutos_lectura }} min de lectura</p>
+  </header>
+
+  <div class="guia-disposicion">
+    {% if guia.indice %}
+    {# En el celular el índice va plegado antes del texto; en pantallas anchas, abierto al costado. #}
+    <details class="guia-indice-movil">
+      <summary>En esta guía</summary>
+      {{ lista_indice(guia.indice) }}
+    </details>
+    <nav class="guia-indice" aria-labelledby="guia-indice-titulo">
+      <p class="guia-recuadro-titulo" id="guia-indice-titulo">En esta guía</p>
+      {{ lista_indice(guia.indice) }}
+    </nav>
+    {% endif %}
+
+    <div class="guia-cuerpo">
+{{ guia.html }}
+    </div>
+
+    <aside class="calculalo" aria-labelledby="guia-calculalo-titulo">
+      <p class="guia-recuadro-titulo" id="guia-calculalo-titulo">Calcúlalo</p>
+      <p class="calculalo-bajada">Haz el cálculo con tus propios datos:</p>
+      <ul>
+        {% for nombre, destino in calculadoras %}
+        <li><a href="{{ ruta(destino) }}">{{ nombre }}</a></li>
+        {% endfor %}
+      </ul>
+    </aside>
+  </div>
+
+  {{ m.anuncio("guia") }}
+
+  <section class="guia-fuentes" aria-labelledby="guia-fuentes-titulo">
+    <h2 id="guia-fuentes-titulo">Fuentes</h2>
+    <ul>
+      {% for fuente in guia.fuentes %}
+      <li><a href="{{ fuente.url }}" rel="noopener" target="_blank">{{ fuente.nombre }}</a></li>
+      {% endfor %}
+    </ul>
+    <p class="nota">Esta guía es informativa y no reemplaza la asesoría legal, tributaria ni financiera. Ante un caso particular, consulta la fuente oficial que corresponda. Publicada el {{ guia.publicada|fecha_larga }}.</p>
+  </section>
+
+  {{ m.faq(pagina) }}
+  {{ m.afiliados(guia.categoria) }}
+
+  <section class="guia-relacionadas" aria-labelledby="guia-relacionadas-titulo">
+    <h2 id="guia-relacionadas-titulo">{% if misma_categoria %}Más guías de {{ guia.nombre_categoria|lower }}{% else %}Otras guías{% endif %}</h2>
+    {% if relacionadas %}
+    <div class="tarjetas tarjetas-guias">
+      {% for otra in relacionadas %}
+      <a class="tarjeta" href="{{ ruta(otra.ruta) }}"><span class="tarjeta-titulo">{{ otra.h1 }}</span><span>{{ otra.resumen }}</span></a>
+      {% endfor %}
+    </div>
+    {% endif %}
+    <p><a href="{{ ruta('/guias/') }}">Ver todas las guías →</a></p>
+  </section>
+</article>
+{% endblock %}

@@ -10,6 +10,16 @@ def url_absoluta(cfg: dict, ruta: str) -> str:
     return cfg["sitio"]["url"] + ruta
 
 
+def _organizacion(cfg: dict) -> dict:
+    sitio = cfg["sitio"]
+    return {
+        "@type": "Organization",
+        "name": sitio["nombre"],
+        "url": sitio["url"] + "/",
+        "logo": sitio["url"] + "/estaticos/img/logo-512.png",
+    }
+
+
 def jsonld_sitio(cfg: dict) -> list[dict]:
     sitio = cfg["sitio"]
     return [
@@ -21,13 +31,7 @@ def jsonld_sitio(cfg: dict) -> list[dict]:
             "inLanguage": sitio["idioma"],
             "description": sitio["eslogan"],
         },
-        {
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            "name": sitio["nombre"],
-            "url": sitio["url"] + "/",
-            "logo": sitio["url"] + "/estaticos/img/logo-512.png",
-        },
+        {"@context": "https://schema.org", **_organizacion(cfg)},
     ]
 
 
@@ -70,6 +74,28 @@ def jsonld_aplicacion(cfg: dict, nombre: str, descripcion: str, ruta: str) -> di
         "isAccessibleForFree": True,
         "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CLP"},
     }
+
+
+def jsonld_articulo(cfg: dict, titulo: str, descripcion: str, ruta: str, publicada: dt.date,
+                    modificada: dt.date, palabras_clave: list[str] | None = None) -> dict:
+    """Article para las guías. El autor y el editor son el propio sitio (Organization)."""
+    organizacion = _organizacion(cfg)
+    articulo = {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": titulo,
+        "description": descripcion,
+        "image": cfg["sitio"]["url"] + "/estaticos/img/og.png",
+        "datePublished": publicada.isoformat(),
+        "dateModified": modificada.isoformat(),
+        "inLanguage": cfg["sitio"]["idioma"],
+        "author": organizacion,
+        "publisher": organizacion,
+        "mainEntityOfPage": {"@type": "WebPage", "@id": url_absoluta(cfg, ruta)},
+    }
+    if palabras_clave:
+        articulo["keywords"] = ", ".join(palabras_clave)
+    return articulo
 
 
 def sitemap_xml(cfg: dict, paginas: list, hoy: dt.date) -> str:

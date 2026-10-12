@@ -19,6 +19,7 @@ from .feriados import (feriados_nacionales, feriados_regionales, fines_de_semana
 from .formato import (capitalizar, dia_mes, fecha_con_dia, fecha_larga, mes_anio, mes_de_anio,
                       monto_corto, nombre_mes, numero, pesos, porcentaje, redondear)
 from .graficos import grafico_barras, grafico_linea
+from .guias import guias_destacadas, paginas_guias
 from .paginas_calculadoras_extra import paginas_calculadoras_extra
 
 # Montos con página propia ("1000 UF en pesos", "100 dólares en pesos", etc.).
@@ -139,6 +140,7 @@ def paginas_inicio(c: Contexto) -> list[Pagina]:
             "proximos_feriados": proximos_feriados(hoy, 3, c.feriados_extra),
             "otros": otros,
             "uf_manana": c.datos.uf_dia(hoy + dt.timedelta(days=1)),
+            "guias_destacadas": guias_destacadas(c.guias),
         },
         datos_js={"uf": ventana(c.datos.uf_completa(), hoy - dt.timedelta(days=3))},
         jsonld=seo.jsonld_sitio(c.cfg),
@@ -831,7 +833,7 @@ def paginas_calculadoras(c: Contexto) -> list[Pagina]:
         migas=[INICIO, ("Calculadoras", "/calculadoras/")],
         prioridad=0.9,
         frecuencia="weekly",
-        contexto={"calculadoras": calculadoras},
+        contexto={"calculadoras": calculadoras, "guias_destacadas": guias_destacadas(c.guias)},
     )]
 
     tasa_h = p["retencion_honorarios"]
@@ -1206,8 +1208,10 @@ def paginas_institucionales(c: Contexto) -> list[Pagina]:
 
 
 def todas_las_paginas(c: Contexto) -> list[Pagina]:
-    return (paginas_inicio(c) + paginas_uf(c) + paginas_uf_proyeccion(c) + paginas_divisas(c)
+    base = (paginas_inicio(c) + paginas_uf(c) + paginas_uf_proyeccion(c) + paginas_divisas(c)
             + paginas_utm_impuesto_ipc(c)
             + paginas_sueldo(c) + paginas_calculadoras(c) + paginas_calculadoras_extra(c)
             + paginas_feriados(c) + paginas_api_widget(c)
             + paginas_institucionales(c))
+    # Las guías van al final: su recuadro "Calcúlalo" usa el nombre de las páginas anteriores.
+    return base + paginas_guias(c, base)
