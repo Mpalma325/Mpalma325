@@ -142,6 +142,6 @@ Si además trabajas con contrato, tu sueldo cotiza primero y por los honorarios 
 
 Si prestas un servicio pero no tienes inicio de actividades y no puedes emitir boletas de honorarios, la empresa que te paga puede emitir por ti una **boleta de prestación de servicios de terceros electrónica**. La emiten las empresas y otros contribuyentes de primera categoría obligados a llevar contabilidad, las personas jurídicas en general, las instituciones fiscales y las municipalidades, entre otros.
 
-Quien emite esta boleta retiene el mismo porcentaje que en una boleta de honorarios ({{ tasa|porcentaje(2) }} en {{ hoy.year }}) y lo paga al fisco. Para ti son rentas de honorarios: se declaran en la Operación Renta junto con tus boletas, y lo retenido se descuenta de lo que debas pagar; si sobra, se te devuelve.
+Quien emite esta boleta retiene impuesto, como en una boleta de honorarios, y lo paga al fisco; el porcentaje y el monto retenidos quedan indicados en la misma boleta. Para ti son rentas de honorarios: se declaran en la Operación Renta junto con tus boletas, y lo retenido se descuenta de lo que debas pagar; si sobra, se te devuelve.
 
 Esta guía es informativa y no reemplaza la asesoría del SII. Antes de declarar, revisa en sii.cl el detalle de tus retenciones y del cálculo de tus cotizaciones.

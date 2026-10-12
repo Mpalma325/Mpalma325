@@ -19,6 +19,12 @@ fuentes:
     url: "https://www.sii.cl/servicios_online/renta/guia_practica_renta_2026.pdf"
   - nombre: "SII Educa: ¿Cuáles son los impuestos directos en Chile?"
     url: "https://www.sii.cl/siieduca/aprende-con-nosotros/cuales-son-los-impuestos-directos.html"
+  - nombre: "SII: ¿Cómo se calcula el Impuesto Único de Segunda Categoría? (preguntas frecuentes)"
+    url: "https://www.sii.cl/preguntas_frecuentes/declaracion_renta/001_140_3545.htm"
+  - nombre: "SII: ¿Cómo debe realizar la reliquidación del Impuesto Único? (preguntas frecuentes)"
+    url: "https://www.sii.cl/preguntas_frecuentes/declaracion_renta/001_140_2712.htm"
+  - nombre: "SII: ¿Qué es la propuesta de declaración de renta? (preguntas frecuentes)"
+    url: "https://www.sii.cl/preguntas_frecuentes/declaracion_renta/001_140_2772.htm"
 faq:
   - pregunta: "¿Desde qué sueldo se paga impuesto único en {{ hoy.year }}?"
     respuesta: "{% set a = calc.afp_mas_barata(p) %}Se paga cuando la base tributable (sueldo imponible menos AFP, salud y seguro de cesantía) supera {{ p.tramos_impuesto[0].hasta|numero(1) }} UTM: en {{ hoy|mes_de_anio }}, {{ (p.tramos_impuesto[0].hasta * utm_hoy)|pesos }}. Como antes se descuentan las cotizaciones, el sueldo bruto exento es mayor: unos {{ (p.tramos_impuesto[0].hasta * utm_hoy / (1 - p.tasa_afp - p.comisiones_afp[a] - p.salud_obligatoria - p.cesantia_trabajador['indefinido']))|monto_corto }} de pesos con Fonasa, contrato indefinido y AFP {{ p.nombres_afp[a] }}."
@@ -27,7 +33,7 @@ faq:
   - pregunta: "¿Qué pasa si tengo dos empleadores al mismo tiempo?"
     respuesta: "Cada empleador retiene el impuesto como si su sueldo fuera tu único ingreso. Por eso en la Operación Renta de abril debes reliquidar: se suman tus sueldos del año, se calcula el impuesto anual y se descuenta lo ya retenido. Como la suma puede caer en un tramo más alto, lo habitual es que quede una diferencia por pagar."
   - pregunta: "¿El APV rebaja el impuesto único?"
-    respuesta: "Sí, si eliges el régimen B. Lo que ahorras, hasta {{ p.tope_apv_mensual_uf|numero }} UF al mes, se descuenta de la base tributable antes de aplicar la tabla, así que pagas menos impuesto. En el régimen A no hay rebaja de impuesto: el Estado bonifica una parte de lo que ahorras."
+    respuesta: "Sí, si eliges el régimen B. Lo que ahorras, hasta {{ p.tope_apv_mensual_uf|numero }} UF al mes, se descuenta de la base tributable antes de aplicar la tabla, así que pagas menos impuesto. En el régimen A no hay rebaja de impuesto: el Estado bonifica el 15% de lo que ahorras en el año, con un tope de 6 UTM."
 ---
 {# cifra(): sin decimales si el número es entero (30 UTM) y con uno si no lo es (13,5 UTM) #}
 {% macro cifra(x) %}{{ x|numero(0 if x == x|round else 1) }}{% endmacro %}
@@ -105,9 +111,9 @@ Sobre {{ (p.tope_imponible_uf * p.uf)|pesos }} ({{ cifra(p.tope_imponible_uf) }}
 Con un solo empleador, el impuesto único es definitivo. Hay dos casos frecuentes en que debes revisar tu impuesto en la Operación Renta de abril del año siguiente:
 
 - **Dos o más empleadores al mismo tiempo.** Cada uno retiene como si su sueldo fuera tu único ingreso, pero la suma de ambos sueldos puede caer en un tramo más alto. Por eso debes reliquidar: se suman las remuneraciones del año, se calcula el impuesto anual sobre el total y se descuenta lo que ya te retuvieron. Lo habitual es que quede una diferencia por pagar.
-- **Sueldo y boletas de honorarios.** Los honorarios se declaran en el Impuesto Global Complementario, que suma todas tus rentas del año, incluido tu sueldo. Al impuesto que resulta se le descuentan el impuesto único que retuvo tu empleador y las retenciones de tus boletas; si te retuvieron de más, recibes una devolución.
+- **Sueldo y boletas de honorarios.** Los honorarios se declaran en el Impuesto Global Complementario, que suma todas tus rentas del año, incluido tu sueldo. Al impuesto que resulta se le descuentan el impuesto único que retuvo tu empleador y lo que queda de las retenciones de tus boletas después de pagar tus cotizaciones, si estás obligado a cotizar; si te retuvieron de más, recibes una devolución.
 
-En ambos casos el SII prepara una propuesta de declaración con la información que le entregan tus empleadores y quienes recibieron tus boletas. Revísala antes de aceptarla.
+En ambos casos el SII prepara una propuesta de declaración con la información de las declaraciones juradas de tus empleadores y de quienes te retuvieron impuesto. Revísala antes de aceptarla: tú eres responsable de confirmarla o modificarla, y si un dato está mal, debes pedir a quien lo informó que rectifique su declaración jurada.
 
 ## El APV régimen B rebaja la base tributable
 
@@ -115,8 +121,8 @@ El ahorro previsional voluntario (APV) en el **régimen B** se descuenta de la b
 
 {% set sin_apv = calc.sueldo_liquido(3000000, p, afp=afp) %}
 {% set con_apv = calc.sueldo_liquido(3000000, p, afp=afp, apv=100000) %}
-Por ejemplo, con un sueldo de $3.000.000, un APV de $100.000 al mes baja la base tributable de {{ sin_apv.base_tributable|pesos }} a {{ con_apv.base_tributable|pesos }} y el impuesto de {{ sin_apv.impuesto|pesos }} a {{ con_apv.impuesto|pesos }}: pagas {{ (sin_apv.impuesto - con_apv.impuesto)|pesos }} menos de impuesto cada mes. El ahorro de impuesto es igual al APV multiplicado por tu tasa marginal, así que crece mientras más alto es tu tramo.
+Por ejemplo, con un sueldo de $3.000.000, un APV de $100.000 al mes baja la base tributable de {{ sin_apv.base_tributable|pesos }} a {{ con_apv.base_tributable|pesos }} y el impuesto de {{ sin_apv.impuesto|pesos }} a {{ con_apv.impuesto|pesos }}: pagas {{ (sin_apv.impuesto - con_apv.impuesto)|pesos }} menos de impuesto cada mes. Mientras tu base no cambie de tramo, el ahorro de impuesto es igual al APV multiplicado por tu tasa marginal, así que crece mientras más alto es tu tramo.
 
-En el **régimen A**, en cambio, no rebajas impuesto: el Estado bonifica una parte de lo que ahorras. Por eso el régimen B suele convenir más a quien está en un tramo alto, y el A a quien paga poco o nada de impuesto único.
+En el **régimen A**, en cambio, no rebajas impuesto: si el ahorro se destina a tu pensión, el Estado te da una bonificación de 15% de lo que ahorras en el año, con un tope de 6 UTM. Por eso el régimen B suele convenir más a quien está en un tramo alto, y el A a quien paga poco o nada de impuesto único.
 
 Esta guía es informativa y no reemplaza la asesoría del SII. Para casos particulares, revisa la información de tu declaración en sii.cl o consulta a un contador.
