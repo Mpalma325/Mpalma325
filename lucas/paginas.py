@@ -1088,6 +1088,11 @@ def paginas_sueldo(c: Contexto) -> list[Pagina]:
 # ---------------------------------------------------------------------------
 
 def paginas_calculadoras(c: Contexto) -> list[Pagina]:
+    # Imports diferidos para no tocar los del módulo (archivo compartido).
+    from .feriados import dias_habiles_entre
+    from .graficos import grafico_ahorro
+    from .paginas_calculadoras_extra import leido_del_formulario, texto_tiempo
+
     p = c.p
     hoy = c.hoy
     calculadoras = [
@@ -1174,6 +1179,10 @@ def paginas_calculadoras(c: Contexto) -> list[Pagina]:
         if len(lista) == meses:
             periodos.append({"meses": meses, "desde": lista[0], "hasta": lista[-1],
                              "variacion": calculos.variacion_acumulada([c.datos.ipc[m] for m in lista])})
+    # Resultado del formulario por defecto (el mismo que calcula app.js): $500.000 reajustados
+    # con los últimos 6 meses de IPC publicado. Va en el HTML para buscadores y sin JavaScript.
+    periodo_defecto = meses_ipc[-6:]
+    inicial_arriendo = calculos.reajustar_por_ipc(500_000, [c.datos.ipc[m] for m in periodo_defecto])
     descripcion = ("Calcula el reajuste de tu arriendo según la variación del IPC: elige el monto "
                    "y el período, y obtén el nuevo valor con el IPC publicado por el INE.")
     paginas.append(Pagina(
@@ -1203,7 +1212,9 @@ def paginas_calculadoras(c: Contexto) -> list[Pagina]:
              "Es referencial: compone las variaciones mensuales publicadas con un decimal. Para "
              "un cálculo oficial con el índice exacto, usa la calculadora del IPC del INE."),
         ],
-        contexto={"periodos": periodos, "meses": list(reversed(meses_ipc)), "ultimo": ultimo},
+        contexto={"periodos": periodos, "meses": list(reversed(meses_ipc)), "ultimo": ultimo,
+                  "desde_defecto": periodo_defecto[0], "periodo_defecto": periodo_defecto,
+                  "inicial": inicial_arriendo},
     ))
 
     anios_feriados = [hoy.year - 3, hoy.year - 2, hoy.year - 1, hoy.year, hoy.year + 1]
@@ -1260,8 +1271,12 @@ def paginas_calculadoras(c: Contexto) -> list[Pagina]:
         contexto={"ejemplo": ejemplo_finiquito, "inicio_ejemplo": inicio_ejemplo,
                   "feriado_anual": p["feriado_anual_habiles"],
                   "tope_indemnizacion": tope_indemnizacion,
-                  "parametros_tope_uf": numero(p["tope_indemnizacion_uf"])},
+                  "parametros_tope_uf": numero(p["tope_indemnizacion_uf"]),
+                  "tiempo_texto": texto_tiempo(ejemplo_finiquito["tiempo"]["anios"],
+                                               ejemplo_finiquito["tiempo"]["meses"],
+                                               ejemplo_finiquito["tiempo"]["dias"])},
     ))
+    proporcional_vacaciones = calculos.feriado_proporcional(calculos.sumar_meses(hoy, -8), hoy, p)
     descripcion = ("Calcula tus vacaciones proporcionales: días hábiles de feriado ganados, su "
                    "conversión a días corridos con los feriados reales de Chile y el monto a pagar.")
     paginas.append(Pagina(
@@ -1297,7 +1312,9 @@ def paginas_calculadoras(c: Contexto) -> list[Pagina]:
              f"{numero(20 / 12, 2)} días. Escribe 20 en el campo de días de feriado al año."),
         ],
         contexto={"ejemplo": ejemplo_vacaciones, "feriado_anual": p["feriado_anual_habiles"],
-                  "ejemplo_inicio": calculos.sumar_meses(hoy, -8).isoformat()},
+                  "ejemplo_inicio": calculos.sumar_meses(hoy, -8).isoformat(),
+                  "periodo_texto": texto_tiempo(0, proporcional_vacaciones["meses"],
+                                                proporcional_vacaciones["dias"])},
     ))
 
     tasa = p["tasa_hipotecaria_referencia"]
@@ -1306,6 +1323,10 @@ def paginas_calculadoras(c: Contexto) -> list[Pagina]:
         for anios in (20, 25, 30):
             r = calculos.simular_hipotecario(valor, 0.2, tasa, anios, p)
             ejemplos_hipotecario.append({"valor": valor, "anios": anios, **r})
+    # Resultado del formulario por defecto (3.000 UF, pie 20%, 25 años, sin seguros), con la
+    # tasa tal como la lee app.js del campo ("4,20" -> 4.2%): así coincide con el navegador.
+    tasa_formulario = leido_del_formulario(tasa * 100, 2) / 100
+    inicial_hipotecario = calculos.simular_hipotecario(3000, 0.2, tasa_formulario, 25, p)
     descripcion = ("Simula tu crédito hipotecario: dividendo mensual en UF y en pesos, renta "
                    "mínima exigida, intereses totales y saldo año a año.")
     paginas.append(Pagina(
@@ -1336,7 +1357,9 @@ def paginas_calculadoras(c: Contexto) -> list[Pagina]:
              "pedirlo) y, en algunos casos, comisiones. Pide siempre la cotización formal con la "
              "CAE (carga anual equivalente)."),
         ],
-        contexto={"tasa": tasa, "ejemplos": ejemplos_hipotecario},
+        contexto={"tasa": tasa, "ejemplos": ejemplos_hipotecario, "inicial": inicial_hipotecario,
+                  "saldos": calculos.saldos_anuales(inicial_hipotecario["credito_uf"], tasa_formulario, 25),
+                  "uf": p["uf"], "carga": p["carga_financiera_maxima"]},
     ))
 
     descripcion = ("Calcula cuánto crece tu ahorro con interés compuesto: monto inicial, aportes "
@@ -1345,6 +1368,8 @@ def paginas_calculadoras(c: Contexto) -> list[Pagina]:
     for tasa_anual in (0.03, 0.05, 0.07):
         r = calculos.proyectar_ahorro(0, 100000, tasa_anual, 20)
         escenarios.append({"tasa": tasa_anual, **r})
+    # Formulario por defecto: $1.000.000 iniciales, $100.000 al mes, 5% anual, 10 años.
+    inicial_ahorro = calculos.proyectar_ahorro(1_000_000, 100_000, 0.05, 10)
     paginas.append(Pagina(
         ruta="/calculadoras/interes-compuesto/",
         plantilla="calc_ahorro.html",
@@ -1370,12 +1395,33 @@ def paginas_calculadoras(c: Contexto) -> list[Pagina]:
              "No: muestra montos nominales. Si quieres pensar en pesos de hoy, usa una "
              "rentabilidad real (descontando la inflación esperada) o invierte en UF."),
         ],
-        contexto={"escenarios": escenarios},
+        contexto={"escenarios": escenarios, "inicial": inicial_ahorro,
+                  "grafico": grafico_ahorro(inicial_ahorro["serie"])},
     ))
 
     anios = [hoy.year - 1, hoy.year, hoy.year + 1]
     feriados_js = [{"fecha": f.fecha.isoformat(), "nombre": f.nombre} for anio in anios
                    for f in feriados_nacionales(anio, c.feriados_extra)]
+    # Resultado del formulario por defecto (el mismo que calcula app.js): días hábiles de lunes a
+    # viernes entre hoy y el día 28 del mes, incluido el día de inicio, y los feriados excluidos.
+    inicio_dias, fin_dias = sorted([hoy, hoy.replace(day=28)])
+    nombres_feriados = {f["fecha"]: f["nombre"] for f in feriados_js}
+    inicial_dias = {
+        "dias": dias_habiles_entre(inicio_dias, fin_dias, c.feriados_extra),
+        "inicio": inicio_dias,
+        "fin": fin_dias,
+        "feriados": [(dt.date.fromisoformat(fecha), nombre) for fecha, nombre in sorted(nombres_feriados.items())
+                     if inicio_dias.isoformat() <= fecha <= fin_dias.isoformat()],
+    }
+    feriados_anio = feriados_nacionales(hoy.year, c.feriados_extra)
+    dias_por_mes = []
+    for numero_mes in range(1, 13):
+        primero = dt.date(hoy.year, numero_mes, 1)
+        dias_por_mes.append({
+            "mes": primero,
+            "dias": dias_habiles_entre(primero, mes_siguiente(primero) - dt.timedelta(days=1), c.feriados_extra),
+            "feriados": [f for f in feriados_anio if f.fecha.month == numero_mes and f.fecha.weekday() < 5],
+        })
     descripcion = ("Cuenta los días hábiles entre dos fechas o suma días hábiles a una fecha, "
                    "considerando fines de semana y feriados legales de Chile.")
     paginas.append(Pagina(
@@ -1402,7 +1448,7 @@ def paginas_calculadoras(c: Contexto) -> list[Pagina]:
              "En esta calculadora puedes elegirlo. En los plazos legales, por regla general el "
              "plazo empieza a correr el día siguiente a la notificación."),
         ],
-        contexto={"anios": anios},
+        contexto={"anios": anios, "inicial": inicial_dias, "por_mes": dias_por_mes},
     ))
     return paginas
 

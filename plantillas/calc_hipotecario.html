@@ -30,30 +30,29 @@
     <input id="hi-seguros" name="seguros" inputmode="decimal" autocomplete="off" value="0">
   </div>
 </form>
-<div class="resultado" id="resultado-hipotecario" aria-live="polite">
+<div class="resultado" id="resultado-hipotecario">
   <p class="resultado-etiqueta">Dividendo mensual</p>
-  <p class="resultado-principal" data-r="dividendo_uf">—</p>
+  <p class="resultado-principal" data-r="dividendo_uf">{{ inicial.dividendo_total_uf|numero(2) }} UF</p>
   <table class="tabla tabla-detalle">
     <tbody>
-      <tr><th scope="row">Dividendo en pesos hoy</th><td class="num" data-r="dividendo_pesos">—</td></tr>
-      <tr><th scope="row">Monto del crédito</th><td class="num" data-r="credito">—</td></tr>
-      <tr><th scope="row">Pie</th><td class="num" data-r="pie">—</td></tr>
-      <tr><th scope="row">Renta líquida mínima sugerida</th><td class="num" data-r="renta">—</td></tr>
-      <tr><th scope="row">Intereses totales</th><td class="num" data-r="intereses">—</td></tr>
-      <tr class="total"><th scope="row">Total pagado (sin seguros)</th><td class="num" data-r="total">—</td></tr>
+      <tr><th scope="row">Dividendo en pesos hoy</th><td class="num" data-r="dividendo_pesos">{{ inicial.dividendo_pesos|pesos }}</td></tr>
+      <tr><th scope="row">Monto del crédito</th><td class="num" data-r="credito">{{ inicial.credito_uf|numero }} UF ({{ (inicial.credito_uf * uf)|pesos }})</td></tr>
+      <tr><th scope="row">Pie</th><td class="num" data-r="pie">{{ inicial.pie_uf|numero }} UF ({{ (inicial.pie_uf * uf)|pesos }})</td></tr>
+      <tr><th scope="row">Renta líquida mínima sugerida</th><td class="num" data-r="renta">{{ inicial.renta_minima|pesos }}</td></tr>
+      <tr><th scope="row">Intereses totales</th><td class="num" data-r="intereses">{{ inicial.intereses_uf|numero }} UF</td></tr>
+      <tr class="total"><th scope="row">Total pagado (sin seguros)</th><td class="num" data-r="total">{{ inicial.total_pagado_uf|numero }} UF</td></tr>
     </tbody>
   </table>
   <details>
     <summary>Saldo de la deuda año a año</summary>
     <div class="tabla-desplazable">
-      <table class="tabla"><thead><tr><th>Año</th><th class="num">Intereses</th><th class="num">Amortización</th><th class="num">Saldo (UF)</th></tr></thead><tbody data-r="saldos"></tbody></table>
+      <table class="tabla"><thead><tr><th>Año</th><th class="num">Intereses</th><th class="num">Amortización</th><th class="num">Saldo (UF)</th></tr></thead><tbody data-r="saldos">{% for fila in saldos %}<tr><td>{{ fila.anio }}</td><td class="num">{{ fila.intereses|numero(1) }}</td><td class="num">{{ fila.amortizacion|numero(1) }}</td><td class="num">{{ fila.saldo|numero(1) }}</td></tr>{% endfor %}</tbody></table>
     </div>
   </details>
-  <button type="button" class="boton-secundario" data-compartir>Copiar enlace a este cálculo</button>
+  {% include "_compartir.html" %}
+  <p class="solo-lectores" role="status" aria-live="polite" data-r-anuncio></p>
 </div>
 </div>
-
-{{ m.anuncio("hipotecario_superior") }}
 
 <section>
   <h2>Dividendos de referencia (pie 20%, tasa {{ tasa|porcentaje(2) }})</h2>
@@ -67,9 +66,18 @@
     </tbody>
   </table>
   </div>
-  <p class="nota">Cálculo con cuota fija (sistema francés) y tasa mensual igual a la tasa anual dividida por 12. No incluye seguros ni gastos operacionales. La tasa de referencia es aproximada; cotiza siempre con al menos tres bancos y compara el CAE.</p>
+  <p class="nota">Sin seguros ni gastos operacionales. La tasa de referencia es aproximada; cotiza siempre con al menos tres bancos y compara el CAE.</p>
+</section>
+
+{{ m.anuncio("hipotecario_superior") }}
+
+<section class="texto">
+  <h2>Cómo se calcula el dividendo</h2>
+  <p>El simulador usa cuota fija (sistema francés): todos los meses pagas el mismo dividendo en UF, con una tasa mensual igual a la tasa anual dividida por 12. Como los intereses se calculan sobre una deuda cada vez menor, mes a mes baja la parte del dividendo que son intereses y sube la que amortiza el crédito: lo ves en el saldo año a año. Los seguros mensuales que ingreses se suman al dividendo.</p>
+  <p>El dividendo en pesos usa la UF de hoy ({{ uf|pesos(2) }}), así que cambia día a día con la UF. La renta líquida mínima sugerida supone que el dividendo no supera el {{ carga|porcentaje(0) }} de tu renta, una exigencia habitual de los bancos; cada banco evalúa además tus otras deudas y tu historial.</p>
 </section>
 
 {{ m.afiliados("hipotecario") }}
+{% include "_guias_relacionadas.html" %}
 {{ m.faq(pagina) }}
 {% endblock %}

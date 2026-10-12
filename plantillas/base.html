@@ -6,7 +6,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ pagina.titulo }}</title>
 <meta name="description" content="{{ pagina.descripcion }}">
+{% if pagina.indexar %}
 <link rel="canonical" href="{{ url_absoluta(pagina.canonica or pagina.ruta) }}">
+{% endif %}
 {% if demo or not pagina.indexar %}
 <meta name="robots" content="noindex">
 {% endif %}
@@ -15,7 +17,7 @@
 <meta property="og:site_name" content="{{ sitio.nombre }}">
 <meta property="og:title" content="{{ pagina.titulo }}">
 <meta property="og:description" content="{{ pagina.descripcion }}">
-<meta property="og:url" content="{{ url_absoluta(pagina.ruta) }}">
+<meta property="og:url" content="{{ url_absoluta(pagina.canonica or pagina.ruta) }}">
 <meta property="og:image" content="{{ sitio.url }}/estaticos/img/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0f766e">
@@ -28,6 +30,10 @@
 {% endif %}
 {% if verificacion.bing %}
 <meta name="msvalidate.01" content="{{ verificacion.bing }}">
+{% endif %}
+{% if adsense.publisher_id %}
+{# Permite que AdSense verifique el sitio aunque los anuncios aún no estén activos. #}
+<meta name="google-adsense-account" content="{{ adsense.publisher_id }}">
 {% endif %}
 {% if anuncios_activos and not demo %}
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ adsense.publisher_id }}" crossorigin="anonymous"></script>

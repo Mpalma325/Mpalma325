@@ -1,0 +1,7 @@
+{# Botones para compartir un cálculo (va dentro del recuadro .resultado de cada calculadora).
+   El enlace lleva los datos del formulario en el hash; app.js actualiza el de WhatsApp en cada
+   cambio. Sin JavaScript, WhatsApp comparte la página con el ejemplo por defecto. #}
+<div class="compartir">
+  <button type="button" class="boton-secundario" data-compartir>Copiar enlace a este cálculo</button>
+  <a class="boton-secundario" href="https://wa.me/?text={{ (pagina.h1 ~ ' ' ~ url_absoluta(pagina.ruta))|urlencode }}" data-whatsapp="{{ pagina.h1 }}" target="_blank" rel="noopener">Compartir por WhatsApp<span class="solo-lectores"> (se abre en una pestaña nueva)</span></a>
+</div>

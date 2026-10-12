@@ -17,15 +17,19 @@
 {% endmacro %}
 
 {% macro anuncio(nombre) %}
-{# Bloque de AdSense manual. Sin slot configurado no se muestra nada (Auto ads sigue funcionando). #}
+{# Bloque de AdSense manual. Sin slot configurado no se muestra nada (Auto ads sigue funcionando).
+   Tamaño exacto por ancho de pantalla (clase anuncio-bloque en estilos.css, con los supuestos):
+   el espacio queda reservado antes de que cargue el anuncio. Rótulo visible "Anuncios": AdSense
+   solo permite "Anuncios" o "Enlaces patrocinados" (support.google.com/adsense/answer/4533986). #}
 {% if anuncios_activos and not demo %}
 {% set slot = (adsense.slots or {}).get(nombre) %}
 {% if slot %}
-<div class="anuncio" aria-label="Publicidad">
-  <ins class="adsbygoogle" style="display:block" data-ad-client="{{ adsense.publisher_id }}"
-       data-ad-slot="{{ slot }}" data-ad-format="auto" data-full-width-responsive="true"></ins>
+<aside class="anuncio" aria-labelledby="anuncio-{{ nombre }}">
+  <p class="anuncio-etiqueta" id="anuncio-{{ nombre }}">Anuncios</p>
+  <ins class="adsbygoogle anuncio-bloque" style="display:inline-block" data-ad-client="{{ adsense.publisher_id }}"
+       data-ad-slot="{{ slot }}"></ins>
   <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-</div>
+</aside>
 {% endif %}
 {% endif %}
 {% endmacro %}

@@ -55,7 +55,7 @@
   </details>
 </form>
 
-<div class="resultado" id="resultado-sueldo" aria-live="polite">
+<div class="resultado" id="resultado-sueldo">
   <p class="resultado-etiqueta" data-r-etiqueta>Sueldo líquido</p>
   <p class="resultado-principal" data-r="principal">{{ inicial.liquido|pesos }}</p>
   <table class="tabla tabla-detalle">
@@ -84,11 +84,10 @@
     </table>
     <p class="nota">No incluye la cotización adicional de la mutual según riesgo de la empresa.</p>
   </details>
-  <button type="button" class="boton-secundario" data-compartir>Copiar enlace a este cálculo</button>
+  {% include "_compartir.html" %}
+  <p class="solo-lectores" role="status" aria-live="polite" data-r-anuncio></p>
 </div>
 </div>
-
-{{ m.anuncio("sueldo_superior") }}
 
 <section class="texto">
   <h2>¿Cómo se calcula el sueldo líquido?</h2>
@@ -102,8 +101,11 @@
   <p>Todos los topes, tasas y comisiones del mes están reunidos en los <a href="{{ ruta('/indicadores-previsionales/') }}">indicadores previsionales de {{ hoy|mes_anio }}</a>.</p>
 </section>
 
+{{ m.anuncio("sueldo_superior") }}
+
 <section>
   <h2>Comisiones de AFP vigentes</h2>
+  <div class="tabla-desplazable">
   <table class="tabla">
     <thead><tr><th>AFP</th><th class="num">Comisión</th><th class="num">Descuento total</th></tr></thead>
     <tbody>
@@ -112,6 +114,7 @@
     {% endfor %}
     </tbody>
   </table>
+  </div>
 </section>
 
 {{ m.afiliados("sueldo") }}
@@ -131,6 +134,7 @@
   </div>
 </section>
 
+{% include "_guias_relacionadas.html" %}
 {{ m.faq(pagina) }}
 {{ m.fuente("Superintendencia de Pensiones, SII y Previred (parámetros); Banco Central (UF)") }}
 {% endblock %}

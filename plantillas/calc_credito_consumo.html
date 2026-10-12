@@ -34,7 +34,7 @@
     </fieldset>
   </details>
 </form>
-<div class="resultado" id="resultado-consumo" aria-live="polite">
+<div class="resultado" id="resultado-consumo">
   <p class="resultado-etiqueta">Cuota mensual</p>
   <p class="resultado-principal" data-r="principal">{{ inicial.cuota_total|pesos }}</p>
   <p class="resultado-etiqueta">CAE (carga anual equivalente)</p>
@@ -55,13 +55,12 @@
     </tbody>
   </table>
   <p class="nota" data-r="nota">Pagarás {{ inicial.sobrecosto|pesos }} más de lo que recibes: {{ inicial.meses }} cuotas de {{ inicial.cuota_total|pesos }}.</p>
-  <button type="button" class="boton-secundario" data-compartir>Copiar enlace a este cálculo</button>
+  {% include "_compartir.html" %}
+  <p class="solo-lectores" role="status" aria-live="polite" data-r-anuncio></p>
 </div>
 </div>
 
 <p class="aviso">Simulación referencial: supone cuotas mensuales iguales, la primera un mes después de recibir el dinero. Cada institución calcula su oferta con sus propios seguros, gastos y fechas de pago. Antes de firmar, pide siempre la <strong>hoja resumen</strong> del crédito con la CAE y el costo total, y compara al menos tres ofertas.</p>
-
-{{ m.anuncio("consumo_superior") }}
 
 <section>
   <h2>Cuota mensual según monto y plazo (tasa de {{ tasa|porcentaje(2) }} mensual)</h2>
@@ -91,6 +90,8 @@
   <p class="nota">Con el impuesto de timbres sumado al crédito y sin seguros ni gastos. La tasa de {{ tasa|porcentaje(2) }} mensual es solo un ejemplo: usa la de tu cotización.</p>
 </section>
 
+{{ m.anuncio("consumo_superior") }}
+
 <section class="texto">
   <h2>¿Qué es la CAE y cómo se calcula?</h2>
   <p>La <strong>carga anual equivalente (CAE)</strong> es un indicador, en porcentaje, del costo de un crédito en un período de un año, cualquiera sea su plazo. Incluye el capital, la tasa de interés, el plazo, los seguros, los gastos propios del crédito y los productos voluntarios que contrates. Desde la Ley 20.555, toda publicidad de créditos que muestre una tasa o una cuota debe informarla, y el reglamento de información al consumidor de créditos de consumo (DS 43 de 2012) define cómo se calcula.</p>
@@ -104,6 +105,7 @@
 </section>
 
 {{ m.afiliados("consumo") }}
+{% include "_guias_relacionadas.html" %}
 {{ m.faq(pagina) }}
 <p><a href="{{ ruta('/calculadoras/credito-hipotecario/') }}">Simula un crédito hipotecario →</a> · <a href="{{ ruta('/calculadoras/interes-compuesto/') }}">Calcula cuánto crece tu ahorro →</a></p>
 {{ m.fuente("Ley 20.555 y DS 43 de 2012 del Ministerio de Economía (CAE); DL 3.475 y SII, Circular N° 17 de 2015 (impuesto de timbres); CMF (tasa máxima convencional)") }}

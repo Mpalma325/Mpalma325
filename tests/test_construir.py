@@ -112,7 +112,8 @@ def test_seo_basico_en_cada_pagina(sitio):
         assert pagina.titulo.strip(), ruta
         assert len(pagina.titulo) <= 90, (ruta, pagina.titulo)
         assert pagina.descripcion and 50 <= len(pagina.descripcion) <= 230, (ruta, pagina.descripcion)
-        assert pagina.canonica and pagina.canonica.startswith("https://"), ruta
+        # La 404 no se indexa y no declara canónica (ver tests/test_ux.py)
+        assert ruta == "/404.html" or (pagina.canonica and pagina.canonica.startswith("https://")), ruta
         assert pagina.h1 == 1, ruta
         for bloque in pagina.jsonld:
             json.loads(bloque)

@@ -17,6 +17,10 @@ from .formato import MESES, numero
 
 _contador = itertools.count(1)
 
+# Tamaño del viewBox. Con 480 de ancho el texto se lee en el celular (unos 10 px en una pantalla
+# de 390 px); en pantallas anchas la figura llega a 760 px como máximo (.figura en estilos.css).
+ANCHO, ALTO = 480, 240
+
 
 def _marcas_eje(minimo: float, maximo: float, cantidad: int = 4) -> list[float]:
     """Valores "redondos" para las líneas guía del eje Y."""
@@ -45,7 +49,7 @@ def _etiqueta_fecha(fecha: dt.date, con_dia: bool) -> str:
 
 
 def grafico_linea(puntos: list[tuple[dt.date, float]], titulo: str, decimales: int = 0,
-                  prefijo: str = "$", sufijo: str = "", ancho: int = 720, alto: int = 240,
+                  prefijo: str = "$", sufijo: str = "", ancho: int = ANCHO, alto: int = ALTO,
                   con_dia: bool = True, proyeccion: list[tuple[dt.date, float]] | None = None) -> Markup:
     """Gráfico de línea con área sombreada, líneas guía y etiquetas en formato chileno.
 
@@ -112,7 +116,7 @@ def grafico_linea(puntos: list[tuple[dt.date, float]], titulo: str, decimales: i
 
 
 def grafico_barras(puntos: list[tuple[dt.date, float]], titulo: str, decimales: int = 1,
-                   sufijo: str = "%", ancho: int = 720, alto: int = 240) -> Markup:
+                   sufijo: str = "%", ancho: int = ANCHO, alto: int = ALTO) -> Markup:
     """Barras para variaciones mensuales (positivas hacia arriba, negativas hacia abajo)."""
     puntos = sorted(puntos)
     if not puntos:
@@ -151,10 +155,43 @@ def grafico_barras(puntos: list[tuple[dt.date, float]], titulo: str, decimales: 
         etiqueta = f"{_etiqueta_fecha(fecha, False)}: {numero(valor, decimales)}{sufijo}"
         partes.append(f'<rect class="{clase}" x="{xx:.1f}" y="{arriba:.1f}" width="{barra:.1f}" '
                       f'height="{altura:.1f}"><title>{escape(etiqueta)}</title></rect>')
-    for indice in sorted({0, len(puntos) // 2, len(puntos) - 1}):
+    # La primera fecha se alinea con el borde izquierdo de su barra y la última con el derecho,
+    # para que no se corten en un gráfico angosto.
+    ultimo = len(puntos) - 1
+    for indice in sorted({0, len(puntos) // 2, ultimo}):
         fecha = puntos[indice][0]
-        xx = izq + indice * paso + paso / 2
-        partes.append(f'<text class="g-texto" x="{xx:.1f}" y="{alto - 8}" text-anchor="middle">'
+        if indice == 0 and ultimo > 0:
+            xx, ancla = izq + (paso - barra) / 2, "start"
+        elif indice == ultimo and ultimo > 0:
+            xx, ancla = izq + indice * paso + (paso + barra) / 2, "end"
+        else:
+            xx, ancla = izq + indice * paso + paso / 2, "middle"
+        partes.append(f'<text class="g-texto" x="{xx:.1f}" y="{alto - 8}" text-anchor="{ancla}">'
                       f"{escape(_etiqueta_fecha(fecha, False))}</text>")
+    partes.append("</svg>")
+    return Markup("".join(partes))
+
+
+def grafico_ahorro(serie: list[dict]) -> Markup:
+    """Barras del ahorro año a año: aportes (abajo) e intereses (arriba).
+
+    Es el mismo SVG que dibuja ``graficoAhorro`` en estaticos/js/app.js: la página trae el del
+    ejemplo (se ve sin JavaScript) y el JavaScript lo redibuja al cambiar los datos en el mismo
+    espacio reservado (``.grafico-ahorro-lienzo``), sin mover la página. Una coordenada puede
+    diferir en una décima por redondeo, sin efecto visible.
+    """
+    ancho, alto = 320, 160
+    maximo = serie[-1]["saldo"] or 1
+    paso = ancho / len(serie)
+    partes = [f'<svg class="grafico" viewBox="0 0 {ancho} {alto}">']
+    for indice, punto in enumerate(serie):
+        x = indice * paso + paso * 0.15
+        w = paso * 0.7
+        total = punto["saldo"] / maximo * (alto - 10)
+        aporte = min(punto["aportado"], punto["saldo"]) / maximo * (alto - 10)
+        partes.append(f'<rect class="g-barra-aporte" x="{x:.1f}" y="{alto - aporte:.1f}" '
+                      f'width="{w:.1f}" height="{aporte:.1f}"/>'
+                      f'<rect class="g-barra" x="{x:.1f}" y="{alto - total:.1f}" '
+                      f'width="{w:.1f}" height="{max(0, total - aporte):.1f}"/>')
     partes.append("</svg>")
     return Markup("".join(partes))

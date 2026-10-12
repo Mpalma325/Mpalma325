@@ -39,6 +39,22 @@ def porcentaje_corto(fraccion: float) -> str:
     return numero(fraccion * 100, 3).rstrip("0").rstrip(",") + "%"
 
 
+def texto_tiempo(anios: int, meses: int, dias: int) -> str:
+    """``"3 años, 7 meses, 0 días"``: el mismo texto que ``textoTiempo`` en estaticos/js/app.js
+    (así el valor inicial de la página no cambia cuando el JavaScript recalcula)."""
+    partes = [f"{anios} {'año' if anios == 1 else 'años'}"] if anios else []
+    partes.append(f"{meses} {'mes' if meses == 1 else 'meses'}")
+    partes.append(f"{dias} {'día' if dias == 1 else 'días'}")
+    return ", ".join(partes)
+
+
+def leido_del_formulario(valor: float, decimales: int) -> float:
+    """El número que lee app.js (``leerNumero``) de un campo cuyo valor inicial es
+    ``numero(valor, decimales)``: "4,20" -> 4.2. El resultado inicial de la página se calcula
+    con él para que coincida con el del navegador."""
+    return float(numero(valor, decimales).replace(".", "").replace(",", "."))
+
+
 def enumerar(partes: list[str], prefijo: str = "") -> str:
     """``["a", "b", "c"]`` -> ``"a, b y c"``; con ``prefijo="a "``: ``"a, a b y a c"``."""
     if len(partes) == 1:

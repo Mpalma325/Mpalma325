@@ -1,0 +1,13 @@
+{# "Guías relacionadas": las guías cuyo campo calculadoras incluye esta página (global guias_de,
+   lucas/construir.py). Se usa con {% include "_guias_relacionadas.html" %}; sin guías no muestra nada. #}
+{% set relacionadas = guias_de(pagina.ruta) %}
+{% if relacionadas %}
+<section class="guias-relacionadas" aria-labelledby="guias-relacionadas-titulo">
+  <h2 id="guias-relacionadas-titulo">Guías relacionadas</h2>
+  <div class="tarjetas tarjetas-guias">
+    {% for guia in relacionadas %}
+    <a class="tarjeta" href="{{ ruta(guia.ruta) }}"><span class="tarjeta-titulo">{{ guia.h1 }}</span><span>{{ guia.resumen }}</span><span class="tarjeta-pie">{{ guia.minutos_lectura }} min de lectura</span></a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}

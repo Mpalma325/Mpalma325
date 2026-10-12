@@ -10,6 +10,9 @@
   --primario: #0f766e;
   --primario-fuerte: #0b5d57;
   --primario-suave: #e3f2f0;
+  --sobre-primario: #fff;       /* texto sobre fondo --primario (botones) */
+  --destacado-inicio: #0f766e;  /* inicio del degradado de .destacado (texto blanco encima) */
+  --borde-campo: #7b8a91;       /* borde de campos: 3:1 con el fondo (WCAG 1.4.11) */
   --acento: #b45309;
   --sube: #0f7a3e;
   --baja: #b42318;
@@ -30,6 +33,9 @@
     --primario: #2fbfb1;
     --primario-fuerte: #5fd6ca;
     --primario-suave: #143331;
+    --sobre-primario: #0e1416;   /* 8,1:1 sobre #2fbfb1 (el blanco daba 2,3:1) */
+    --destacado-inicio: #0f766e; /* blanco encima: 5,5:1 (con #2fbfb1 daba 2,1:1) */
+    --borde-campo: #5b6b72;
     --acento: #f59e0b;
     --sube: #4ade80;
     --baja: #f87171;
@@ -65,6 +71,12 @@ code { background: var(--superficie-2); padding: .1em .35em; border-radius: 6px;
 
 .saltar { position: absolute; left: -999px; }
 .saltar:focus { left: 1rem; top: 1rem; z-index: 10; background: var(--superficie); padding: .5rem 1rem; }
+
+/* Oculto a la vista pero leído por los lectores de pantalla (p. ej. el anuncio del resultado). */
+.solo-lectores {
+  position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
 
 /* Cabecera ----------------------------------------------------------------- */
 
@@ -112,7 +124,7 @@ main { padding-bottom: 3rem; }
 /* Destacados y tarjetas ---------------------------------------------------- */
 
 .destacado {
-  background: linear-gradient(135deg, var(--primario), #115e59);
+  background: linear-gradient(135deg, var(--destacado-inicio), #115e59);
   color: #fff;
   border-radius: calc(var(--radio) + 4px);
   padding: 1.25rem 1.5rem;
@@ -124,7 +136,8 @@ main { padding-bottom: 3rem; }
 .destacado-valor { font-size: clamp(2.2rem, 7vw, 3.2rem); font-weight: 800; letter-spacing: -.02em; line-height: 1.15; font-variant-numeric: tabular-nums; }
 .destacado-texto { font-size: clamp(1.5rem, 5vw, 2.2rem); }
 .destacado-pie { font-size: .92rem; opacity: .92; margin-top: .35rem !important; }
-.destacado .variacion, .destacado .variacion.sube, .destacado .variacion.baja { background: rgba(255, 255, 255, .2); color: #fff; }
+/* Pastilla oscura: el blanco sobre blanco translúcido daba 3,7:1; así queda sobre 7,6:1. */
+.destacado .variacion, .destacado .variacion.sube, .destacado .variacion.baja { background: rgba(0, 0, 0, .2); color: #fff; }
 
 .tarjetas { display: grid; grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr)); gap: .9rem; margin: 1rem 0; }
 .tarjeta {
@@ -141,6 +154,16 @@ a.tarjeta:hover { border-color: var(--primario); transform: translateY(-1px); co
 .tarjeta-pie { font-size: .88rem; color: var(--texto-suave); }
 .tarjeta.destacada { border-color: var(--primario); background: var(--primario-suave); }
 
+/* Indicadores de la portada: dos columnas en el celular para ver más valores sin bajar. */
+@media (max-width: 40rem) {
+  .tarjetas-indicadores { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; }
+  .tarjetas-indicadores .tarjeta { padding: .75rem .8rem; }
+  .tarjetas-indicadores .tarjeta-titulo { font-size: .85rem; }
+  .tarjetas-indicadores .tarjeta-valor { font-size: 1.3rem; }
+  .tarjetas-indicadores .tarjeta-valor-texto { font-size: 1.1rem; }
+  .tarjetas-indicadores .tarjeta-pie { font-size: .8rem; }
+}
+
 .variacion { display: inline-block; font-size: .82rem; font-weight: 700; padding: .05rem .45rem; border-radius: 999px; background: var(--superficie-2); font-variant-numeric: tabular-nums; }
 .variacion.sube { color: var(--sube); }
 .variacion.baja { color: var(--baja); }
@@ -148,6 +171,8 @@ a.tarjeta:hover { border-color: var(--primario); transform: translateY(-1px); co
 /* Tablas ------------------------------------------------------------------- */
 
 .tabla-desplazable { overflow-x: auto; border-radius: var(--radio); }
+/* app.js le da tabindex="0" cuando se desplaza: así se recorre con las flechas del teclado. */
+.tabla-desplazable:focus-visible { outline: 3px solid var(--primario); outline-offset: 2px; }
 .tabla { width: 100%; border-collapse: collapse; background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); overflow: hidden; font-size: .97rem; }
 .tabla th, .tabla td { padding: .55rem .8rem; text-align: left; border-bottom: 1px solid var(--borde); }
 .tabla thead th { background: var(--superficie-2); font-size: .88rem; color: var(--texto-suave); font-weight: 700; }
@@ -160,7 +185,7 @@ a.tarjeta:hover { border-color: var(--primario); transform: translateY(-1px); co
 .tabla-detalle th { font-weight: 500; }
 .tabla-detalle td.num { white-space: normal; }
 .tabla thead th.num { white-space: normal; }
-.tabla-feriados .pasado { opacity: .55; }
+.tabla-feriados .pasado { color: var(--texto-suave); }  /* con opacity:.55 el contraste era 3,6:1 */
 .etiqueta { display: inline-block; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; background: var(--primario-suave); color: var(--primario-fuerte); padding: .05rem .4rem; border-radius: 6px; vertical-align: middle; }
 abbr { text-decoration: none; color: var(--acento); }
 
@@ -187,9 +212,9 @@ abbr { text-decoration: none; color: var(--acento); }
 .campo label, .modo legend { font-weight: 600; font-size: .95rem; }
 input, select {
   font: inherit; font-size: 1.05rem; color: var(--texto); background: var(--fondo);
-  border: 1px solid var(--borde); border-radius: 10px; padding: .6rem .75rem; width: 100%;
+  border: 1px solid var(--borde-campo); border-radius: 10px; padding: .6rem .75rem; width: 100%;
 }
-input:focus, select:focus { outline: 3px solid color-mix(in srgb, var(--primario) 35%, transparent); border-color: var(--primario); }
+input:focus, select:focus { outline: 3px solid var(--primario); border-color: var(--primario); }
 input[type="radio"], input[type="checkbox"] { width: auto; accent-color: var(--primario); }
 .modo { border: 0; padding: 0; margin: 0 0 1rem; display: grid; gap: .4rem; }
 .modo label { display: flex; align-items: center; gap: .5rem; padding: .55rem .75rem; border: 1px solid var(--borde); border-radius: 10px; cursor: pointer; }
@@ -201,10 +226,11 @@ input[type="radio"], input[type="checkbox"] { width: auto; accent-color: var(--p
 .boton, .boton-secundario, .boton-chico {
   display: inline-block; font: inherit; font-weight: 700; cursor: pointer; border-radius: 10px; text-decoration: none;
 }
-.boton { background: var(--primario); color: #fff; padding: .65rem 1.1rem; border: 0; }
-.boton:hover { background: var(--primario-fuerte); color: #fff; }
+.boton { background: var(--primario); color: var(--sobre-primario); padding: .65rem 1.1rem; border: 0; }
+.boton:hover { background: var(--primario-fuerte); color: var(--sobre-primario); }
 .boton-secundario { background: transparent; color: var(--primario); border: 1px solid var(--primario); padding: .5rem .9rem; }
 .boton-chico { background: var(--superficie-2); color: var(--texto); border: 1px solid var(--borde); padding: .35rem .7rem; font-size: .88rem; font-weight: 600; }
+.compartir { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .75rem; }
 
 .conversor { display: grid; grid-template-columns: 1fr auto 1fr; gap: .75rem; align-items: end; background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); padding: 1rem; margin: 1rem 0; }
 .conversor .campo { margin: 0; }
@@ -217,10 +243,15 @@ input[type="radio"], input[type="checkbox"] { width: auto; accent-color: var(--p
 
 /* Gráficos ----------------------------------------------------------------- */
 
-.figura { margin: 0; background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); padding: .75rem; }
+/* Los SVG de lucas/graficos.py miden 480 de ancho: en el celular el texto queda legible y en
+   pantallas anchas la figura no pasa de 760 px (si no, el texto crecería demasiado). */
+.figura { margin: 0; max-width: 760px; background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); padding: .75rem; }
 .grafico { width: 100%; height: auto; display: block; }
 .g-guia { stroke: var(--borde); stroke-width: 1; }
-.g-texto { fill: var(--texto-suave); font-size: 12px; font-family: inherit; }
+.g-texto { fill: var(--texto-suave); font-size: 14px; font-family: inherit; }
+@media (min-width: 48rem) { .g-texto { font-size: 11px; } }
+/* Gráfico de interés compuesto: espacio reservado (viewBox 320 × 160) para que no mueva la página. */
+.grafico-ahorro-lienzo { aspect-ratio: 2 / 1; }
 .g-linea { fill: none; stroke: var(--primario); stroke-width: 2.5; stroke-linejoin: round; }
 .g-area { fill: var(--primario); opacity: .12; }
 .g-proyeccion { stroke: var(--acento); stroke-dasharray: 6 5; }
@@ -243,7 +274,25 @@ input[type="radio"], input[type="checkbox"] { width: auto; accent-color: var(--p
 .afiliado-titulo { font-weight: 800; margin: 0 0 .25rem; }
 .afiliado p { margin: 0 0 .6rem; }
 
-.anuncio { margin: 1.5rem 0; min-height: 100px; }
+/* Bloques de AdSense (macro m.anuncio): rótulo visible y tamaño exacto por ancho de pantalla,
+   según el método de la ayuda de AdSense "How to modify your responsive ad code" → "Specify an
+   exact size per screen width" (support.google.com/adsense/answer/9183363): el <ins> lleva
+   display:inline-block, una clase con ancho y alto en px por media query y no lleva
+   data-ad-format ni data-full-width-responsive. Supuestos: los bloques son "anuncios de display"
+   adaptables; adsbygoogle.js pide un anuncio que quepa en el tamaño del <ins> y no lo cambia,
+   así el espacio queda reservado desde el primer pintado (CLS 0). 336 × 280 (rectángulo grande)
+   admite también 300 × 250; max-width evita desbordes en celulares de menos de 368 px (el ancho
+   medido baja a 288-335 px y AdSense elige un anuncio que quepa). 728 × 250 desde 760 px
+   (ancho útil ≥ 728 px) admite 728 × 90, 300 × 250 y anuncios adaptables de 728 × 250.
+   Si AdSense no llena el bloque queda el recuadro de fondo suave: ocultarlo movería la página. */
+.anuncio { margin: 2.5rem 0; text-align: center; }
+.anuncio-etiqueta { margin: 0 0 .35rem; color: var(--texto-suave); font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.anuncio-bloque { width: 336px; max-width: 100%; height: 280px; vertical-align: top; background: var(--superficie-2); border-radius: 8px; }
+@media (min-width: 760px) { .anuncio-bloque { width: 728px; height: 250px; } }
+/* Respaldo por si no hay contenido entre el anuncio y lo que se toca (preguntas frecuentes,
+   botones de recomendaciones): más de 150 px de distancia, contra los clics accidentales. */
+.anuncio + .faq { margin-top: 7.5rem; }
+.anuncio + .afiliados { margin-top: 6rem; }
 
 .lista-largos { padding-left: 1.2rem; }
 .destacado-contacto { font-size: 1.2rem; font-weight: 700; }

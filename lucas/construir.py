@@ -133,6 +133,14 @@ def crear_entorno(cfg: dict, c: Contexto, hashes: dict[str, str]) -> Environment
         return [a for a in cfg["monetizacion"].get("afiliados") or []
                 if a.get("activo", True) and (clave in (a.get("secciones") or []) or "todas" in (a.get("secciones") or []))]
 
+    def guias_de(destino: str) -> list:
+        """Guías que enlazan a ``destino`` en su campo ``calculadoras`` (bloque "Guías relacionadas"),
+        primero las que la tienen como calculadora principal (la primera de su lista). Lee
+        ``c.guias`` al usarse: las guías se cargan después de crear el entorno."""
+        from .guias import ordenar  # import diferido: guias importa este módulo
+        relacionadas = ordenar([g for g in c.guias if destino in g.calculadoras])
+        return sorted(relacionadas, key=lambda g: g.calculadoras.index(destino))
+
     for nombre in ("pesos", "numero", "porcentaje", "fecha_larga", "fecha_con_dia", "fecha_corta",
                    "dia_mes", "dia_semana", "nombre_mes", "capitalizar", "monto_corto"):
         entorno.filters[nombre] = getattr(formato, nombre)
@@ -154,6 +162,7 @@ def crear_entorno(cfg: dict, c: Contexto, hashes: dict[str, str]) -> Environment
         ruta=ruta,
         estatico=estatico,
         afiliados_de=afiliados_de,
+        guias_de=guias_de,
         url_absoluta=lambda r: seo.url_absoluta(cfg, r),
         actualizado=dt.datetime.fromisoformat(actualizado) if actualizado else c.ahora,
         cabecera={"uf": c.uf_hoy, "dolar": c.dolar, "utm": c.utm_hoy},

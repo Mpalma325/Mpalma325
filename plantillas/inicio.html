@@ -5,7 +5,7 @@
   <p class="bajada">Valores actualizados al <strong>{{ hoy|fecha_con_dia }}</strong>. Datos oficiales del Banco Central, INE y SII, y calculadoras gratuitas con los parámetros legales vigentes.</p>
 </section>
 
-<section class="tarjetas" aria-label="Indicadores de hoy">
+<section class="tarjetas tarjetas-indicadores" aria-label="Indicadores de hoy">
   <a class="tarjeta destacada" href="{{ ruta('/uf/') }}">
     <span class="tarjeta-titulo">UF hoy</span>
     <span class="tarjeta-valor" data-uf-hoy>{{ cabecera.uf|pesos(2) }}</span>
@@ -63,6 +63,7 @@
 {% if otros %}
 <section>
   <h2>Otros indicadores</h2>
+  <div class="tabla-desplazable">
   <table class="tabla">
     <thead><tr><th>Indicador</th><th class="num">Valor</th><th>Fecha</th></tr></thead>
     <tbody>
@@ -75,6 +76,7 @@
     {% endfor %}
     </tbody>
   </table>
+  </div>
 </section>
 {% endif %}
 

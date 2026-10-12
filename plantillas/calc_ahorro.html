@@ -22,21 +22,23 @@
     <input id="ah-anios" name="anios" inputmode="numeric" autocomplete="off" value="10">
   </div>
 </form>
-<div class="resultado" id="resultado-ahorro" aria-live="polite">
+<div class="resultado" id="resultado-ahorro">
   <p class="resultado-etiqueta">Ahorro al final del plazo</p>
-  <p class="resultado-principal" data-r="saldo">—</p>
+  <p class="resultado-principal" data-r="saldo">{{ inicial.saldo|pesos }}</p>
   <table class="tabla tabla-detalle">
     <tbody>
-      <tr><th scope="row">Total aportado</th><td class="num" data-r="aportado">—</td></tr>
-      <tr class="total"><th scope="row">Ganancia por intereses</th><td class="num" data-r="ganancia">—</td></tr>
+      <tr><th scope="row">Total aportado</th><td class="num" data-r="aportado">{{ inicial.aportado|pesos }}</td></tr>
+      <tr class="total"><th scope="row">Ganancia por intereses</th><td class="num" data-r="ganancia">{{ inicial.ganancia|pesos }}</td></tr>
     </tbody>
   </table>
-  <div class="grafico-ahorro" data-r="grafico" aria-hidden="true"></div>
-  <button type="button" class="boton-secundario" data-compartir>Copiar enlace a este cálculo</button>
+  <div class="grafico-ahorro" aria-hidden="true">
+    <div class="grafico-ahorro-lienzo" data-r="grafico">{{ grafico }}</div>
+    <p class="leyenda"><span class="muestra muestra-aporte"></span>Aportes <span class="muestra"></span>Intereses</p>
+  </div>
+  {% include "_compartir.html" %}
+  <p class="solo-lectores" role="status" aria-live="polite" data-r-anuncio></p>
 </div>
 </div>
-
-{{ m.anuncio("ahorro_superior") }}
 
 <section>
   <h2>¿Cuánto suman $100.000 mensuales en 20 años?</h2>
@@ -53,7 +55,7 @@
   <p>La diferencia entre una rentabilidad de 3% y una de 7% anual, en 20 años, es de {{ (escenarios[2].saldo - escenarios[0].saldo)|pesos }}. Por eso las comisiones y el tipo de instrumento importan tanto en el largo plazo.</p>
 </section>
 
-{{ m.afiliados("ahorro") }}
+{{ m.anuncio("ahorro_superior") }}
 
 <section class="texto">
   <h2>Antes de invertir</h2>
@@ -65,5 +67,7 @@
   </ul>
 </section>
 
+{{ m.afiliados("ahorro") }}
+{% include "_guias_relacionadas.html" %}
 {{ m.faq(pagina) }}
 {% endblock %}

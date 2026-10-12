@@ -111,6 +111,56 @@
   }
 
   // ---------------------------------------------------------------------------
+  // Tablas con desplazamiento horizontal: accesibles con el teclado
+  // ---------------------------------------------------------------------------
+
+  /** Texto del título más cercano antes del elemento (h2, h3 o el summary de un details). */
+  function tituloCercano(elemento) {
+    for (var nodo = elemento; nodo && nodo !== document.body; nodo = nodo.parentElement) {
+      for (var hermano = nodo.previousElementSibling; hermano; hermano = hermano.previousElementSibling) {
+        if (/^(H2|H3|SUMMARY)$/.test(hermano.tagName)) {
+          return hermano.textContent.replace(/\s+/g, ' ').trim();
+        }
+      }
+    }
+    return 'Tabla';
+  }
+
+  /**
+   * Una tabla que no cabe (celular) se desplaza dentro de su caja: esa caja debe poder
+   * recibir el foco para recorrerla con las flechas (axe: scrollable-region-focusable),
+   * con role="region" y el título de su sección como nombre. Se revisa al cargar, al
+   * cambiar el tamaño de la ventana, al abrir un details y después de cada cálculo.
+   */
+  function marcarTablasDesplazables() {
+    $$('.tabla-desplazable').forEach(function (caja) {
+      var desplaza = caja.scrollWidth > caja.clientWidth + 1;
+      if (desplaza && !caja.hasAttribute('data-desplazable')) {
+        caja.setAttribute('data-desplazable', '');
+        caja.setAttribute('tabindex', '0');
+        caja.setAttribute('role', 'region');
+        caja.setAttribute('aria-label', tituloCercano(caja));
+      } else if (!desplaza && caja.hasAttribute('data-desplazable')) {
+        caja.removeAttribute('data-desplazable');
+        caja.removeAttribute('tabindex');
+        caja.removeAttribute('role');
+        caja.removeAttribute('aria-label');
+      }
+    });
+  }
+
+  function iniciarTablasDesplazables() {
+    marcarTablasDesplazables();
+    var espera = null;
+    window.addEventListener('resize', function () {
+      clearTimeout(espera);
+      espera = setTimeout(marcarTablasDesplazables, 150);
+    });
+    // "toggle" no burbujea: se escucha en la fase de captura.
+    document.addEventListener('toggle', marcarTablasDesplazables, true);
+  }
+
+  // ---------------------------------------------------------------------------
   // Formularios: lectura, enlaces para compartir y formato de montos
   // ---------------------------------------------------------------------------
 
@@ -143,6 +193,16 @@
       return encodeURIComponent(clave) + '=' + encodeURIComponent(valor);
     });
     history.replaceState(null, '', '#' + partes.join('&'));
+    actualizarWhatsapp();
+  }
+
+  /** decodeURIComponent que no falla: un enlace mal copiado (p. ej. "%E0%A4%A") da null. */
+  function decodificar(texto) {
+    try {
+      return decodeURIComponent(texto);
+    } catch (error) {
+      return null;
+    }
   }
 
   function cargarDesdeEnlace(form) {
@@ -151,8 +211,11 @@
     }
     location.hash.slice(1).split('&').forEach(function (par) {
       var kv = par.split('=');
-      var nombre = decodeURIComponent(kv[0] || '');
-      var valor = decodeURIComponent(kv[1] || '');
+      var nombre = decodificar(kv[0] || '');
+      var valor = decodificar(kv[1] || '');
+      if (nombre === null || valor === null) {
+        return;  // se ignora el par dañado y se usan los valores por defecto
+      }
       $$('input, select', form).forEach(function (campo) {
         if (campo.name !== nombre) {
           return;
@@ -168,7 +231,16 @@
     });
   }
 
+  /** Enlaces "Compartir por WhatsApp": título de la calculadora y dirección con los datos (hash). */
+  function actualizarWhatsapp() {
+    $$('a[data-whatsapp]').forEach(function (enlace) {
+      var texto = enlace.getAttribute('data-whatsapp') + ' ' + location.href;
+      enlace.href = 'https://wa.me/?text=' + encodeURIComponent(texto);
+    });
+  }
+
   function iniciarCompartir(contenedor) {
+    actualizarWhatsapp();
     $$('[data-compartir]', contenedor).forEach(function (boton) {
       var original = boton.textContent;
       boton.addEventListener('click', function () {
@@ -198,11 +270,26 @@
     });
   }
 
+  /** Resultados principales con su etiqueta, para lectores de pantalla: "Sueldo líquido: $819.400". */
+  function textoPrincipal(res) {
+    return $$('.resultado-principal', res).map(function (valor) {
+      var etiqueta = valor.previousElementSibling;
+      var nombre = etiqueta && etiqueta.className.indexOf('resultado-etiqueta') !== -1 ?
+        etiqueta.textContent.trim() + ': ' : '';
+      var texto = valor.textContent.trim();
+      return nombre + (texto === '—' ? 'sin resultado, revisa los datos' : texto);
+    }).join('. ');
+  }
+
   /** Conecta un formulario de calculadora con su función de cálculo. */
   function calculadora(form, resultado, calcular) {
     cargarDesdeEnlace(form);
     iniciarMontos(form);
     iniciarCompartir(resultado.parentNode);
+    // Región role="status" oculta: anuncia solo el resultado principal, unos 700 ms después
+    // del último cambio (y no cada tecla ni cada fila de la tabla).
+    var region = $('[data-r-anuncio]', resultado);
+    var espera = null;
     var ejecutar = function () {
       try {
         calcular(form, resultado);
@@ -210,14 +297,22 @@
         poner(resultado, 'principal', '—');
       }
     };
-    form.addEventListener('input', function () {
+    var alCambiar = function () {
       ejecutar();
       guardarEnEnlace(form);
-    });
-    form.addEventListener('change', function () {
-      ejecutar();
-      guardarEnEnlace(form);
-    });
+      marcarTablasDesplazables();
+      if (region) {
+        clearTimeout(espera);
+        espera = setTimeout(function () {
+          var texto = textoPrincipal(resultado);
+          if (region.textContent !== texto) {
+            region.textContent = texto;
+          }
+        }, 700);
+      }
+    };
+    form.addEventListener('input', alCambiar);
+    form.addEventListener('change', alCambiar);
     ejecutar();
   }
 
@@ -369,11 +464,15 @@
   function calcHonorarios(form, res) {
     var p = datosPagina().parametros;
     var d = leerFormulario(form);
+    var desdeLiquido = d.modo === 'liquido';
+    poner(res, 'etiqueta', desdeLiquido ? 'Monto bruto de la boleta' : 'Monto líquido');
     var monto = leerNumero(d.monto);
     if (isNaN(monto) || monto <= 0) {
+      poner(res, 'principal', '—');
       return;
     }
-    var r = d.modo === 'liquido' ? L.honorariosDesdeLiquido(monto, p) : L.honorariosDesdeBruto(monto, p);
+    var r = desdeLiquido ? L.honorariosDesdeLiquido(monto, p) : L.honorariosDesdeBruto(monto, p);
+    poner(res, 'principal', pesos(desdeLiquido ? r.bruto : r.liquido));
     poner(res, 'bruto', pesos(r.bruto));
     poner(res, 'retencion', pesos(-r.retencion));
     poner(res, 'liquido', pesos(r.liquido));
@@ -450,6 +549,8 @@
     }
   }
 
+  /** Barras del ahorro año a año. Igual que grafico_ahorro en lucas/graficos.py (la página ya trae
+   *  el del ejemplo); la leyenda está en la plantilla y el espacio, reservado en el CSS. */
   function graficoAhorro(serie) {
     var ancho = 320;
     var alto = 160;
@@ -465,8 +566,7 @@
         '<rect class="g-barra" x="' + x.toFixed(1) + '" y="' + (alto - hTotal).toFixed(1) +
         '" width="' + w.toFixed(1) + '" height="' + Math.max(0, hTotal - hAporte).toFixed(1) + '"/>';
     }).join('');
-    return '<svg class="grafico" viewBox="0 0 ' + ancho + ' ' + alto + '">' + barras + '</svg>' +
-      '<p class="leyenda"><span class="muestra muestra-aporte"></span>Aportes <span class="muestra"></span>Intereses</p>';
+    return '<svg class="grafico" viewBox="0 0 ' + ancho + ' ' + alto + '">' + barras + '</svg>';
   }
 
   function calcAhorro(form, res) {
@@ -804,9 +904,13 @@
     actualizarUf();
     actualizarProximoFeriado();
     iniciarProyeccion();
-    if (!L) {
-      return;
+    if (L) {
+      iniciarCalculadoras();
     }
+    iniciarTablasDesplazables();  // después de los cálculos, que cambian el ancho de algunas tablas
+  }
+
+  function iniciarCalculadoras() {
     var calculadoras = {
       sueldo: [calcSueldo, 'resultado-sueldo'],
       honorarios: [calcHonorarios, 'resultado-honorarios'],

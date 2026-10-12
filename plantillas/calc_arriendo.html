@@ -13,7 +13,7 @@
     <label for="a-desde">Desde el IPC de</label>
     <select id="a-desde" name="desde">
       {% for mes in meses %}
-      <option value="{{ mes.strftime('%Y-%m') }}"{% if loop.index == 6 %} selected{% endif %}>{{ mes|mes_anio|capitalizar }}</option>
+      <option value="{{ mes.strftime('%Y-%m') }}"{% if mes == desde_defecto %} selected{% endif %}>{{ mes|mes_anio|capitalizar }}</option>
       {% endfor %}
     </select>
   </div>
@@ -31,21 +31,20 @@
     {% endfor %}
   </div>
 </form>
-<div class="resultado" id="resultado-arriendo" aria-live="polite">
+<div class="resultado" id="resultado-arriendo">
   <p class="resultado-etiqueta">Nuevo arriendo</p>
-  <p class="resultado-principal" data-r="nuevo">—</p>
+  <p class="resultado-principal" data-r="nuevo">{{ inicial.nuevo_monto|pesos }}</p>
   <table class="tabla tabla-detalle">
     <tbody>
-      <tr><th scope="row">Variación del IPC en el período</th><td class="num" data-r="variacion">—</td></tr>
-      <tr><th scope="row">Aumento</th><td class="num" data-r="diferencia">—</td></tr>
-      <tr><th scope="row">Meses considerados</th><td class="num" data-r="meses">—</td></tr>
+      <tr><th scope="row">Variación del IPC en el período</th><td class="num" data-r="variacion">{{ inicial.variacion|porcentaje(2, true) }}</td></tr>
+      <tr><th scope="row">Aumento</th><td class="num" data-r="diferencia">{{ inicial.diferencia|pesos }}</td></tr>
+      <tr><th scope="row">Meses considerados</th><td class="num" data-r="meses">{{ periodo_defecto|length }} ({{ periodo_defecto[0]|mes_anio }} a {{ periodo_defecto[-1]|mes_anio }})</td></tr>
     </tbody>
   </table>
-  <button type="button" class="boton-secundario" data-compartir>Copiar enlace a este cálculo</button>
+  {% include "_compartir.html" %}
+  <p class="solo-lectores" role="status" aria-live="polite" data-r-anuncio></p>
 </div>
 </div>
-
-{{ m.anuncio("arriendo_superior") }}
 
 <section>
   <h2>Variación acumulada del IPC hasta {{ ultimo|mes_de_anio }}</h2>
@@ -61,12 +60,15 @@
   </div>
 </section>
 
+{{ m.anuncio("arriendo_superior") }}
+
 <section class="texto">
   <h2>Cómo leer tu contrato</h2>
   <p>La mayoría de los contratos dice algo como "la renta se reajustará cada seis meses según la variación que experimente el IPC". En ese caso, usa los últimos seis meses con IPC publicado antes de la fecha del reajuste. Si tu contrato está en UF, no necesitas esta calculadora: el arriendo se reajusta solo con el <a href="{{ ruta('/uf/') }}">valor de la UF</a>.</p>
 </section>
 
 {{ m.afiliados("arriendo") }}
+{% include "_guias_relacionadas.html" %}
 {{ m.faq(pagina) }}
 {{ m.fuente("Instituto Nacional de Estadísticas (INE), publicado por el SII") }}
 {% endblock %}
