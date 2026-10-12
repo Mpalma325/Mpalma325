@@ -63,7 +63,7 @@ class Contexto:
     uf_hoy: float
     utm_hoy: float
     dolar: tuple[dt.date, float]
-    euro: tuple[dt.date, float]
+    euro: tuple[dt.date, float] | None
     ipc: tuple[dt.date, float]
     feriados_extra: list[dict]
     advertencias: list[str] = field(default_factory=list)
@@ -87,7 +87,7 @@ def crear_contexto(cfg: dict, params: Parametros, datos: Datos, hoy: dt.date,
         uf_hoy=uf_hoy,
         utm_hoy=utm_hoy,
         dolar=Datos.ultimo(datos.dolar, hoy),
-        euro=Datos.ultimo(datos.euro, hoy),
+        euro=Datos.ultimo(datos.euro, hoy) if datos.euro_vigente(hoy) else None,
         ipc=(ultimo_ipc, datos.ipc[ultimo_ipc]),
         feriados_extra=params.feriados_extra(),
         advertencias=advertencias,
@@ -147,6 +147,7 @@ def crear_entorno(cfg: dict, c: Contexto, hashes: dict[str, str]) -> Environment
         url_absoluta=lambda r: seo.url_absoluta(cfg, r),
         actualizado=dt.datetime.fromisoformat(actualizado) if actualizado else c.ahora,
         cabecera={"uf": c.uf_hoy, "dolar": c.dolar, "utm": c.utm_hoy},
+        hay_euro=c.euro is not None,
         # UF de los próximos días: el JavaScript muestra la del día del visitante
         # aunque el sitio se haya generado hace un par de días.
         uf_ventana={f.isoformat(): v for f, v in c.datos.uf_completa().items()

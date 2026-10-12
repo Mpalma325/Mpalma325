@@ -16,11 +16,13 @@
     <span class="tarjeta-valor">{{ cabecera.dolar[1]|pesos(2) }}</span>
     <span class="tarjeta-pie">{{ cabecera.dolar[0]|dia_mes }} {{ m.variacion(dolar_variacion) }}</span>
   </a>
+  {% if euro_valor %}
   <a class="tarjeta" href="{{ ruta('/euro/') }}">
     <span class="tarjeta-titulo">Euro</span>
     <span class="tarjeta-valor">{{ euro_valor|pesos(2) }}</span>
     <span class="tarjeta-pie">{{ m.variacion(euro_variacion) }}</span>
   </a>
+  {% endif %}
   <a class="tarjeta" href="{{ ruta('/utm/') }}">
     <span class="tarjeta-titulo">UTM {{ hoy|mes_anio }}</span>
     <span class="tarjeta-valor">{{ cabecera.utm|pesos }}</span>

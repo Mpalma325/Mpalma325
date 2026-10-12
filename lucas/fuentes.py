@@ -19,12 +19,14 @@ import re
 import time
 import urllib.error
 import urllib.request
+from html.parser import HTMLParser
 from pathlib import Path
 
 from .config import RAIZ, ahora_chile, hoy_chile
 from .datos import SERIES, SERIES_MENSUALES, escribir_serie, leer_serie, primer_dia
 
 MINDICADOR = "https://mindicador.cl/api"
+SII = "https://www.sii.cl/valores_y_fechas"
 CMF = "https://api.cmfchile.cl/api-sbifv3/recursos_api"
 USER_AGENT = "LucasClaras/1.0 (sitio de indicadores; contacto en el sitio)"
 
@@ -80,8 +82,8 @@ def numero_chileno(texto: str) -> float:
     return float(str(texto).strip().replace(".", "").replace(",", "."))
 
 
-def serie_mindicador(indicador: str, anio: int) -> dict[dt.date, float]:
-    respuesta = descargar_json(f"{MINDICADOR}/{indicador}/{anio}")
+def serie_mindicador(indicador: str, anio: int, **opciones) -> dict[dt.date, float]:
+    respuesta = descargar_json(f"{MINDICADOR}/{indicador}/{anio}", **opciones)
     serie = {}
     for punto in respuesta.get("serie", []):
         # mindicador entrega la medianoche de Chile en UTC ("2026-10-12T03:00:00.000Z"):
@@ -98,18 +100,171 @@ def serie_cmf(indicador: str, anio: int, clave: str) -> dict[dt.date, float]:
             for item in respuesta.get(lista, [])}
 
 
-def obtener_serie(indicador: str, anio: int) -> tuple[dict[dt.date, float], str]:
-    """Serie de un año desde mindicador.cl, o desde la CMF si la primera falla."""
+# ---------------------------------------------------------------------------
+# Respaldo sin clave: tablas públicas del SII (valores y fechas)
+# ---------------------------------------------------------------------------
+
+MESES_CORTOS = ("ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic")
+SII_PAGINAS = {"uf": "uf/uf{anio}.htm", "dolar": "dolar/dolar{anio}.htm", "utm": "utm/utm{anio}.htm",
+               "ipc": "utm/utm{anio}.htm"}
+
+
+class _LectorTablas(HTMLParser):
+    """Extrae todas las tablas de una página HTML como listas de filas de texto."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.tablas: list[list[list[str]]] = []
+        self._pila: list[list[list[str]]] = []
+        self._celda: list[str] | None = None
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "table":
+            self._pila.append([])
+        elif tag == "tr" and self._pila:
+            self._pila[-1].append([])
+        elif tag in ("td", "th") and self._pila:
+            self._celda = []
+
+    def handle_endtag(self, tag):
+        if tag in ("td", "th") and self._celda is not None and self._pila and self._pila[-1]:
+            self._pila[-1][-1].append(" ".join("".join(self._celda).split()))
+            self._celda = None
+        elif tag == "table" and self._pila:
+            self.tablas.append(self._pila.pop())
+
+    def handle_data(self, data):
+        if self._celda is not None:
+            self._celda.append(data)
+
+
+def tablas_html(html: str) -> list[list[list[str]]]:
+    lector = _LectorTablas()
+    lector.feed(html)
+    return [[fila for fila in tabla if fila] for tabla in lector.tablas]
+
+
+def _mes_de_texto(texto: str) -> int | None:
+    texto = texto.strip().lower()[:3]
+    return MESES_CORTOS.index(texto) + 1 if texto in MESES_CORTOS else None
+
+
+def _numero_o_nada(texto: str) -> float | None:
+    texto = texto.replace("$", "").replace("%", "").strip()
+    if not texto or not any(ch.isdigit() for ch in texto):
+        return None
     try:
-        return serie_mindicador(indicador, anio), "mindicador.cl"
-    except ErrorDescarga as error_principal:
-        clave = os.environ.get("CMF_API_KEY", "").strip()
-        if not clave:
-            raise
+        return numero_chileno(texto)
+    except ValueError:
+        return None
+
+
+def serie_diaria_sii(html: str, anio: int) -> dict[dt.date, float]:
+    """Lee una grilla día × mes (UF o dólar): filas 1..31 y una columna por mes."""
+    serie: dict[dt.date, float] = {}
+    for tabla in tablas_html(html):
+        columnas: dict[int, int] = {}
+        for fila in tabla:
+            meses = {i: _mes_de_texto(celda) for i, celda in enumerate(fila)}
+            if sum(1 for m in meses.values() if m) >= 3:
+                columnas = {i: m for i, m in meses.items() if m}
+                continue
+            if not columnas or not fila or not fila[0].strip().isdigit():
+                continue
+            dia = int(fila[0])
+            for i, mes in columnas.items():
+                if i < len(fila) and 1 <= dia <= 31:
+                    valor = _numero_o_nada(fila[i])
+                    if valor is not None:
+                        try:
+                            serie[dt.date(anio, mes, dia)] = valor
+                        except ValueError:
+                            pass
+    return serie
+
+
+def serie_mensual_sii(html: str, anio: int, columna: str) -> dict[dt.date, float]:
+    """Lee la tabla mensual de la UTM: ``columna`` es "utm" o "ipc" (variación mensual en %)."""
+    serie: dict[dt.date, float] = {}
+    for tabla in tablas_html(html):
+        indice = None
+        for fila in tabla:
+            encabezados = [celda.lower() for celda in fila]
+            if any("utm" in e for e in encabezados) and _mes_de_texto(fila[0]) is None:
+                if columna == "utm":
+                    indice = next((i for i, e in enumerate(encabezados) if e.startswith("utm")), None)
+                else:
+                    indice = next((i for i, e in enumerate(encabezados)
+                                   if "mensual" in e and ("var" in e or "ipc" in e)), None)
+                continue
+            mes = _mes_de_texto(fila[0]) if fila else None
+            if indice is None or mes is None or indice >= len(fila):
+                continue
+            valor = _numero_o_nada(fila[indice])
+            if valor is not None:
+                serie[dt.date(anio, mes, 1)] = valor
+    return serie
+
+
+def descargar_texto(url: str, intentos: int = 3, espera: float = 2.0, timeout: float = 25) -> str:
+    ultimo_error: Exception | None = None
+    for intento in range(intentos):
         try:
-            return serie_cmf(indicador, anio, clave), "api.cmfchile.cl"
-        except ErrorDescarga as error_respaldo:
-            raise ErrorDescarga(f"{error_principal} | respaldo CMF: {error_respaldo}") from None
+            solicitud = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+            with urllib.request.urlopen(solicitud, timeout=timeout) as respuesta:
+                crudo = respuesta.read()
+            for codificacion in ("utf-8", "latin-1"):
+                try:
+                    return crudo.decode(codificacion)
+                except UnicodeDecodeError:
+                    continue
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as error:
+            ultimo_error = error
+            if intento < intentos - 1:
+                time.sleep(espera * (2 ** intento))
+    raise ErrorDescarga(f"No se pudo descargar {url}: {ultimo_error}")
+
+
+def serie_sii(indicador: str, anio: int, **opciones) -> dict[dt.date, float]:
+    if indicador not in SII_PAGINAS:
+        raise ErrorDescarga(f"El SII no publica {indicador}")
+    html = descargar_texto(f"{SII}/{SII_PAGINAS[indicador].format(anio=anio)}", **opciones)
+    if indicador in ("uf", "dolar"):
+        serie = serie_diaria_sii(html, anio)
+    else:
+        serie = serie_mensual_sii(html, anio, indicador)
+    if not serie:
+        raise ErrorDescarga(f"No se encontraron datos de {indicador} {anio} en la página del SII")
+    return serie
+
+
+def obtener_serie(indicador: str, anio: int, fuentes_caidas: set[str] | None = None
+                  ) -> tuple[dict[dt.date, float], str]:
+    """Serie de un año: primero mindicador.cl, luego la CMF (si hay clave) y luego el SII.
+
+    ``fuentes_caidas`` acumula las fuentes que fallaron en esta ejecución para no
+    volver a esperarlas en cada consulta.
+    """
+    caidas = fuentes_caidas if fuentes_caidas is not None else set()
+    clave = os.environ.get("CMF_API_KEY", "").strip()
+    intentos = [
+        # Un solo intento corto: si mindicador no responde (pasa desde algunos
+        # servidores en la nube), se pasa de inmediato a la siguiente fuente.
+        ("mindicador.cl", lambda: serie_mindicador(indicador, anio, intentos=1, timeout=20)),
+        ("api.cmfchile.cl", (lambda: serie_cmf(indicador, anio, clave)) if clave else None),
+        ("sii.cl", (lambda: serie_sii(indicador, anio)) if indicador in SII_PAGINAS else None),
+    ]
+    errores = []
+    for nombre, funcion in intentos:
+        if funcion is None or nombre in caidas:
+            continue
+        try:
+            return funcion(), nombre
+        except ErrorDescarga as error:
+            errores.append(str(error))
+            if "No se pudo descargar" in str(error):
+                caidas.add(nombre)
+    raise ErrorDescarga(" | ".join(errores) or f"Sin fuentes disponibles para {indicador} {anio}")
 
 
 def filtrar_valores_validos(indicador: str, serie: dict[dt.date, float]) -> tuple[dict, list[str]]:
@@ -123,9 +278,9 @@ def filtrar_valores_validos(indicador: str, serie: dict[dt.date, float]) -> tupl
     return validos, descartados
 
 
-def ultimos_indicadores() -> dict:
+def ultimos_indicadores(**opciones) -> dict:
     """Último valor de todos los indicadores que publica mindicador.cl (TPM, cobre, IMACEC, etc.)."""
-    respuesta = descargar_json(MINDICADOR)
+    respuesta = descargar_json(MINDICADOR, **opciones)
     resultado = {}
     for codigo, item in respuesta.items():
         if isinstance(item, dict) and "valor" in item and "fecha" in item:
@@ -149,6 +304,7 @@ def actualizar(directorio: Path | None = None, anio_inicio: int = 2018,
     hoy = hoy or hoy_chile()
     resumen: dict = {"series": {}, "errores": [], "fuentes": set()}
     fallas_seguidas = 0
+    fuentes_caidas: set[str] = set()
 
     for indicador in SERIES:
         ruta = directorio / "series" / f"{indicador}.json"
@@ -165,7 +321,7 @@ def actualizar(directorio: Path | None = None, anio_inicio: int = 2018,
                 continue
             inicio = time.monotonic()
             try:
-                serie, fuente = obtener_serie(indicador, anio)
+                serie, fuente = obtener_serie(indicador, anio, fuentes_caidas)
                 nuevos.update(serie)
                 resumen["fuentes"].add(fuente)
                 fallas_seguidas = 0
@@ -194,9 +350,9 @@ def actualizar(directorio: Path | None = None, anio_inicio: int = 2018,
             "ultimo": max(combinado).isoformat() if combinado else None,
         }
 
-    if fallas_seguidas < MAX_FALLAS_SEGUIDAS:
+    if fallas_seguidas < MAX_FALLAS_SEGUIDAS and "mindicador.cl" not in fuentes_caidas:
         try:
-            ultimos = ultimos_indicadores()
+            ultimos = ultimos_indicadores(intentos=1, timeout=20)
             with open(directorio / "ultimos.json", "w", encoding="utf-8") as archivo:
                 json.dump(ultimos, archivo, indent=1, ensure_ascii=False)
                 archivo.write("\n")

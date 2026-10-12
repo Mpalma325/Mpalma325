@@ -117,12 +117,12 @@ def test_serie_mindicador(monkeypatch):
 
 
 def test_actualizar_fusiona_y_escribe(tmp_path, monkeypatch):
-    def falsa_serie(indicador, anio):
+    def falsa_serie(indicador, anio, *_):
         valores = {"uf": 41000.0, "dolar": 950.0, "euro": 1100.0, "utm": 72000.0, "ipc": 0.4}
         return {D(anio, 3, 1): valores[indicador], D(anio, 3, 2): valores[indicador] + 1}, "prueba"
 
     monkeypatch.setattr(fuentes, "obtener_serie", falsa_serie)
-    monkeypatch.setattr(fuentes, "ultimos_indicadores", lambda: {"tpm": {"valor": 4.5}})
+    monkeypatch.setattr(fuentes, "ultimos_indicadores", lambda **_: {"tpm": {"valor": 4.5}})
     resumen = fuentes.actualizar(tmp_path, anio_inicio=2025, hoy=D(2026, 10, 12), pausa=0)
     assert resumen["series"]["uf"]["total"] == 4      # 2 días × 2 años
     assert resumen["series"]["utm"]["total"] == 2     # series mensuales: un valor por mes
@@ -139,12 +139,55 @@ def test_actualizar_fusiona_y_escribe(tmp_path, monkeypatch):
 def test_actualizar_deja_de_insistir_si_la_fuente_esta_caida(tmp_path, monkeypatch):
     llamadas = []
 
-    def caida(indicador, anio):
+    def caida(indicador, anio, *_):
         llamadas.append((indicador, anio))
         raise fuentes.ErrorDescarga("sin respuesta")
 
     monkeypatch.setattr(fuentes, "obtener_serie", caida)
-    monkeypatch.setattr(fuentes, "ultimos_indicadores", lambda: pytest.fail("no debería consultarse"))
+    monkeypatch.setattr(fuentes, "ultimos_indicadores", lambda **_: pytest.fail("no debería consultarse"))
     resumen = fuentes.actualizar(tmp_path, anio_inicio=2018, hoy=D(2026, 10, 12), pausa=0)
     assert len(llamadas) == fuentes.MAX_FALLAS_SEGUIDAS
     assert all(info["total"] == 0 for info in resumen["series"].values())
+
+
+# --- Respaldo SII (HTML simulado con la estructura de sus tablas) ---
+
+HTML_UF = """
+<table id="table_export"><thead><tr><th>Día</th><th>Ene</th><th>Feb</th><th>Mar</th></tr></thead>
+<tbody>
+<tr><th>1</th><td>39.727,06</td><td>39.800,12</td><td>&nbsp;</td></tr>
+<tr><th>31</th><td>39.900,00</td><td></td><td>40.001,50</td></tr>
+</tbody></table>
+"""
+
+HTML_UTM = """
+<table><tr><th>Mes</th><th>UTM</th><th>UTA</th><th>IPC Índice</th><th>Var. Mensual</th></tr>
+<tr><td>Enero</td><td>$ 69.751</td><td>$ 837.012</td><td>130,02</td><td>0,3</td></tr>
+<tr><td>Febrero</td><td>$ 69.960</td><td>$ 839.520</td><td>130,40</td><td>-0,1</td></tr>
+<tr><td>Marzo</td><td></td><td></td><td></td><td></td></tr>
+</table>
+"""
+
+
+def test_lee_grilla_diaria_del_sii():
+    serie = fuentes.serie_diaria_sii(HTML_UF, 2026)
+    assert serie == {D(2026, 1, 1): 39727.06, D(2026, 2, 1): 39800.12,
+                     D(2026, 1, 31): 39900.0, D(2026, 3, 31): 40001.5}
+
+
+def test_lee_tabla_mensual_del_sii():
+    assert fuentes.serie_mensual_sii(HTML_UTM, 2026, "utm") == {D(2026, 1, 1): 69751.0, D(2026, 2, 1): 69960.0}
+    assert fuentes.serie_mensual_sii(HTML_UTM, 2026, "ipc") == {D(2026, 1, 1): 0.3, D(2026, 2, 1): -0.1}
+
+
+def test_usa_el_sii_si_mindicador_falla(monkeypatch):
+    def caida(*_, **__):
+        raise fuentes.ErrorDescarga("No se pudo descargar https://mindicador.cl: timeout")
+
+    monkeypatch.delenv("CMF_API_KEY", raising=False)
+    monkeypatch.setattr(fuentes, "serie_mindicador", caida)
+    monkeypatch.setattr(fuentes, "descargar_texto", lambda url, **_: HTML_UF)
+    caidas = set()
+    serie, fuente = fuentes.obtener_serie("uf", 2026, caidas)
+    assert fuente == "sii.cl" and serie[D(2026, 1, 1)] == 39727.06
+    assert caidas == {"mindicador.cl"}

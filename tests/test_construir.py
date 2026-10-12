@@ -180,3 +180,17 @@ def test_falla_si_faltan_datos(tmp_path):
     (vacio / "series").mkdir(parents=True)
     with pytest.raises(ErrorConstruccion):
         construir(salida=tmp_path / "dist", demo=False, hoy=HOY, directorio_datos=vacio)
+
+
+def test_sitio_sin_euro(tmp_path):
+    """Si no hay datos del euro (el SII no lo publica), sus páginas se omiten sin dejar enlaces rotos."""
+    import shutil
+    datos = tmp_path / "datos"
+    shutil.copytree(DEMO, datos)
+    (datos / "series" / "euro.json").unlink()
+    salida = tmp_path / "sitio"
+    resumen = construir(salida=salida, demo=True, hoy=HOY, directorio_datos=datos)
+    assert not (salida / "euro").exists()
+    assert any("euro" in a for a in resumen["advertencias"])
+    for archivo in salida.rglob("*.html"):
+        assert 'href="/euro/' not in archivo.read_text(encoding="utf-8"), archivo

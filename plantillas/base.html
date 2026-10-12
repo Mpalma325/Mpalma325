@@ -85,7 +85,7 @@
           <li><a href="{{ ruta('/uf/') }}">UF hoy</a></li>
           <li><a href="{{ ruta('/uf/proyeccion/') }}">UF proyectada</a></li>
           <li><a href="{{ ruta('/dolar/') }}">Dólar observado</a></li>
-          <li><a href="{{ ruta('/euro/') }}">Euro</a></li>
+          {% if hay_euro %}<li><a href="{{ ruta('/euro/') }}">Euro</a></li>{% endif %}
           <li><a href="{{ ruta('/utm/') }}">UTM y UTA</a></li>
           <li><a href="{{ ruta('/ipc/') }}">IPC</a></li>
         </ul>

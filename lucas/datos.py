@@ -23,6 +23,7 @@ from pathlib import Path
 from .formato import redondear
 
 SERIES = ("uf", "dolar", "euro", "utm", "ipc")
+SERIES_OBLIGATORIAS = ("uf", "dolar", "utm", "ipc")  # el euro es opcional: el SII no lo publica
 SERIES_MENSUALES = ("utm", "ipc")
 UN_DIA = dt.timedelta(days=1)
 
@@ -211,6 +212,10 @@ class Datos:
     def demo(self) -> bool:
         return bool(self.meta.get("demo"))
 
+    def euro_vigente(self, hoy: dt.date) -> bool:
+        """Hay euro si su último dato tiene menos de 30 días (si no, se ocultan sus páginas)."""
+        return bool(self.euro) and (hoy - max(self.euro)).days <= 30
+
     def uf_dia(self, fecha: dt.date) -> float | None:
         return self.uf.get(fecha, self.uf_calculada.get(fecha))
 
@@ -267,14 +272,19 @@ def revisar_frescura(datos: Datos, hoy: dt.date) -> tuple[list[str], list[str]]:
     """Devuelve (errores, advertencias) sobre datos faltantes o desactualizados."""
     errores: list[str] = []
     advertencias: list[str] = []
-    for nombre in SERIES:
+    for nombre in SERIES_OBLIGATORIAS:
         if not getattr(datos, nombre):
             errores.append(f"No hay datos de {nombre}. Ejecuta: python -m lucas actualizar")
     if errores:
         return errores, advertencias
     if datos.uf_dia(hoy) is None:
         errores.append(f"No se conoce la UF de hoy ({hoy}). Último dato oficial: {max(datos.uf)}")
+    if not datos.euro_vigente(hoy):
+        advertencias.append("No hay datos recientes del euro: se omiten sus páginas "
+                            "(configura CMF_API_KEY si mindicador.cl no responde)")
     for nombre, limite in (("dolar", 7), ("euro", 7)):
+        if not getattr(datos, nombre):
+            continue
         ultima = max(getattr(datos, nombre))
         atraso = (hoy - ultima).days
         if atraso > limite:

@@ -27,13 +27,12 @@ jobs:
       - name: Instalar dependencias
         run: pip install -r requirements-dev.txt
 
-      - name: Revisar la fuente de datos
+      - name: Diagnosticar fuentes de datos
         continue-on-error: true
-        timeout-minutes: 2
-        run: |
-          for url in https://mindicador.cl/api https://mindicador.cl/api/uf/2026; do
-            curl -sS -m 45 -o /dev/null -w "$url -> HTTP %{http_code} en %{time_total} s\n" "$url" || true
-          done
+        timeout-minutes: 4
+        run: python -m lucas diagnosticar --detalle
+        env:
+          CMF_API_KEY: ${{ secrets.CMF_API_KEY }}
 
       - name: Descargar datos reales
         # Dos años bastan para validar las fórmulas. Si la API no responde, las

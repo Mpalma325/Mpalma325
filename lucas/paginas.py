@@ -105,7 +105,7 @@ def paginas_inicio(c: Contexto) -> list[Pagina]:
     hoy = c.hoy
     uf_anio = c.datos.uf_dia(un_anio_antes(hoy))
     dolar_anterior = Datos.anterior(c.datos.dolar, c.dolar[0])
-    euro_anterior = Datos.anterior(c.datos.euro, c.euro[0])
+    euro_anterior = Datos.anterior(c.datos.euro, c.euro[0]) if c.euro else None
     utm_anterior = c.datos.utm_mes(mes_anterior(hoy))
     otros = []
     for codigo, nombre, unidad in (("tpm", "Tasa de política monetaria", "%"),
@@ -128,9 +128,9 @@ def paginas_inicio(c: Contexto) -> list[Pagina]:
         contexto={
             "uf_variacion_anual": variacion(c.uf_hoy, uf_anio),
             "dolar_variacion": variacion(c.dolar[1], dolar_anterior[1] if dolar_anterior else None),
-            "euro_variacion": variacion(c.euro[1], euro_anterior[1] if euro_anterior else None),
+            "euro_variacion": variacion(c.euro[1], euro_anterior[1]) if c.euro and euro_anterior else None,
             "utm_variacion": variacion(c.utm_hoy, utm_anterior),
-            "euro_valor": c.euro[1],
+            "euro_valor": c.euro[1] if c.euro else None,
             "ipc_mes": c.ipc[0],
             "ipc_valor": c.ipc[1],
             "ipc_12m": ipc_12_meses(c),
@@ -485,8 +485,10 @@ def paginas_divisas(c: Contexto) -> list[Pagina]:
          "Multiplica la cantidad de euros por el valor del euro del día. Las casas de cambio y "
          "bancos aplican además su propio margen."),
     ]
-    return (_paginas_divisa(c, "dolar", "dólar", "dolares", "US$", MONTOS_DOLAR, True, FAQ_DOLAR)
-            + _paginas_divisa(c, "euro", "euro", "euros", "€", MONTOS_EURO, False, faq_euro))
+    paginas = _paginas_divisa(c, "dolar", "dólar", "dolares", "US$", MONTOS_DOLAR, True, FAQ_DOLAR)
+    if c.euro:
+        paginas += _paginas_divisa(c, "euro", "euro", "euros", "€", MONTOS_EURO, False, faq_euro)
+    return paginas
 
 
 # ---------------------------------------------------------------------------

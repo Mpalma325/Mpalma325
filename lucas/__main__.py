@@ -5,6 +5,7 @@
     python -m lucas construir --demo  # usa datos ficticios (sin internet)
     python -m lucas servir          # vista previa en http://localhost:8000
     python -m lucas verificar       # revisa datos y parámetros por actualizar
+    python -m lucas diagnosticar    # prueba las fuentes de datos
 """
 
 from __future__ import annotations
@@ -115,6 +116,53 @@ def comando_verificar(args) -> int:
     return 0
 
 
+def comando_diagnosticar(args) -> int:
+    """Prueba cada fuente de datos: si responde, cuánto tarda y qué trae."""
+    import time
+
+    from . import fuentes
+
+    anio = hoy_chile().year
+    pruebas = [("mindicador.cl", i, lambda i=i: fuentes.serie_mindicador(i, anio, intentos=1, timeout=20))
+               for i in ("uf", "dolar", "euro", "utm", "ipc")]
+    pruebas += [("sii.cl", i, lambda i=i: fuentes.serie_sii(i, anio, intentos=1, timeout=30))
+                for i in ("uf", "dolar", "utm", "ipc")]
+    clave = os.environ.get("CMF_API_KEY", "").strip()
+    if clave:
+        pruebas += [("api.cmfchile.cl", i, lambda i=i: fuentes.serie_cmf(i, anio, clave))
+                    for i in ("uf", "dolar", "euro", "utm", "ipc")]
+    caidas: set[str] = set()
+    for fuente, indicador, funcion in pruebas:
+        if fuente in caidas:
+            print(f"OMITIDA {fuente:16} {indicador:6} (la fuente no respondió antes)")
+            continue
+        inicio = time.monotonic()
+        try:
+            serie = funcion()
+            fechas = sorted(serie)
+            print(f"OK      {fuente:16} {indicador:6} {len(serie):4} valores: "
+                  f"{fechas[0]} = {serie[fechas[0]]} ... {fechas[-1]} = {serie[fechas[-1]]} "
+                  f"({time.monotonic() - inicio:.1f} s)")
+        except Exception as error:  # noqa: BLE001 - diagnóstico: mostrar cualquier falla
+            print(f"FALLA   {fuente:16} {indicador:6} ({time.monotonic() - inicio:.1f} s): {error}")
+            if "No se pudo descargar" in str(error):
+                caidas.add(fuente)
+    if args.detalle and "sii.cl" not in caidas:
+        for pagina in ("uf/uf{anio}.htm", "utm/utm{anio}.htm"):
+            try:
+                html = fuentes.descargar_texto(f"{fuentes.SII}/{pagina.format(anio=anio)}", intentos=1)
+            except fuentes.ErrorDescarga as error:
+                print(error)
+                continue
+            tablas = fuentes.tablas_html(html)
+            print(f"\n{pagina.format(anio=anio)}: {len(tablas)} tablas")
+            for numero, tabla in enumerate(tablas):
+                print(f"  tabla {numero}: {len(tabla)} filas")
+                for fila in tabla[:3]:
+                    print("    ", [celda[:18] for celda in fila[:14]])
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m lucas", description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -137,6 +185,10 @@ def main(argv: list[str] | None = None) -> int:
 
     p = sub.add_parser("verificar", help="revisa parámetros vencidos y datos atrasados")
     p.set_defaults(funcion=comando_verificar)
+
+    p = sub.add_parser("diagnosticar", help="prueba las fuentes de datos (mindicador, SII, CMF)")
+    p.add_argument("--detalle", action="store_true", help="muestra las tablas que encuentra en el SII")
+    p.set_defaults(funcion=comando_diagnosticar)
 
     args = parser.parse_args(argv)
     return args.funcion(args)
