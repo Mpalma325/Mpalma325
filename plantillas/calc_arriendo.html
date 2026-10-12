@@ -27,7 +27,7 @@
   </div>
   <div class="botones-rapidos">
     {% for p in periodos %}
-    <button type="button" class="boton-chico" data-periodo="{{ p.meses }}">Últimos {{ p.meses }} {{ 'mes' if p.meses == 1 else 'meses' }}</button>
+    <button type="button" class="boton-chico" data-periodo="{{ p.meses }}">{{ 'Último mes' if p.meses == 1 else 'Últimos ' ~ p.meses ~ ' meses' }}</button>
     {% endfor %}
   </div>
 </form>
@@ -49,6 +49,7 @@
 
 <section>
   <h2>Variación acumulada del IPC hasta {{ ultimo|mes_de_anio }}</h2>
+  <div class="tabla-desplazable">
   <table class="tabla">
     <thead><tr><th>Período</th><th class="num">Variación</th><th class="num">Arriendo de $500.000 queda en</th></tr></thead>
     <tbody>
@@ -57,6 +58,7 @@
     {% endfor %}
     </tbody>
   </table>
+  </div>
 </section>
 
 <section class="texto">

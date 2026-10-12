@@ -40,6 +40,7 @@
 
 <section>
   <h2>¿Cuánto suman $100.000 mensuales en 20 años?</h2>
+  <div class="tabla-desplazable">
   <table class="tabla">
     <thead><tr><th>Rentabilidad anual</th><th class="num">Aportado</th><th class="num">Ahorro final</th><th class="num">Ganancia</th></tr></thead>
     <tbody>
@@ -48,6 +49,7 @@
     {% endfor %}
     </tbody>
   </table>
+  </div>
   <p>La diferencia entre una rentabilidad de 3% y una de 7% anual, en 20 años, es de {{ (escenarios[2].saldo - escenarios[0].saldo)|pesos }}. Por eso las comisiones y el tipo de instrumento importan tanto en el largo plazo.</p>
 </section>
 
