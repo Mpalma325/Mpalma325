@@ -260,7 +260,8 @@ def test_404_sin_canonica(sitio):
 
 
 def test_meta_de_adsense_aunque_los_anuncios_no_esten_activos(contexto):
-    pagina = Pagina(ruta="/contacto/", plantilla="contacto.html", titulo="Contacto", descripcion="d" * 60, h1="Contacto")
+    pagina = Pagina(ruta="/404.html", plantilla="404.html", titulo="No encontrada", descripcion="d" * 60,
+                    h1="No encontrada", indexar=False)
     activo_no = {"activo": False, "publisher_id": PUBLISHER, "slots": {}}
     html = _render_pagina(contexto, pagina, adsense=activo_no, anuncios_activos=False)
     assert f'<meta name="google-adsense-account" content="{PUBLISHER}">' in html
@@ -346,7 +347,8 @@ def test_valores_iniciales_dias_habiles_finiquito_y_vacaciones(sitio, params):
     periodo = valor_de(resultado_de(leer(sitio, "/calculadoras/vacaciones-proporcionales/"),
                                     "resultado-vacaciones"), "periodo")
     proporcional = calculos.feriado_proporcional(calculos.sumar_meses(HOY, -8), HOY, _p_demo(sitio))
-    assert periodo == texto_tiempo(0, proporcional["meses"], proporcional["dias"]) == "8 meses, 1 día"
+    # Como la Dirección del Trabajo, sin contar el día de inicio: del 12-02 al 12-10 son 8 meses justos
+    assert periodo == texto_tiempo(0, proporcional["meses"], proporcional["dias"]) == "8 meses, 0 días"
 
 
 def _campo(html: str, identificador: str) -> str:

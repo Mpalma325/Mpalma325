@@ -638,4 +638,4 @@ def test_anuncios_debajo_de_la_tabla_principal(contexto, ruta, bloque):
     texto = entorno.get_template(pagina.plantilla).render(pagina=pagina, jsonld=[], **pagina.contexto)
     slot = cfg["monetizacion"]["adsense"]["slots"][bloque]
     assert f'data-ad-slot="{slot}"' in texto
-    assert texto.index("</table>") < texto.index("adsbygoogle\" style"), "el anuncio va después de la tabla"
+    assert texto.index("</table>") < texto.index(f'data-ad-slot="{slot}"'), "el anuncio va después de la tabla"
