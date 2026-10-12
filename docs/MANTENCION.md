@@ -12,6 +12,9 @@ El sitio se actualiza solo, pero las leyes cambian. Esta guía explica qué se a
 | Feriados de cada año (incluidos los trasladados) | Se calculan con las reglas de la ley |
 | Retención de honorarios 2027 (16%) y 2028 (17%) | Ya cargadas con su fecha de inicio |
 | Aporte del empleador por la reforma de pensiones (agosto 2027, 2028, 2029) | Ya cargado con sus fechas |
+| Jornada de 40 horas desde el 26 de abril de 2028 (horas extra) | Ya cargada con su fecha |
+| Cifras de las guías (sueldo mínimo, UF, topes, tablas, ejemplos) | Se calculan con los parámetros vigentes cada vez que se construye el sitio |
+| API de indicadores (`/api/v1/...`) y widget | Se regeneran en cada publicación |
 | Versiones de las GitHub Actions | Dependabot abre un pull request una vez al mes |
 
 ## Cómo les avisa el sistema
@@ -35,8 +38,22 @@ En el resumen del job (pestaña *Actions* → la ejecución en rojo → *Summary
 | **Cada trimestre** | Tasa hipotecaria de referencia (`credito_hipotecario`) | Simuladores de bancos, CMF |
 | **Antes de cada elección** | Agregar el día de la elección a `feriados_extra` (próximas: 29-oct-2028 municipales y regionales; 18-nov-2029 presidencial) | [servel.cl](https://www.servel.cl) |
 | **Fin de año** | Leyes nuevas de feriados o cambios en la tabla del impuesto único | [sii.cl](https://www.sii.cl), [bcn.cl](https://www.bcn.cl) |
+| **Enero** | Cambiar las URL con año (`impuesto2026.htm`, `uf2026.htm`...) en las `fuentes` de las guías y en `parametros/chile.yaml`: no se actualizan solas | `grep -rn "2026.htm" contenido parametros` |
+| **Cada trimestre** | Tasa de ejemplo del crédito de consumo (`credito_consumo`) | Simuladores de bancos, tasa máxima convencional en [cmfchile.cl](https://www.cmfchile.cl) |
+| **Cuando se publique** | El nuevo reglamento de información de créditos de consumo (reemplaza al DS 43 de 2012; estaba en consulta pública desde octubre de 2025): revisar la fórmula de la CAE y los textos de la calculadora de crédito de consumo | [economia.gob.cl](https://www.economia.gob.cl), Diario Oficial |
+| **Después de cada Operación Renta** | En la guía de honorarios, el porcentaje de cobertura parcial de las cotizaciones | [sii.cl](https://www.sii.cl) |
+| **Cada semestre** | Subsidio a la tasa hipotecaria (Ley 21.748, vigente hasta el 31-05-2028) y FOGAES en la guía de crédito hipotecario | [minvu.gob.cl](https://www.minvu.gob.cl) |
+| **Abril y octubre** | Programas de referidos (condiciones, montos, si siguen vigentes) | [MONETIZACION.md](MONETIZACION.md) |
+| **Una vez al año** | Requisitos de las redes de anuncios y los puntos "por confirmar" del plan de lanzamiento | [MONETIZACION.md](MONETIZACION.md), [LANZAMIENTO.md](LANZAMIENTO.md) |
+| **Abril de 2028** | Textos de la guía de jornada cuando rija la jornada de 40 horas (el parámetro ya está cargado) | `contenido/guias/jornada-laboral-42-horas-y-horas-extra.md` |
 
 > Tip: el **PDF mensual de Indicadores Previsionales de Previred** trae casi todo (UF, UTM, topes, comisiones AFP, SIS, sueldo mínimo, asignación familiar) en una sola página. Contrastarlo una vez al mes toma 5 minutos.
+
+**Fechas de la cuenta de AdSense y los referidos:**
+
+- El formulario W-8BEN de AdSense vence el 31 de diciembre del tercer año después de firmarlo (si lo firman en 2026, vence el 31-12-2029).
+- Racional desactiva el código al llegar a 50 referidos: pidan más cupo o pongan su bloque en `activo: false`.
+- Antes de la Operación Renta 2027, pregúntenle al contador si deben presentar la declaración jurada 1965 del SII (contenido digital).
 
 ## Cómo actualizar un parámetro
 
@@ -61,6 +78,24 @@ En el resumen del job (pestaña *Actions* → la ejecución en rojo → *Summary
 
 Se pueden cargar cambios **por adelantado**: el sitio usa cada valor solo desde su fecha `desde`.
 
+## Guías
+
+Las guías son archivos Markdown en `contenido/guias/`. El formato completo está en [contenido/LEEME.md](../contenido/LEEME.md).
+
+1. Copien una guía existente y cambien el nombre del archivo: será la URL (`/guias/<nombre>/`).
+2. Escriban **todas las cifras que cambian con el tiempo con variables** (`{{ p.imm|pesos }}`, `{{ uf_hoy|pesos(2) }}`, `{{ calc.sueldo_liquido(1000000, p).liquido|pesos }}`): así la guía sigue correcta cuando cambian los parámetros.
+3. Validen con `python -m lucas guias contenido/guias/<archivo>.md --demo --html`. Si una guía tiene errores, el sitio no se construye.
+4. Cada vez que revisen el contenido de una guía, actualicen su campo `revisada`.
+
+Los enlaces de referidos de las guías se ubican con la categoría de la guía (`trabajo`, `impuestos`, `vivienda`, `ahorro`, `indicadores`) en `monetizacion.afiliados[].secciones`.
+
+## API y widget
+
+- La API `v1` es un contrato público: se pueden **agregar** campos, nunca quitar ni cambiar los existentes. Un cambio incompatible va en `/api/v2/`, manteniendo `v1`.
+- `widget/widget.js` debe seguir siendo ES5, solo ASCII y de menos de 6 KB (las pruebas lo revisan), y vivir en la raíz del sitio. Los cambios llegan a los sitios que lo usan en cerca de una hora.
+- El código que otros sitios insertan tiene el dominio escrito: si algún día cambian de dominio, mantengan `/widget.js` y `/api/` funcionando en el antiguo o redirijan.
+- Si activan protecciones contra bots en Cloudflare, excluyan `/api/*` y `/widget.js`.
+
 ## Cómo crecer el sitio
 
 ### Agregar montos a las páginas en serie
@@ -74,12 +109,12 @@ En `lucas/paginas.py`, editen las listas `MONTOS_UF`, `MONTOS_DOLAR`, `MONTOS_EU
 3. **Pruebas:** casos en `tests/test_calculos.py`, y un caso en `tests/test_paridad_js.py` para verificar que Python y JavaScript den lo mismo.
 4. **La plantilla:** en `plantillas/` (copien una existente, por ejemplo `calc_honorarios.html`).
 5. **La interfaz:** en `estaticos/js/app.js`, una función `calcAlgo(form, res)`, registrada en el objeto `calculadoras` de la función `iniciar`.
-6. **La página:** en `lucas/paginas.py`, dentro de `paginas_calculadoras`, con título, descripción, preguntas frecuentes y `calculadora=True`. Agréguenla también a la lista de calculadoras de esa misma función.
+6. **La página:** en `lucas/paginas.py`, dentro de `paginas_calculadoras`, con título, descripción, preguntas frecuentes y `calculadora=True`. Agréguenla también a la lista de calculadoras de esa misma función. Las calculadoras de IVA, horas extra y crédito de consumo están en `lucas/paginas_calculadoras_extra.py` y sus pruebas en `tests/test_calculadoras_nuevas.py`: son un buen ejemplo completo.
 7. Corran `python -m pytest` y revisen la página con `python -m lucas construir --demo && python -m lucas servir`.
 
 ### Ideas priorizadas
 
-Ver la hoja de ruta en [PLAN_DE_NEGOCIO.md](PLAN_DE_NEGOCIO.md#6-hoja-de-ruta): permiso de circulación 2027, simulador de Operación Renta, licencia médica, horas extra y APV.
+Ver la hoja de ruta en [PLAN_DE_NEGOCIO.md](PLAN_DE_NEGOCIO.md#6-hoja-de-ruta): permiso de circulación 2027, simulador de Operación Renta, licencia médica y APV.
 
 ## Si algo falla
 

@@ -48,7 +48,9 @@ La demanda existe y está validada por sitios independientes:
 2. **Permiso de circulación por modelo y año** (temporada febrero–marzo): no hay calculadora privada.
 3. **Licencia médica** ("¿cuánto me pagan?"): solo está el simulador de SUSESO.
 4. ✅ **Vacaciones proporcionales con el calendario real de feriados:** los competidores usan la aproximación 7/5. Ya está construida (`/calculadoras/vacaciones-proporcionales/`).
-5. ✅ **Finiquito por causal:** ya está construido (`/calculadoras/finiquito/`). Pendiente: modelo de carta y recargos por despido injustificado.
+5. ✅ **Finiquito por causal:** ya está construido (`/calculadoras/finiquito/`), incluida la indemnización por término de obra o faena (Ley 21.122), que muchos simuladores omiten. Pendiente: modelo de carta.
+6. ✅ **Horas extra con la jornada de 42 horas** (desde abril de 2026), **IVA** y **crédito de consumo con CAE**: ya construidas.
+7. ✅ **Guías** que explican cada cálculo con ejemplos que se actualizan solos (finiquito, vacaciones, gratificación, liquidación, honorarios, impuesto único, arriendo, hipotecario, UF...): ayudan a posicionar búsquedas informativas y a la aprobación de AdSense.
 
 **Amenaza principal:** los resúmenes con IA de Google (AI Overviews) reducen los clics en búsquedas de "dato del día". Según Pew Research (jul-2025), con resumen de IA se hace clic en un 8% de las búsquedas, contra un 15% sin resumen. Por eso **priorizamos calculadoras interactivas**, que la IA no reemplaza, y usamos las páginas de datos como puerta de entrada y para enlaces internos.
 
@@ -56,19 +58,23 @@ La demanda existe y está validada por sitios independientes:
 
 ### 3.1 Publicidad (Google AdSense)
 
-- Ingreso por cada 1.000 páginas vistas (RPM): **estimamos entre US$1 y US$5** para tráfico chileno de finanzas. No hay datos públicos confiables; se sabrá midiendo.
-- AdSense paga cuando se acumulan **CLP 60.000** (cuenta en pesos) o US$100.
+- Ingreso por cada 1.000 páginas vistas (RPM): **para planificar usamos entre US$0,5 y US$2** para tráfico chileno. No hay datos públicos confiables (ver [MONETIZACION.md](MONETIZACION.md#rpm-esperado)): las finanzas pagan más que el promedio, pero el tráfico latinoamericano paga menos que el de EE. UU. Se sabrá midiendo.
+- AdSense paga cuando se acumulan **CLP 60.000** (cuenta en pesos), por transferencia o PayPal.
 - Otras redes (Ezoic, Mediavine, Raptive) exigen tráfico de EE. UU. o volúmenes muy altos: **al principio, solo AdSense es viable**.
 
 ### 3.2 Referidos y afiliados (más valor por visita)
 
-| Programa | Qué paga (según sus bases públicas, verificar) | Dónde encaja |
+Detalle verificado (con enlaces a las bases) en [MONETIZACION.md](MONETIZACION.md).
+
+| Programa | Qué paga (según sus bases públicas) | Dónde encaja |
 |---|---|---|
-| Fintual | 1% anual del saldo promedio del referido durante su primer año (2 años en APV) | Interés compuesto, sueldo (APV) |
-| Racional | 0,84% anual de lo invertido por el referido durante 1 año (tope 50 referidos) | Interés compuesto |
-| Global66 (Afiliados) | Pago por cliente nuevo (hasta US$20 en Colombia; consultar Chile) | Dólar, euro |
-| Buda.com | 20% de las comisiones de tus referidos durante 1 año | (si se agrega contenido cripto) |
-| Mercado Libre Afiliados | Hasta 8% según categoría | Contenido de compras, ahorro |
+| Fintual | 1% anual del saldo promedio del referido durante su primer año (2 años en APV) | Interés compuesto, sueldo (APV). Confirmar por escrito que se puede publicar en un sitio web |
+| Racional | 0,84% anual de lo invertido por el referido durante 1 año (tope 50 referidos) | Interés compuesto. Confirmar por escrito |
+| Global66 (Afiliados) | Pago por cliente nuevo (hasta US$20 en Colombia; consultar Chile) | Dólar, euro. Es el único programa fintech que acepta sitios web explícitamente |
+| ComparaOnline (vía Awin) | Desde 10% por venta de asistencia en viaje | Dólar, euro |
+| Mercado Libre Afiliados | Hasta 8% según categoría | Contenido de compras |
+
+> ❌ **Buda.com no sirve:** sus bases prohíben publicar el enlace en sitios web o redes sin autorización escrita.
 
 > Ejemplo: un referido que invierte $1.000.000 en Fintual genera unos $10.000 al año. Con 10 referidos nuevos al mes, al cabo de un año son ~$1.200.000 anuales adicionales. Ojo: algunos programas están pensados para invitar a conocidos; lean sus bases antes de publicar enlaces.
 
@@ -83,18 +89,19 @@ La demanda existe y está validada por sitios independientes:
 
 ## 4. Proyección de ingresos (estimaciones)
 
-Supuestos: 1,5 páginas por visita; RPM de US$2 (US$3 en el escenario optimista); dólar ≈ $950. Sin contar referidos.
+Supuestos: 1,5 páginas por visita; RPM de US$0,5 (pesimista), US$1 (base) y US$2 (optimista); dólar ≈ $950; anuncios desde el mes 3. Sin contar referidos. *Versión revisada en octubre de 2026: la primera usaba un RPM de US$2 a US$3, que la investigación de monetización consideró optimista.*
 
 | Escenario | Visitas/mes al mes 6 | Al mes 12 | Al mes 24 | Ingreso AdSense al mes 24 |
 |---|---|---|---|---|
-| Pesimista (Google no nos posiciona) | 500 | 2.000 | 5.000 | ~US$15/mes |
-| **Base** | 5.000 | 30.000 | 100.000 | **~US$300/mes (~$285.000)** |
-| Optimista | 20.000 | 100.000 | 300.000 | ~US$1.350/mes (~$1.280.000) |
+| Pesimista (Google no nos posiciona) | 500 | 2.000 | 5.000 | ~US$4/mes |
+| **Base** | 5.000 | 30.000 | 100.000 | **~US$150/mes (~$140.000)** |
+| Optimista | 20.000 | 100.000 | 300.000 | ~US$900/mes (~$855.000) |
 
 **¿Cuándo llegamos al primer millón?** (de pesos, que en Chile también cuenta 😄)
 
-- Escenario base: alrededor del **mes 17–18**, sumando lo acumulado.
-- Escenario optimista: antes del mes 12.
+- Escenario base, solo con AdSense: alrededor del **mes 22**, sumando lo acumulado. Los referidos pueden adelantarlo mucho: con 10 referidos nuevos al mes en Fintual o Racional se suma del orden de $1.000.000 al año.
+- Escenario optimista: alrededor del mes 11.
+- El primer pago de AdSense (al juntar $60.000) llegaría hacia el mes 9 o 10 en el escenario base.
 - Para ser millonarios en dólares, este sitio solo no basta. Es realista como **primera pieza** de un portafolio de activos digitales, si se reinvierte lo que genere (ver sección 9).
 
 Qué mueve la aguja: más calculadoras útiles (cada una es una nueva puerta de entrada desde Google), enlaces desde otros sitios, y ubicar bien los referidos.
@@ -106,7 +113,7 @@ Qué mueve la aguja: más calculadoras útiles (cada una es una nueva puerta de 
 | Dominio `.cl` (NIC Chile) | ~$10.000 al año (verificar tarifa vigente) |
 | Hosting (Cloudflare, plan gratuito) | $0, con uso comercial permitido |
 | Automatización (GitHub Actions) | $0. El proyecto usa ~150 minutos al mes; el plan gratuito incluye 2.000 en repositorios privados |
-| Datos (SII, mindicador.cl, API de la CMF) | $0 |
+| Datos (SII, findic.cl, API de la CMF) | $0 |
 | Tiempo de puesta en marcha | 10–15 horas |
 | Mantención | 1–2 horas al mes, más el tiempo que quieran dedicar a crecer |
 
@@ -123,10 +130,13 @@ Cada pieza se publica entre 4 y 8 semanas antes de su temporada alta.
 | Dic 2026 | Postular a AdSense; activar referidos | El sitio ya tendrá páginas indexadas |
 | Ene 2027 | **Permiso de circulación 2027** por tasación del SII (páginas por marca, modelo y año) | Se paga en febrero–marzo; no hay calculadora privada. Gran oportunidad de páginas en serie con valor real |
 | Feb 2027 | **Simulador Operación Renta** para honorarios | Abril: ¿me devuelven o pago cotizaciones? |
-| Mar–abr 2027 | Licencia médica; horas extra (jornada de 42 horas) | Poca competencia |
+| Mar–abr 2027 | Licencia médica | Poca competencia |
 | May 2027 | APV régimen A vs. B; comparador de comisiones AFP | Mucho valor por visita (referidos) |
 | Jul 2027 | Costo empleador con el aporte de 4,25% (agosto 2027, ya cargado) | Pymes y contadores |
 | Continuo | Newsletter semanal automática con los indicadores | Audiencia propia que no depende de Google |
+| Continuo | Una guía nueva al mes y difusión del widget y la API gratuitos ([LANZAMIENTO.md](LANZAMIENTO.md)) | Enlaces desde otros sitios: lo más difícil para un sitio nuevo |
+
+Ya construido además del plan original: calculadoras de horas extra, IVA y crédito de consumo; 15 guías; API abierta de indicadores (JSON) y widget para otros sitios.
 
 ## 7. Roles sugeridos
 
@@ -155,7 +165,7 @@ Revisen cada mes: páginas indexadas, impresiones, CTR, posición media (Search 
 | Google tarda en posicionar un dominio nuevo | Paciencia (3–12 meses), contenido único (UF proyectada, calculadoras exactas) y enlaces desde otros sitios (compartir en comunidades, LinkedIn, universidad) |
 | Resúmenes con IA en Google | Priorizar herramientas interactivas por sobre datos sueltos |
 | Error en un cálculo | Pruebas automáticas contra valores oficiales, avisos legales y correo de contacto |
-| La API de datos se cae | Respaldo con la API de la CMF, datos guardados en el repositorio y aviso por correo |
+| Una fuente de datos falla | Tres fuentes por indicador (SII, findic.cl y la API de la CMF), datos guardados en el repositorio y aviso por correo |
 | AdSense rechaza la solicitud | Esperar a tener más páginas indexadas, revisar las políticas y volver a postular |
 | Cambios legales (tasas, topes) | Parámetros con fecha de vigencia y recordatorios automáticos (ver MANTENCION.md) |
 
