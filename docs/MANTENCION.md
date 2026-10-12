@@ -85,7 +85,7 @@ Ver la hoja de ruta en [PLAN_DE_NEGOCIO.md](PLAN_DE_NEGOCIO.md#6-hoja-de-ruta): 
 
 | Síntoma | Qué hacer |
 |---|---|
-| El paso "Descargar datos nuevos" muestra advertencias | Normalmente es temporal: la próxima ejecución lo resuelve. Si dura varios días, revisen si mindicador.cl cambió y configuren el respaldo de la CMF (`CMF_API_KEY`). |
+| El paso "Descargar datos nuevos" muestra advertencias | Normalmente es temporal: la próxima ejecución lo resuelve. Si dura varios días, corran `python -m lucas diagnosticar --detalle` (o revisen ese paso en el workflow **Pruebas**) para ver qué fuente falla. Si el SII cambió el formato de sus tablas, hay que ajustar `serie_diaria_sii` o `serie_mensual_sii` en `lucas/fuentes.py`; mientras tanto, configuren el respaldo de la CMF (`CMF_API_KEY`). |
 | Falla `test_uf_contra_datos_reales` | La fuente entregó una UF que no calza con la fórmula oficial. Revisen el valor en sii.cl o bcentral.cl antes de publicar. |
 | Falla `test_utm_contra_datos_reales` | Revisen `utm_se_mantiene_con_ipc_negativo` en `parametros/chile.yaml` y el valor en sii.cl. |
 | Falla "Publicar en Cloudflare" | Revisen que los secretos `CLOUDFLARE_API_TOKEN` y `CLOUDFLARE_ACCOUNT_ID` existan y que el token no haya expirado. |

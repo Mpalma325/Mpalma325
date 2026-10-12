@@ -148,8 +148,25 @@ def comando_diagnosticar(args) -> int:
             print(f"FALLA   {fuente:16} {indicador:6} ({time.monotonic() - inicio:.1f} s): {error}")
             if "No se pudo descargar" in str(error):
                 caidas.add(fuente)
+    if args.detalle:
+        import re as _re
+        for url in ("https://www.bcentral.cl/inicio",
+                    "https://si3.bcentral.cl/indicadoressiete/secure/IndicadoresDiarios.aspx",
+                    "https://findic.cl/api/dolar"):
+            inicio = time.monotonic()
+            try:
+                texto = fuentes.descargar_texto(url, intentos=1, timeout=20)
+            except fuentes.ErrorDescarga as error:
+                print(f"\nFALLA   {url} ({time.monotonic() - inicio:.1f} s): {error}")
+                continue
+            plano = " ".join(_re.sub(r"<[^>]+>", " ", texto).split())
+            print(f"\nOK      {url}: {len(texto)} caracteres ({time.monotonic() - inicio:.1f} s)")
+            for clave_busqueda in ("Dólar observado", "Dolar observado", "Euro", "UF", '"valor"'):
+                posicion = plano.find(clave_busqueda)
+                if posicion >= 0:
+                    print(f"   …{plano[max(0, posicion - 60): posicion + 140]}…")
     if args.detalle and "sii.cl" not in caidas:
-        for pagina in ("dolar/dolar{anio}.htm", "utm/utm{anio}.htm"):
+        for pagina in ("dolar/dolar{anio}.htm",):
             try:
                 html = fuentes.descargar_texto(f"{fuentes.SII}/{pagina.format(anio=anio)}", intentos=1)
             except fuentes.ErrorDescarga as error:

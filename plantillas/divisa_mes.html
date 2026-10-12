@@ -28,5 +28,5 @@
   {% if siguiente %}<a href="{{ ruta('/' ~ divisa.clave ~ '/' ~ siguiente.year ~ '/' ~ (siguiente.month|nombre_mes) ~ '/') }}">{{ siguiente|mes_anio|capitalizar }} →</a>{% endif %}
 </nav>
 <p><a href="{{ ruta('/' ~ divisa.clave ~ '/') }}">Ver el {{ divisa.nombre }} de hoy →</a></p>
-{{ m.fuente("Banco Central de Chile, vía mindicador.cl") }}
+{{ m.fuente("Banco Central de Chile") }}
 {% endblock %}

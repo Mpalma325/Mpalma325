@@ -111,9 +111,9 @@ Postulen cuando el sitio lleve algunas semanas en línea y ya tenga páginas ind
 2. **Lean las bases:** algunos programas solo permiten invitar a conocidos y no publicar el enlace en un sitio web.
 3. Agréguenlos en `config.yaml`, en `monetizacion.afiliados`, indicando en qué secciones mostrarlos. Hay un ejemplo comentado en el archivo. El sitio siempre muestra el aviso de que son enlaces de referidos.
 
-## Paso 9 (opcional): Fuente de datos de respaldo
+## Paso 9 (recomendado): Clave de la API de la CMF
 
-Si mindicador.cl deja de responder, el sitio puede usar la API oficial de la CMF:
+Los datos principales (UF, dólar, UTM e IPC) se leen de las tablas oficiales del SII, sin clave. Pero el **euro** (y un respaldo si el SII cambia su página) requiere la API de la CMF, porque mindicador.cl no responde desde los servidores de GitHub. Sin esta clave, el sitio funciona igual, pero sin las páginas del euro:
 
 1. Pidan una clave gratuita en [api.cmfchile.cl](https://api.cmfchile.cl).
 2. Guárdenla como secreto `CMF_API_KEY` en GitHub (*Settings → Secrets and variables → Actions*).

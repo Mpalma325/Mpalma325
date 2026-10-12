@@ -1,12 +1,11 @@
-"""Descarga de datos desde fuentes públicas.
+"""Descarga de datos desde fuentes públicas (el orden por indicador está en ``ORDEN_FUENTES``).
 
-1. Tablas de "Valores y fechas" del SII (oficial, sin clave): UF (incluidos los
-   valores futuros hasta el día 9), dólar observado, UTM e IPC.
-2. https://mindicador.cl (sin clave): además trae el euro y otros indicadores
-   (TPM, cobre, IMACEC...). Ojo: no responde desde los servidores de GitHub Actions.
-3. API de la CMF, con una clave gratuita (https://api.cmfchile.cl): si defines la
-   variable de entorno ``CMF_API_KEY`` (en GitHub: Settings → Secrets → Actions),
-   se usa como respaldo y para obtener el euro.
+- Tablas de "Valores y fechas" del SII (oficial, sin clave): UF (incluidos los
+  valores futuros hasta el día 9), UTM e IPC al día; dólar con ~10 días de atraso.
+- API de la CMF, con una clave gratuita (https://api.cmfchile.cl): dólar y euro al
+  día. Se activa definiendo ``CMF_API_KEY`` (en GitHub: Settings → Secrets → Actions).
+- https://mindicador.cl (sin clave): trae todo, además de TPM, cobre e IMACEC, pero
+  no responde desde los servidores de GitHub Actions.
 
 Los datos se guardan en ``data/`` y GitHub Actions los sube al repositorio en
 cada actualización: así el sitio siempre tiene un respaldo aunque la API se caiga.
@@ -84,8 +83,16 @@ def descargar_json(url: str, intentos: int = 3, espera: float = 2.0, timeout: fl
 
 
 def numero_chileno(texto: str) -> float:
-    """'39.485,65' -> 39485.65"""
-    return float(str(texto).strip().replace(".", "").replace(",", "."))
+    """Lee números en formato chileno o con punto decimal.
+
+    '39.485,65' -> 39485.65 · '69.751' -> 69751 · '972.6' -> 972.6 · '0,4' -> 0.4
+    """
+    texto = str(texto).strip().replace(" ", "")
+    if "," in texto:
+        return float(texto.replace(".", "").replace(",", "."))
+    if re.fullmatch(r"-?\d{1,3}(\.\d{3})+", texto):
+        return float(texto.replace(".", ""))
+    return float(texto)
 
 
 def serie_mindicador(indicador: str, anio: int, **opciones) -> dict[dt.date, float]:
@@ -266,24 +273,37 @@ def serie_sii(indicador: str, anio: int, **opciones) -> dict[dt.date, float]:
     return serie
 
 
+# Orden de fuentes por indicador. El SII es oficial y no requiere clave, pero su
+# página del dólar se actualiza con ~10 días de atraso; por eso para el dólar y el
+# euro se prefiere la API de la CMF (con clave). mindicador.cl no responde desde
+# los servidores de GitHub Actions, pero sí desde otros lugares.
+ORDEN_FUENTES = {
+    "uf": ("sii.cl", "api.cmfchile.cl", "mindicador.cl"),
+    "utm": ("sii.cl", "api.cmfchile.cl", "mindicador.cl"),
+    "ipc": ("sii.cl", "api.cmfchile.cl", "mindicador.cl"),
+    "dolar": ("api.cmfchile.cl", "mindicador.cl", "sii.cl"),
+    "euro": ("api.cmfchile.cl", "mindicador.cl"),
+}
+
+
 def obtener_serie(indicador: str, anio: int, fuentes_caidas: set[str] | None = None
                   ) -> tuple[dict[dt.date, float], str]:
-    """Serie de un año desde la primera fuente que responda.
+    """Serie de un año desde la primera fuente que responda (ver ``ORDEN_FUENTES``).
 
-    Orden: SII (oficial, sin clave; UF, dólar, UTM e IPC), mindicador.cl (también
-    trae el euro, pero no responde desde algunos servidores en la nube) y la API de
-    la CMF si hay clave. ``fuentes_caidas`` acumula las fuentes que no respondieron
-    en esta ejecución para no volver a esperarlas.
+    ``fuentes_caidas`` acumula las fuentes que no respondieron en esta ejecución
+    para no volver a esperarlas.
     """
     caidas = fuentes_caidas if fuentes_caidas is not None else set()
     clave = os.environ.get("CMF_API_KEY", "").strip()
-    intentos = [
-        ("sii.cl", (lambda: serie_sii(indicador, anio)) if indicador in SII_PAGINAS else None),
-        ("mindicador.cl", lambda: serie_mindicador(indicador, anio, intentos=1, timeout=20)),
-        ("api.cmfchile.cl", (lambda: serie_cmf(indicador, anio, clave)) if clave else None),
-    ]
+    disponibles = {
+        "sii.cl": (lambda: serie_sii(indicador, anio)) if indicador in SII_PAGINAS else None,
+        # Un solo intento corto: si mindicador no responde, se pasa a la siguiente fuente.
+        "mindicador.cl": lambda: serie_mindicador(indicador, anio, intentos=1, timeout=20),
+        "api.cmfchile.cl": (lambda: serie_cmf(indicador, anio, clave)) if clave else None,
+    }
     errores = []
-    for nombre, funcion in intentos:
+    for nombre in ORDEN_FUENTES[indicador]:
+        funcion = disponibles.get(nombre)
         if funcion is None or nombre in caidas:
             continue
         try:

@@ -97,6 +97,9 @@ def test_utm_contra_datos_reales():
 def test_numero_chileno():
     assert fuentes.numero_chileno("39.485,65") == 39485.65
     assert fuentes.numero_chileno("0,4") == 0.4
+    assert fuentes.numero_chileno("69.751") == 69751.0      # punto de miles
+    assert fuentes.numero_chileno("972.6") == 972.6         # punto decimal (tablas del dólar del SII)
+    assert fuentes.numero_chileno("-0,1") == -0.1
 
 
 def test_filtra_valores_fuera_de_rango():
@@ -206,6 +209,13 @@ def test_detecta_cambio_de_formato_en_la_tabla_de_utm():
     roto = HTML_UTM.replace("837.012", "1.234")
     with pytest.raises(fuentes.ErrorDescarga):
         fuentes.serie_mensual_sii(roto, 2026, "utm")
+
+
+def test_dolar_prefiere_la_cmf_si_hay_clave(monkeypatch):
+    monkeypatch.setenv("CMF_API_KEY", "clave")
+    monkeypatch.setattr(fuentes, "serie_cmf", lambda indicador, anio, clave: {D(2026, 10, 9): 970.5})
+    serie, fuente = fuentes.obtener_serie("dolar", 2026, set())
+    assert fuente == "api.cmfchile.cl"
 
 
 def test_el_sii_es_la_fuente_principal(monkeypatch):

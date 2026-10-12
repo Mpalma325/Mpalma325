@@ -106,7 +106,7 @@ Qué mueve la aguja: más calculadoras útiles (cada una es una nueva puerta de 
 | Dominio `.cl` (NIC Chile) | ~$10.000 al año (verificar tarifa vigente) |
 | Hosting (Cloudflare, plan gratuito) | $0, con uso comercial permitido |
 | Automatización (GitHub Actions) | $0. El proyecto usa ~150 minutos al mes; el plan gratuito incluye 2.000 en repositorios privados |
-| Datos (mindicador.cl, API CMF) | $0 |
+| Datos (SII, mindicador.cl, API de la CMF) | $0 |
 | Tiempo de puesta en marcha | 10–15 horas |
 | Mantención | 1–2 horas al mes, más el tiempo que quieran dedicar a crecer |
 
