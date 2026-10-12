@@ -19,9 +19,19 @@ fuentes:
     url: "https://www.sernac.cl/portal/607/w3-article-2463.html"
   - nombre: "Subsidio al Crédito Hipotecario (Ministerio de Vivienda y Urbanismo)"
     url: "https://www.minvu.gob.cl/nuevo-subsidio-al-credito-hipotecario/"
+  - nombre: "Fogaes, garantía estatal para créditos hipotecarios (Ministerio de Vivienda y Urbanismo)"
+    url: "https://www.minvu.gob.cl/fogaes/"
+  - nombre: "Ley 21.748, subsidio a la tasa de interés hipotecaria (BCN)"
+    url: "https://www.bcn.cl/leychile/navegar?i=1213759"
+  - nombre: "Ley 21.836, que extiende la vigencia y aumenta la cobertura del subsidio (Diario Oficial, 17 de agosto de 2026)"
+    url: "https://www.diariooficial.interior.gob.cl/publicaciones/2026/08/17/44526/01/2854867.pdf"
+  - nombre: "Ley 18.010 sobre operaciones de crédito de dinero, artículo 10 (BCN)"
+    url: "https://www.bcn.cl/leychile/navegar?idNorma=29438"
+  - nombre: "¿Puedo adelantar el pago del crédito hipotecario? (CMF Educa)"
+    url: "https://www.cmfchile.cl/educa/621/w3-article-27379.html"
 faq:
   - pregunta: "¿Cuánto pie se necesita para un crédito hipotecario?"
-    respuesta: "Lo habitual es un 20% del valor de la vivienda, porque los bancos suelen financiar hasta el 80%. Para viviendas nuevas, la garantía estatal FOGAES permite financiar hasta el 90%. Además del pie, necesitas dinero para la tasación, la notaría, el impuesto de timbres y la inscripción en el Conservador de Bienes Raíces."
+    respuesta: "Lo habitual es un 20% del valor de la vivienda, porque los bancos suelen financiar hasta el 80%. {% if hoy.isoformat() <= '2028-05-31' %}Para viviendas nuevas de hasta 6.000 UF, la garantía estatal FOGAES permite poner un pie de solo 10%, según el Ministerio de Vivienda. {% endif %}Además del pie, necesitas dinero para la tasación, la notaría, el impuesto de timbres y la inscripción en el Conservador de Bienes Raíces."
   - pregunta: "¿Qué seguros son obligatorios en un crédito hipotecario?"
     respuesta: "El de desgravamen y el de incendio. El seguro de sismo no es obligatorio: es una cobertura adicional que se contrata junto con la póliza de incendio. Puedes tomar una póliza individual en vez de la colectiva del banco, siempre que tenga al menos la misma cobertura."
   - pregunta: "¿Cuánto es el dividendo de un crédito de 2.400 UF?"
@@ -36,6 +46,8 @@ faq:
 {% set r25 = calc.simular_hipotecario(3000, 0.2, tasa, 25, p) %}
 {% set r30 = calc.simular_hipotecario(3000, 0.2, tasa, 30, p) %}
 {% set primer_anio = calc.saldos_anuales(r25.credito_uf, tasa, 25)[0] %}
+{# Plazo del subsidio a la tasa y de la garantía FOGAES ampliados por la Ley 21.836. #}
+{% set beneficio_vigente = hoy.isoformat() <= '2028-05-31' %}
 Un crédito hipotecario es un préstamo de largo plazo para comprar una vivienda, que queda hipotecada como garantía. En Chile lo habitual es pactarlo en UF: la deuda y el dividendo se expresan en UF y cada mes pagas su equivalente en pesos. Aquí verás cuánto pie necesitas, cómo se calcula el dividendo y qué costos no aparecen en la fórmula.
 
 ## Cómo funciona un crédito en UF
@@ -54,9 +66,9 @@ Lo habitual es que el crédito cubra hasta el **80% del valor de tasación** de 
 | Pie (20%) | {{ r25.pie_uf|numero }} UF | {{ (r25.pie_uf * uf_hoy)|pesos }} |
 | Crédito (80%) | {{ r25.credito_uf|numero }} UF | {{ (r25.credito_uf * uf_hoy)|pesos }} |
 
-Además del pie, necesitas dinero para los **gastos operacionales**. Según la Comisión para el Mercado Financiero (CMF), incluyen la tasación de la propiedad, el estudio de títulos y la redacción de la escritura, la notaría, el impuesto de timbres y estampillas y la inscripción en el Conservador de Bienes Raíces. El impuesto de timbres varía, entre otras cosas, según si la vivienda es nueva o usada y si está acogida al DFL 2.
+Además del pie, necesitas dinero para los **gastos operacionales**. Según la Comisión para el Mercado Financiero (CMF), incluyen la tasación de la propiedad, el estudio de títulos y la redacción de la escritura, la notaría, el impuesto de timbres y estampillas y la inscripción en el Conservador de Bienes Raíces. Pide al banco el detalle de estos gastos antes de firmar.
 
-Para viviendas nuevas existe una garantía estatal (FOGAES) que permite al banco financiar hasta el 90% del valor, con un pie de 10%, siempre sujeto a su evaluación. La explicamos más abajo, en la sección de subsidios.
+{% if beneficio_vigente %}Para viviendas nuevas de hasta 6.000 UF existe una garantía estatal (FOGAES) con la que el banco puede financiar hasta el 90% del valor, con un pie de 10%, siempre sujeto a su evaluación. La explicamos más abajo, en la sección de subsidios.{% else %}Revisa también, en la sección de subsidios, si hay garantías del Estado vigentes que permitan un pie menor.{% endif %}
 
 ## Cómo se calcula el dividendo en UF
 
@@ -91,7 +103,7 @@ El dividendo que cobra el banco es mayor que el de la fórmula, porque se le sum
 
 El seguro de **sismo no es obligatorio**: es una cobertura adicional que solo se puede contratar junto con la póliza de incendio ([CMF Educa](https://www.cmfchile.cl/educa/621/w3-article-920.html)). Pregunta si la tuya lo incluye.
 
-Los seguros que el banco contrata por cuenta de sus deudores se licitan en forma colectiva y se adjudican a la oferta de menor precio. Aun así, puedes contratar una póliza individual, siempre que tenga al menos la misma cobertura que la colectiva ([seguros asociados a créditos hipotecarios, CMF Educa](https://www.cmfchile.cl/educa/621/w3-article-1753.html)).
+Los seguros que el banco contrata por cuenta de sus deudores se licitan en forma colectiva. Aun así, puedes contratar una póliza individual, directamente en una aseguradora o con el corredor que elijas, siempre que tenga al menos las mismas coberturas que la licitada ([seguros asociados a créditos hipotecarios, CMF Educa](https://www.cmfchile.cl/educa/621/w3-article-1753.html)).
 
 ## Cómo comparar ofertas: CAE y tipo de tasa
 
@@ -112,6 +124,10 @@ Consejos para cotizar:
 3. Pregunta cuánto te cobrarían por prepagar (pagar por adelantado) parte o todo el crédito: te servirá si después quieres abonar capital o cambiarte de banco.
 4. Revisa qué productos te ofrecen junto con el crédito y si son voluntarios.
 
+### Prepago: pagar antes de tiempo
+
+Según el artículo 10 de la Ley 18.010 y la CMF, si el capital inicial de tu crédito no supera las 5.000 UF, puedes pagarlo por adelantado aun contra la voluntad del banco. Pagas el capital que adelantas, los intereses hasta el día del pago y una comisión de prepago con tope legal: en los créditos reajustables, como los pactados en UF, es de hasta un mes y medio de los intereses pactados sobre el capital que prepagas. Es un derecho irrenunciable, así que el contrato no puede quitártelo, aunque un abono parcial muy pequeño en relación con el saldo puede requerir el acuerdo del banco. En los créditos de más de 5.000 UF, el prepago se rige por lo que pactes.
+
 ## Qué renta te piden
 
 Cada banco define qué parte de tu renta puede ir al dividendo y evalúa además tus otras deudas y tu historial de pagos. Como referencia, nuestro simulador considera que el dividendo no supere el **{{ p.carga_financiera_maxima|porcentaje(0) }} de tu renta líquida**:
@@ -122,11 +138,12 @@ En el ejemplo a 25 años, un dividendo de {{ r25.dividendo_pesos|pesos }} requie
 
 ## Subsidios y garantías del Estado
 
-Si compras una vivienda **nueva**, revisa el subsidio al crédito hipotecario: rebaja la tasa de interés y viene con la garantía estatal FOGAES, que permite créditos con menos pie. Lo creó la Ley 21.748, publicada el 29 de mayo de 2025.
-{% if hoy.year < 2028 or (hoy.year == 2028 and hoy.month <= 5) %}
-En 2026 se amplió: según el Ministerio de Vivienda y Urbanismo, aplica a viviendas nuevas de hasta 6.000 UF compradas por personas naturales, con 80 mil cupos, hasta el 31 de mayo de 2028 o hasta que se agoten. Se pide en los bancos y entidades adscritas al beneficio: una vez aprobado el crédito, el subsidio se otorga automáticamente.
+{% if beneficio_vigente %}
+Si compras una vivienda **nueva**, revisa el subsidio a la tasa de interés hipotecaria: rebaja la tasa de tu crédito hasta en 60 puntos base (0,6 puntos porcentuales) y se entrega junto con la garantía estatal FOGAES, que permite créditos con menos pie. Lo creó la Ley 21.748, publicada el 29 de mayo de 2025, para viviendas de hasta 4.000 UF. La Ley 21.836, publicada el 17 de agosto de 2026, subió ese tope a 6.000 UF y extendió el plazo para pedirlo hasta el 31 de mayo de 2028.
+
+Según el Ministerio de Vivienda y Urbanismo, aplica a viviendas nuevas de hasta 6.000 UF compradas por personas naturales, con 80 mil cupos, hasta el 31 de mayo de 2028 o hasta que se agoten. No se postula aparte: el beneficio se otorga al aprobarse el crédito, sin trámites adicionales. Pregunta en tu banco si participa del programa.
 {% else %}
-Según el Ministerio de Vivienda y Urbanismo, el programa ampliado tuvo vigencia hasta el 31 de mayo de 2028 o hasta agotar sus cupos. Revisa en minvu.gob.cl si existe un beneficio similar vigente.
+Entre 2025 y mayo de 2028 existió un subsidio a la tasa de interés hipotecaria para viviendas nuevas, creado por la Ley 21.748 y ampliado por la Ley 21.836, que se entregaba junto con la garantía estatal FOGAES. Según el Ministerio de Vivienda y Urbanismo, el programa ampliado tuvo vigencia hasta el 31 de mayo de 2028 o hasta agotar sus cupos. Revisa en minvu.gob.cl si existe un beneficio similar vigente.
 {% endif %}
 
 Otros programas del Ministerio de Vivienda y Urbanismo (Minvu):
@@ -134,8 +151,8 @@ Otros programas del Ministerio de Vivienda y Urbanismo (Minvu):
 | Programa | Para quién | Qué entrega |
 |---|---|---|
 | DS1, Subsidio para Sectores Medios | Familias de sectores medios; tiene tres tramos y exige un ahorro mínimo | Un monto en UF que se suma a tu ahorro y, si hace falta, a un crédito hipotecario |
-| DS19, Integración Social y Territorial | Familias de distintos ingresos | Viviendas en proyectos bien ubicados, donde también puedes aplicar un DS1 o un DS49 |
-| DS49, Fondo Solidario de Elección de Vivienda | Familias de menores ingresos | Subsidio para comprar o construir una vivienda |
+| DS19, Integración Social y Territorial | Familias vulnerables y de sectores medios | Viviendas en proyectos que integran a familias de distintos ingresos |
+| DS49, Fondo Solidario de Elección de Vivienda | Familias vulnerables sin vivienda propia | Subsidio para comprar o construir una vivienda |
 
 Los llamados, montos y requisitos cambian cada año: revisa el sitio del [Minvu](https://www.minvu.gob.cl/) antes de postular.
 

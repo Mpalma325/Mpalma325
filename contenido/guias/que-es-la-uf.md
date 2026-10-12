@@ -12,10 +12,14 @@ calculadoras:
   - /uf/proyeccion/
   - /calculadoras/credito-hipotecario/
 fuentes:
+  - nombre: "Unidad de Fomento: metodología de cálculo (Banco Central de Chile)"
+    url: "https://si3.bcentral.cl/estadisticas/Principal1/Metodologias/EMF/UF.pdf"
   - nombre: "Valores de la UF 2026 (Servicio de Impuestos Internos)"
     url: "https://www.sii.cl/valores_y_fechas/uf/uf2026.htm"
   - nombre: "UTM, UTA e IPC 2026 (Servicio de Impuestos Internos)"
     url: "https://www.sii.cl/valores_y_fechas/utm/utm2026.htm"
+  - nombre: "Aspectos principales de la UF y el debate sobre su pertinencia (Biblioteca del Congreso Nacional)"
+    url: "https://obtienearchivo.bcn.cl/obtienearchivo?id=repositorio%2F10221%2F34133%2F1%2FAspectos_principales_de_la_UF_y_el_debate_sobre_su_pertinencia.pdf"
 faq:
   - pregunta: "¿Cuánto vale la UF hoy?"
     respuesta: "Hoy, {{ hoy|fecha_larga }}, la UF vale {{ uf_hoy|pesos(2) }}. Su valor cambia todos los días, pero los valores hasta el día 9 del mes siguiente se conocen apenas el INE publica el IPC."
@@ -48,7 +52,7 @@ Si tienes un contrato en UF, revísalo: ahí se indica qué valor de la UF se us
 
 {# Mes en que empezó el período vigente de la UF (del día 10 al día 9 del mes siguiente). #}
 {% set mes_inicio = hoy.month if hoy.day >= 10 else (hoy.month - 2) % 12 + 1 %}
-El Banco Central de Chile calcula la UF con una regla fija, que no depende de decisiones del día a día:
+El Banco Central de Chile calcula la UF con una regla fija, descrita en su metodología, que no depende de decisiones del día a día:
 
 1. **Período:** la UF se reajusta todos los días entre el día 10 de cada mes y el día 9 del mes siguiente.
 2. **Reajuste total:** en ese período, la UF varía exactamente lo mismo que el IPC del mes anterior al inicio del período. Por ejemplo, entre el 10 de {{ mes_inicio|nombre_mes }} y el 9 de {{ (mes_inicio % 12 + 1)|nombre_mes }} se aplica el IPC de {{ ((mes_inicio - 2) % 12 + 1)|nombre_mes }}.
@@ -58,7 +62,7 @@ En fórmula:
 
 <p><code>UF(día) = UF(día 9) × (1 + IPC)<sup>n/d</sup></code></p>
 
-donde *n* es la cantidad de días transcurridos desde el día 9 y *d* la cantidad de días del período, que coincide con los días del mes en que el período comienza (31, 30, 29 o 28). El resultado se redondea a dos decimales.
+donde *n* es la cantidad de días transcurridos desde el día 9 y *d* la cantidad de días del período, que coincide con los días del mes en que el período comienza (31, 30, 29 o 28). El resultado se redondea a dos decimales. El Banco Central publica estos valores en el Diario Oficial a más tardar el día 9 de cada mes, para todo el período que va del día 10 al día 9 del mes siguiente.
 
 ### Un ejemplo con números redondos
 

@@ -11,10 +11,16 @@ calculadoras:
   - /calculadoras/reajuste-arriendo-ipc/
   - /ipc/
 fuentes:
+  - nombre: "Ley 18.101 sobre arrendamiento de predios urbanos, artículos 3 y 21 (BCN)"
+    url: "https://www.bcn.cl/leychile/navegar?idNorma=29526"
   - nombre: "Ley de arriendo (Ley 18.101), guía Ley Fácil de la Biblioteca del Congreso Nacional"
     url: "https://www.bcn.cl/portal/leyfacil/recurso/ley-de-arriendo"
+  - nombre: "Ley 21.461, procedimiento monitorio de cobro de rentas (BCN)"
+    url: "https://www.bcn.cl/leychile/navegar?idNorma=1178004"
   - nombre: "Preguntas frecuentes del IPC base 2023=100 (INE)"
     url: "https://www.ine.gob.cl/docs/default-source/%C3%ADndice-de-precios-al-consumidor/metodologias/base-anual-2023-100/2---preguntas-frecuentes-ipc-2023.pdf"
+  - nombre: "Conferencia ciudadana del IPC, abril de 2025: calendario de publicación (INE)"
+    url: "https://www.ine.gob.cl/docs/default-source/conferencias/2025/conferencia_ciudadana_ipc_23_04_2025.pdf"
   - nombre: "Cálculo de variaciones en la Calculadora IPC (INE)"
     url: "https://www.ine.gob.cl/docs/default-source/%C3%ADndice-de-precios-al-consumidor/metodologias/base-anual-2023-100/5---uso-calculadora-ipc.pdf"
   - nombre: "Metodología de cálculo de la Unidad de Fomento (Banco Central de Chile)"
@@ -40,7 +46,8 @@ Los arriendos de inmuebles urbanos se rigen por la [Ley 18.101](https://www.bcn.
 En la práctica, esto significa que:
 
 - **Manda tu contrato.** El índice (IPC o UF), la frecuencia y los meses que se consideran son los que diga la cláusula de reajuste.
-- **Sin cláusula, no hay reajuste automático.** La ley no agrega un reajuste por su cuenta; para cambiar la renta se necesita un nuevo acuerdo, por ejemplo al renovar el contrato.
+- **Sin cláusula, la renta no se reajusta sola.** La ley no fija un reajuste periódico de la renta; para cambiarla se necesita un nuevo acuerdo, por ejemplo al renovar el contrato.
+- **Los pagos atrasados sí se reajustan por ley.** Según el artículo 21, en caso de mora, los pagos o devoluciones entre las partes se hacen reajustados según la variación de la UF entre la fecha en que debieron hacerse y la del pago efectivo.
 - **El término del contrato tiene reglas.** En los contratos mes a mes o de duración indefinida, el arrendador solo puede dar el desahucio por vía judicial o con notificación personal de un notario. El plazo es de dos meses, más un mes por cada año completo que el arrendatario haya ocupado el inmueble, con un máximo de seis meses en total.
 
 Conviene que el contrato conste por escrito y con las firmas autorizadas ante notario. Desde la [Ley 21.461](https://www.bcn.cl/leychile/navegar?idNorma=1178004) de 2022, ese contrato sirve como antecedente suficiente para cobrar rentas impagas mediante el procedimiento monitorio que creó esa ley. Si la cláusula de reajuste es clara, también será claro cuánto se debe.
@@ -65,7 +72,7 @@ Antes de calcular, revisa en tu cláusula:
 
 ## Qué meses del IPC usar
 
-El IPC lo calcula el Instituto Nacional de Estadísticas (INE). Según sus preguntas frecuentes, se publica a las **08:00 del día 8 de cada mes**, con el dato del mes anterior. Si el 8 no es día hábil, se publica el día hábil inmediatamente anterior.
+El IPC lo calcula el Instituto Nacional de Estadísticas (INE). Según el INE, se publica a las **08:00 del día 8 de cada mes** en su sitio web, con el dato del mes anterior. Si el 8 no es día hábil, se publica el día hábil inmediatamente anterior: por ejemplo, el IPC de mayo de 2025 se publicó el viernes 6 de junio, porque el 8 cayó domingo.
 
 Esto importa porque el reajuste suele cobrarse en los primeros días del mes, antes de que salga el IPC del mes recién terminado. Un ejemplo:
 
