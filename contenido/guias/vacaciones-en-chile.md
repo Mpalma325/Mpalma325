@@ -13,8 +13,10 @@ calculadoras:
 fuentes:
   - nombre: "Código del Trabajo, artículos 67 a 73 (Biblioteca del Congreso Nacional)"
     url: "https://www.bcn.cl/leychile/navegar?idNorma=207436"
-  - nombre: "Dirección del Trabajo: ¿Cómo se calcula el feriado proporcional?"
+  - nombre: "Dirección del Trabajo: ¿Cómo se calcula el feriado proporcional? (incluye los días progresivos)"
     url: "https://www.dt.gob.cl/portal/1628/w3-article-60200.html"
+  - nombre: "Dirección del Trabajo, Ord. N° 3838/192: los días progresivos se suman al feriado que se paga al terminar"
+    url: "https://www.dt.gob.cl/legislacion/1624/w3-article-63540.html"
   - nombre: "Dirección del Trabajo: ¿En qué consiste el derecho al feriado progresivo?"
     url: "https://www.dt.gob.cl/portal/1628/w3-article-60194.html"
   - nombre: "Dirección del Trabajo: feriado anual en Magallanes, Aysén y la Provincia de Palena"
