@@ -24,7 +24,8 @@
       <option value="desahucio">Desahucio, cargo de exclusiva confianza (art. 161)</option>
       <option value="renuncia">Renuncia voluntaria</option>
       <option value="mutuo_acuerdo">Mutuo acuerdo</option>
-      <option value="vencimiento">Vencimiento del plazo o término de la obra</option>
+      <option value="vencimiento">Vencimiento del plazo (art. 159 N° 4)</option>
+      <option value="termino_obra">Término de la obra o faena (art. 159 N° 5)</option>
       <option value="disciplinario">Despido disciplinario (art. 160)</option>
     </select>
   </div>
@@ -39,6 +40,11 @@
       <label for="f-dias">Días trabajados del último mes aún no pagados</label>
       <input id="f-dias" name="dias" inputmode="numeric" autocomplete="off" value="0">
     </div>
+    <div class="campo">
+      <label for="f-feriado-anual">Días hábiles de feriado al año</label>
+      <input id="f-feriado-anual" name="feriado_anual" inputmode="decimal" autocomplete="off" value="{{ feriado_anual|numero }}">
+      <small>{{ feriado_anual|numero }} por ley; 20 en las regiones de Magallanes y Aysén y en la provincia de Palena.</small>
+    </div>
   </details>
 </form>
 
@@ -50,6 +56,7 @@
       <tr><th scope="row">Tiempo trabajado</th><td class="num" data-r="tiempo">{{ ejemplo.tiempo.anios }} años, {{ ejemplo.tiempo.meses }} meses y {{ ejemplo.tiempo.dias }} días</td></tr>
       <tr data-fila="indemnizacion"><th scope="row">Indemnización por años de servicio <span data-r="anios">({{ ejemplo.anios_indemnizacion }} años)</span></th><td class="num" data-r="indemnizacion">{{ ejemplo.indemnizacion_anios|pesos }}</td></tr>
       <tr data-fila="aviso"><th scope="row">Indemnización sustitutiva del aviso previo</th><td class="num" data-r="aviso">{{ ejemplo.aviso_previo|pesos }}</td></tr>
+      <tr data-fila="obra" hidden><th scope="row">Indemnización por término de obra o faena <span data-r="meses_obra">(0 meses)</span></th><td class="num" data-r="obra">$0</td></tr>
       <tr><th scope="row">Vacaciones <span data-r="feriado_detalle">({{ ejemplo.feriado_habiles|numero(2) }} días hábiles = {{ ejemplo.feriado_corridos|numero(2) }} días corridos)</span></th><td class="num" data-r="feriado">{{ ejemplo.feriado|pesos }}</td></tr>
       <tr data-fila="pendiente" hidden><th scope="row">Días trabajados no pagados</th><td class="num" data-r="pendiente">$0</td></tr>
       <tr class="total"><th scope="row">Total</th><td class="num" data-r="total">{{ ejemplo.total|pesos }}</td></tr>
@@ -71,7 +78,8 @@
       <tr><td>Necesidades de la empresa o desahucio (art. 161)</td><td>Sí, con 1 año o más</td><td>Sí, si no avisaron con 30 días</td><td>Sí</td></tr>
       <tr><td>Renuncia voluntaria</td><td>No (salvo pacto)</td><td>No</td><td>Sí</td></tr>
       <tr><td>Mutuo acuerdo</td><td>Solo si se pacta</td><td>No</td><td>Sí</td></tr>
-      <tr><td>Vencimiento del plazo o término de la obra</td><td>No</td><td>No</td><td>Sí</td></tr>
+      <tr><td>Vencimiento del plazo (art. 159 N° 4)</td><td>No</td><td>No</td><td>Sí</td></tr>
+      <tr><td>Término de la obra o faena (art. 159 N° 5)</td><td>2,5 días por mes trabajado (Ley 21.122)</td><td>No</td><td>Sí</td></tr>
       <tr><td>Despido disciplinario (art. 160)</td><td>No (salvo que un tribunal lo declare injustificado)</td><td>No</td><td>Sí</td></tr>
     </tbody>
   </table>
@@ -80,9 +88,10 @@
   <ul>
     <li><strong>Años de servicio:</strong> 30 días de la última remuneración mensual por cada año trabajado y fracción superior a seis meses, con un máximo de 11 años. La remuneración se considera con un tope de 90 UF.</li>
     <li><strong>Aviso previo:</strong> si el empleador no avisó con 30 días de anticipación, debe pagar una remuneración mensual adicional (también con tope de 90 UF).</li>
+    <li><strong>Término de obra o faena:</strong> si el contrato por obra o faena termina porque la obra concluyó y duró al menos un mes, corresponden 2,5 días de remuneración por cada mes trabajado y fracción superior a 15 días (Ley 21.122), con el mismo tope de 90 UF.</li>
     <li><strong>Vacaciones:</strong> 1,25 días hábiles por cada mes trabajado desde el último aniversario del contrato, más los días pendientes. Se pagan en días corridos: se cuentan los días hábiles desde el día siguiente al término y se suman los sábados, domingos y feriados que quedan entre medio. Cada día vale la remuneración mensual dividida por 30.</li>
   </ul>
-  <p class="aviso">Resultado referencial y en montos brutos. No considera bonos, horas extra, gratificaciones pendientes, indemnizaciones pactadas ni descuentos (por ejemplo, el aporte del empleador al seguro de cesantía que puede descontarse de la indemnización por necesidades de la empresa). Para un cálculo oficial, acude a la Dirección del Trabajo.</p>
+  <p class="aviso">Resultado referencial y en montos brutos. No considera bonos, horas extra, gratificaciones pendientes, indemnizaciones pactadas ni descuentos (por ejemplo, el aporte del empleador al seguro de cesantía, que puede descontarse de la indemnización por necesidades de la empresa o por término de obra). Tampoco suma el feriado progresivo (un día más por cada tres años trabajados después de diez, artículo 68). Para un cálculo oficial, acude a la Dirección del Trabajo.</p>
 </section>
 
 {{ m.afiliados("finiquito") }}

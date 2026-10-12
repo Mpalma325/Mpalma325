@@ -244,3 +244,27 @@ def test_finiquito_renuncia_y_tope(p):
     assert alto["tope_aplicado"]
     assert alto["indemnizacion_anios"] == round(tope * 7)  # 6 años y 9 meses -> 7 años
     assert alto["feriado"] > 0
+
+
+def test_finiquito_por_termino_de_obra(p):
+    """Ley 21.122: 2,5 días de remuneración por mes trabajado y fracción superior a 15 días."""
+    import datetime as dt
+    D = dt.date
+    # Del 5 de enero al 12 de octubre de 2026: 9 meses y 8 días -> 9 meses.
+    assert c.meses_obra_o_faena(D(2026, 1, 5), D(2026, 10, 12)) == 9
+    # Del 20 de enero al 12 de octubre: 8 meses y 23 días -> la fracción suma un mes.
+    assert c.meses_obra_o_faena(D(2026, 1, 20), D(2026, 10, 12)) == 9
+    # Menos de un mes de contrato: no corresponde.
+    assert c.meses_obra_o_faena(D(2026, 10, 1), D(2026, 10, 20)) == 0
+    r = c.finiquito(D(2026, 1, 5), D(2026, 10, 12), 900_000, "termino_obra", p, _feriados())
+    assert r["meses_obra"] == 9
+    assert r["indemnizacion_obra"] == 675_000  # 900.000 / 30 × 2,5 × 9
+    assert r["indemnizacion_anios"] == 0 and r["aviso_previo"] == 0
+    assert r["total"] == 675_000 + r["feriado"]
+    # Vencimiento de un plazo fijo: sin indemnización.
+    plazo = c.finiquito(D(2026, 1, 5), D(2026, 10, 12), 900_000, "vencimiento", p, _feriados())
+    assert plazo["indemnizacion_obra"] == 0 and plazo["total"] == plazo["feriado"]
+    # La remuneración se topa en 90 UF, como el resto de las indemnizaciones.
+    alto = c.finiquito(D(2026, 1, 5), D(2026, 10, 12), 6_000_000, "termino_obra", p, _feriados())
+    assert alto["tope_aplicado"]
+    assert alto["indemnizacion_obra"] == round(90 * UF_12_OCTUBRE_2026 / 30 * 2.5 * 9)

@@ -19,6 +19,8 @@ fuentes:
     url: "https://www.dt.gob.cl/portal/1628/w3-article-60604.html"
   - nombre: "Dirección del Trabajo: ratificación de un finiquito de trabajo"
     url: "https://www.dt.gob.cl/portal/1626/w3-article-117245.html"
+  - nombre: "Dirección del Trabajo: indemnización por término de obra o faena (Ley 21.122)"
+    url: "https://dt.gob.cl/legislacion/1624/w3-article-119662.html"
 faq:
   - pregunta: "¿Cuánto me pagan de finiquito si renuncio?"
     respuesta: "Si renuncias no te corresponde indemnización por años de servicio, salvo que tu contrato la pacte. Sí te deben pagar las vacaciones pendientes y proporcionales, los días trabajados que aún no te pagan y cualquier otra remuneración adeudada."
@@ -52,8 +54,11 @@ El Código del Trabajo agrupa las causales de término en tres artículos:
 |---|---|---|---|
 | Necesidades de la empresa o desahucio (art. 161) | Sí, con un año o más | Sí, si no te avisaron con 30 días | Sí |
 | Renuncia o mutuo acuerdo (art. 159) | No, salvo pacto | No | Sí |
-| Vencimiento del plazo o término de la obra (art. 159) | No | No | Sí |
+| Vencimiento del plazo (art. 159 N° 4) | No | No | Sí |
+| Término de la obra o faena (art. 159 N° 5) | 2,5 días por mes trabajado (Ley 21.122) | No | Sí |
 | Despido disciplinario (art. 160) | No, salvo que un juez lo declare injustificado | No | Sí |
+
+Los contratos **por obra o faena** tienen una regla propia: si terminan porque la obra concluyó y duraron al menos un mes, el empleador debe pagar **2,5 días de remuneración por cada mes trabajado y fracción superior a 15 días**, con el mismo tope de {{ p.tope_indemnizacion_uf|numero }} UF (artículo 163, agregado por la Ley 21.122).
 
 ## Indemnización por años de servicio
 

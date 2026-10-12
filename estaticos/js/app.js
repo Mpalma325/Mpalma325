@@ -558,6 +558,20 @@
     return true;
   }
 
+  /** Copia de los parámetros con otros días de feriado al año (por ejemplo, 20 en zonas extremas). */
+  function conFeriadoAnual(p, texto) {
+    var dias = leerNumero(texto);
+    if (isNaN(dias) || dias <= 0 || dias === p.feriado_anual_habiles) {
+      return p;
+    }
+    var copia = {};
+    Object.keys(p).forEach(function (clave) {
+      copia[clave] = p[clave];
+    });
+    copia.feriado_anual_habiles = dias;
+    return copia;
+  }
+
   function textoTiempo(t) {
     var partes = [];
     if (t.anios) {
@@ -577,7 +591,8 @@
     if (!fechasContrato(d, res, datos) || isNaN(remuneracion) || remuneracion <= 0) {
       return;
     }
-    var r = L.finiquito(d.inicio, d.termino, remuneracion, d.causal, datos.parametros, datos.feriados,
+    var r = L.finiquito(d.inicio, d.termino, remuneracion, d.causal,
+      conFeriadoAnual(datos.parametros, d.feriado_anual), datos.feriados,
       !!d.aviso, leerNumero(d.pendientes) || 0, leerNumero(d.dias) || 0);
     poner(res, 'principal', pesos(r.total));
     poner(res, 'tiempo', textoTiempo(r.tiempo));
@@ -586,6 +601,10 @@
     mostrarFila(res, 'indemnizacion', conIndemnizacion);
     poner(res, 'aviso', pesos(r.aviso_previo));
     mostrarFila(res, 'aviso', conIndemnizacion);
+    var obra = d.causal === 'termino_obra';
+    poner(res, 'meses_obra', '(' + r.meses_obra + (r.meses_obra === 1 ? ' mes)' : ' meses)'));
+    poner(res, 'obra', pesos(r.indemnizacion_obra));
+    mostrarFila(res, 'obra', obra);
     poner(res, 'feriado_detalle', '(' + numero(r.feriado_habiles, 2) + ' días hábiles = ' +
       numero(r.feriado_corridos, 2) + ' días corridos)');
     poner(res, 'feriado', pesos(r.feriado));
@@ -597,6 +616,8 @@
       pesos(datos.parametros.tope_indemnizacion_uf * datos.parametros.uf) + ').';
     if (conIndemnizacion && r.anios_indemnizacion === 0) {
       nota = 'La indemnización por años de servicio exige al menos un año de contrato.';
+    } else if (obra && r.meses_obra === 0) {
+      nota = 'La indemnización por término de obra o faena exige al menos un mes de contrato.';
     } else if (r.tope_aplicado) {
       nota += ' Se aplicó el tope.';
     }
@@ -610,8 +631,9 @@
     if (!fechasContrato(d, res, datos) || isNaN(remuneracion) || remuneracion <= 0) {
       return;
     }
-    var proporcional = L.feriadoProporcional(d.inicio, d.termino, datos.parametros);
-    var r = L.finiquito(d.inicio, d.termino, remuneracion, 'renuncia', datos.parametros, datos.feriados,
+    var parametros = conFeriadoAnual(datos.parametros, d.feriado_anual);
+    var proporcional = L.feriadoProporcional(d.inicio, d.termino, parametros);
+    var r = L.finiquito(d.inicio, d.termino, remuneracion, 'renuncia', parametros, datos.feriados,
       true, leerNumero(d.pendientes) || 0, 0);
     poner(res, 'principal', pesos(r.feriado));
     poner(res, 'periodo', textoTiempo({ anios: 0, meses: proporcional.meses, dias: proporcional.dias }));

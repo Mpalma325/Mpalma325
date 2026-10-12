@@ -64,7 +64,7 @@ ingreso_minimo:
   fuente: https://www.bcn.cl/leychile/navegar?idNorma=1225354
   vigencias:
     - desde: 2025-01-01
-      monto: 510000
+      monto: 510500        # $500.000 reajustado por el IPC de jul-dic 2024
       ley: Ley 21.578
     - desde: 2025-05-01
       monto: 529000
@@ -107,7 +107,7 @@ impuesto_unico:
         - {hasta: null, factor: 0.40,  rebaja: 38.82}
 
 retencion_honorarios:
-  # Ley 21.133 (gradualidad corrida por la Ley 21.242). Llega a 17% en 2028.
+  # Ley 21.133: sube 0,75 puntos al año desde 2020 (1 punto en 2028) hasta llegar a 17%.
   revisar_antes_de: 2028-12-01
   fuente: https://www.sii.cl/destacados/boletas_honorarios/index.html
   vigencias:

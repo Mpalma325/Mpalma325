@@ -197,6 +197,10 @@ def costo_empleador(bruto: float, p: dict, contrato: str = "indefinido", no_impo
 # ---------------------------------------------------------------------------
 
 CAUSALES_CON_INDEMNIZACION = ("necesidades_empresa", "desahucio")
+# Contrato por obra o faena terminado por la conclusión de la obra (art. 159 N° 5):
+# 2,5 días de remuneración por cada mes trabajado y fracción superior a 15 días, si
+# el contrato duró un mes o más (art. 163, agregado por la Ley 21.122).
+DIAS_POR_MES_OBRA = 2.5
 UN_DIA = dt.timedelta(days=1)
 
 
@@ -225,6 +229,14 @@ def anios_de_servicio(inicio: dt.date, termino: dt.date, p: dict) -> int:
         return 0
     extra = 1 if t["meses"] > 6 or (t["meses"] == 6 and t["dias"] > 0) else 0
     return min(t["anios"] + extra, p["tope_anios_indemnizacion"])
+
+
+def meses_obra_o_faena(inicio: dt.date, termino: dt.date) -> int:
+    """Meses para la indemnización por término de obra: cada mes y fracción superior a 15 días."""
+    t = tiempo_trabajado(inicio, termino)
+    if t["meses_totales"] < 1:
+        return 0
+    return t["meses_totales"] + (1 if t["dias"] > 15 else 0)
 
 
 def feriado_proporcional(inicio: dt.date, termino: dt.date, p: dict) -> dict:
@@ -270,6 +282,8 @@ def finiquito(inicio: dt.date, termino: dt.date, remuneracion: float, causal: st
     - Indemnización por años de servicio y sustitutiva del aviso previo: solo por
       necesidades de la empresa o desahucio (art. 161), con la remuneración topada
       en 90 UF (art. 172).
+    - Término de obra o faena (``termino_obra``): 2,5 días por mes trabajado, con el
+      mismo tope de remuneración.
     - Feriado: días pendientes más el proporcional, pagados en días corridos.
     - Remuneración de los días trabajados del último mes que aún no se pagan.
     """
@@ -279,6 +293,8 @@ def finiquito(inicio: dt.date, termino: dt.date, remuneracion: float, causal: st
     anios = anios_de_servicio(inicio, termino, p) if con_indemnizacion else 0
     indemnizacion = redondear(base * anios)
     aviso = redondear(base) if con_indemnizacion and not aviso_dado else 0.0
+    meses_obra = meses_obra_o_faena(inicio, termino) if causal == "termino_obra" else 0
+    indemnizacion_obra = redondear(base / 30 * DIAS_POR_MES_OBRA * meses_obra)
     proporcional = feriado_proporcional(inicio, termino, p)
     habiles = proporcional["dias_habiles"] + dias_pendientes
     conversion = dias_corridos_de_feriado(habiles, termino, feriados)
@@ -288,16 +304,18 @@ def finiquito(inicio: dt.date, termino: dt.date, remuneracion: float, causal: st
     return {
         "tiempo": tiempo_trabajado(inicio, termino),
         "anios_indemnizacion": anios,
-        "tope_aplicado": con_indemnizacion and remuneracion > tope,
+        "tope_aplicado": (con_indemnizacion or causal == "termino_obra") and remuneracion > tope,
         "indemnizacion_anios": indemnizacion,
         "aviso_previo": aviso,
+        "meses_obra": meses_obra,
+        "indemnizacion_obra": indemnizacion_obra,
         "feriado_proporcional_habiles": proporcional["dias_habiles"],
         "feriado_habiles": habiles,
         "feriado_corridos": conversion["dias_corridos"],
         "feriado_inhabiles": conversion["inhabiles"],
         "feriado": feriado,
         "remuneracion_pendiente": remuneracion_pendiente,
-        "total": indemnizacion + aviso + feriado + remuneracion_pendiente,
+        "total": indemnizacion + aviso + indemnizacion_obra + feriado + remuneracion_pendiente,
     }
 
 

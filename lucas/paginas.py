@@ -950,6 +950,11 @@ def paginas_calculadoras(c: Contexto) -> list[Pagina]:
             ("Si renuncio, ¿me pagan indemnización?",
              "No corresponde indemnización por años de servicio (salvo que tu contrato la pacte), "
              "pero sí te deben pagar las vacaciones pendientes y proporcionales y los días trabajados."),
+            ("¿Hay indemnización cuando termina un contrato por obra o faena?",
+             "Sí. Si el contrato termina porque concluyó la obra (artículo 159 N° 5) y duró al menos "
+             "un mes, corresponden 2,5 días de remuneración por cada mes trabajado y fracción superior "
+             "a 15 días (Ley 21.122). En un contrato a plazo fijo que termina por vencimiento del plazo "
+             "no hay indemnización."),
             ("¿Cuál es el plazo para pagar el finiquito?",
              "El empleador debe pagarlo dentro de 10 días hábiles contados desde la separación del "
              "trabajador (artículo 177 del Código del Trabajo)."),
@@ -958,6 +963,7 @@ def paginas_calculadoras(c: Contexto) -> list[Pagina]:
              "años de servicio aumenta entre 30% y 100% según la causal invocada (artículo 168)."),
         ],
         contexto={"ejemplo": ejemplo_finiquito, "inicio_ejemplo": inicio_ejemplo,
+                  "feriado_anual": p["feriado_anual_habiles"],
                   "tope_indemnizacion": tope_indemnizacion,
                   "parametros_tope_uf": numero(p["tope_indemnizacion_uf"])},
     ))
@@ -991,8 +997,11 @@ def paginas_calculadoras(c: Contexto) -> list[Pagina]:
              "Se divide la remuneración mensual por 30 y se multiplica por los días corridos."),
             ("¿Qué pasa con las vacaciones que no tomé de años anteriores?",
              "También se pagan al terminar el contrato. Ingrésalas en el campo de días pendientes."),
+            ("¿Y si trabajo en Magallanes, Aysén o Palena?",
+             "Allí el feriado anual es de 20 días hábiles (artículo 67), así que cada mes ganas "
+             f"{numero(20 / 12, 2)} días. Escribe 20 en el campo de días de feriado al año."),
         ],
-        contexto={"ejemplo": ejemplo_vacaciones,
+        contexto={"ejemplo": ejemplo_vacaciones, "feriado_anual": p["feriado_anual_habiles"],
                   "ejemplo_inicio": calculos.sumar_meses(hoy, -8).isoformat()},
     ))
 
@@ -1027,8 +1036,9 @@ def paginas_calculadoras(c: Contexto) -> list[Pagina]:
              "Muchos bancos exigen que el dividendo no supere el 25% de tu renta líquida, aunque "
              "cada institución evalúa además tu historial y otras deudas."),
             ("¿Por qué mi dividendo real es mayor?",
-             "Porque el dividendo incluye seguros obligatorios (desgravamen e incendio con "
-             "sismo) y, en algunos casos, comisiones. Pide siempre la cotización formal con el "
+             "Porque el dividendo incluye los seguros obligatorios de desgravamen e incendio, "
+             "casi siempre el adicional de sismo (que no es obligatorio, pero los bancos suelen "
+             "pedirlo) y, en algunos casos, comisiones. Pide siempre la cotización formal con la "
              "CAE (carga anual equivalente)."),
         ],
         contexto={"tasa": tasa, "ejemplos": ejemplos_hipotecario},
@@ -1089,8 +1099,10 @@ def paginas_calculadoras(c: Contexto) -> list[Pagina]:
         faq=[
             ("¿Qué es un día hábil?",
              "Para la mayoría de los trámites, un día hábil es de lunes a viernes, excluyendo "
-             "los feriados. Algunas normas, como el Código Civil, consideran hábiles también los "
-             "sábados: revisa qué norma aplica a tu plazo."),
+             "los feriados (así cuentan, por ejemplo, los plazos de los trámites ante organismos "
+             "públicos, Ley 19.880). Otras normas cuentan distinto: en el Código Civil los plazos "
+             "son de días corridos salvo que digan \"días útiles\", y en los plazos judiciales el "
+             "sábado es día hábil. Revisa qué norma aplica a tu plazo."),
             ("¿Se cuentan el día de inicio y el de término?",
              "En esta calculadora puedes elegirlo. En los plazos legales, por regla general el "
              "plazo empieza a correr el día siguiente a la notificación."),

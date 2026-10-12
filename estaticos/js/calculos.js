@@ -156,6 +156,8 @@
   // -------------------------------------------------------------------------
 
   var CAUSALES_CON_INDEMNIZACION = ['necesidades_empresa', 'desahucio'];
+  // Término de obra o faena (art. 159 N° 5, Ley 21.122): 2,5 días por mes trabajado.
+  var DIAS_POR_MES_OBRA = 2.5;
 
   function iso(anio, mes, dia) {
     return anio + '-' + ('0' + mes).slice(-2) + '-' + ('0' + dia).slice(-2);
@@ -198,6 +200,14 @@
     return Math.min(t.anios + extra, p.tope_anios_indemnizacion);
   }
 
+  function mesesObraOFaena(inicio, termino) {
+    var t = tiempoTrabajado(inicio, termino);
+    if (t.meses_totales < 1) {
+      return 0;
+    }
+    return t.meses_totales + (t.dias > 15 ? 1 : 0);
+  }
+
   function feriadoProporcional(inicio, termino, p) {
     var anios = tiempoTrabajado(inicio, termino).anios;
     var aniversario = sumarMeses(inicio, 12 * anios);
@@ -238,6 +248,8 @@
     var anios = conIndemnizacion ? aniosDeServicio(inicio, termino, p) : 0;
     var indemnizacion = redondear(base * anios);
     var aviso = conIndemnizacion && !avisoDado ? redondear(base) : 0;
+    var mesesObra = causal === 'termino_obra' ? mesesObraOFaena(inicio, termino) : 0;
+    var indemnizacionObra = redondear(base / 30 * DIAS_POR_MES_OBRA * mesesObra);
     var proporcional = feriadoProporcional(inicio, termino, p);
     var habiles = proporcional.dias_habiles + diasPendientes;
     var conversion = diasCorridosDeFeriado(habiles, termino, feriados);
@@ -247,16 +259,18 @@
     return {
       tiempo: tiempoTrabajado(inicio, termino),
       anios_indemnizacion: anios,
-      tope_aplicado: conIndemnizacion && remuneracion > tope,
+      tope_aplicado: (conIndemnizacion || causal === 'termino_obra') && remuneracion > tope,
       indemnizacion_anios: indemnizacion,
       aviso_previo: aviso,
+      meses_obra: mesesObra,
+      indemnizacion_obra: indemnizacionObra,
       feriado_proporcional_habiles: proporcional.dias_habiles,
       feriado_habiles: habiles,
       feriado_corridos: conversion.dias_corridos,
       feriado_inhabiles: conversion.inhabiles,
       feriado: feriado,
       remuneracion_pendiente: remuneracionPendiente,
-      total: indemnizacion + aviso + feriado + remuneracionPendiente
+      total: indemnizacion + aviso + indemnizacionObra + feriado + remuneracionPendiente
     };
   }
 
@@ -582,6 +596,7 @@
     sumarMeses: sumarMeses,
     tiempoTrabajado: tiempoTrabajado,
     aniosDeServicio: aniosDeServicio,
+    mesesObraOFaena: mesesObraOFaena,
     feriadoProporcional: feriadoProporcional,
     diasCorridosDeFeriado: diasCorridosDeFeriado,
     finiquito: finiquito,

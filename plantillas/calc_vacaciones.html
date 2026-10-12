@@ -21,6 +21,11 @@
     <label for="v-pendientes">Días hábiles pendientes de años anteriores</label>
     <input id="v-pendientes" name="pendientes" inputmode="decimal" autocomplete="off" value="0">
   </div>
+  <div class="campo">
+    <label for="v-feriado-anual">Días hábiles de feriado al año</label>
+    <input id="v-feriado-anual" name="feriado_anual" inputmode="decimal" autocomplete="off" value="{{ feriado_anual|numero }}">
+    <small>{{ feriado_anual|numero }} por ley; 20 en las regiones de Magallanes y Aysén y en la provincia de Palena.</small>
+  </div>
 </form>
 
 <div class="resultado" id="resultado-vacaciones" aria-live="polite">

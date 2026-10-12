@@ -145,6 +145,8 @@ def test_finiquito_identico(p):
         ("2019-01-31", "2026-02-27", 6_500_000, "desahucio", True, 0, 0),
         ("2026-02-01", "2026-10-09", 850_000, "renuncia", True, 2.5, 3),
         ("2024-12-31", "2026-12-24", 1_000_000, "vencimiento", True, 0, 0),
+        ("2026-01-20", "2026-10-12", 900_000, "termino_obra", True, 0, 0),
+        ("2025-03-03", "2026-09-30", 7_000_000, "termino_obra", True, 1.5, 4),
         ("2010-05-20", "2026-09-17", 3_000_000, "necesidades_empresa", False, 10, 0),
     ]
     for inicio, termino, remuneracion, causal, aviso, pendientes, dias in escenarios:
